@@ -19,7 +19,7 @@ public class ShopRecipe extends MerchantRecipe {
 	
 	private static net.minecraft.server.ItemStack convertItemStack(org.bukkit.inventory.ItemStack item) {
 		if (item == null) return null;
-		return new net.minecraft.server.ItemStack(item.getTypeId(), item.getAmount(), item.getDurability());
+		return org.bukkit.craftbukkit.inventory.CraftItemStack.createNMSItemStack(item);
 	}
 
 }

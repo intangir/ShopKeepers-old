@@ -3,19 +3,26 @@ package com.nisovin.shopkeepers;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import net.minecraft.server.EntityHuman;
 import net.minecraft.server.EntityLiving;
 import net.minecraft.server.EntityVillager;
 import net.minecraft.server.MerchantRecipeList;
+import net.minecraft.server.NBTTagCompound;
+import net.minecraft.server.NBTTagList;
+import net.minecraft.server.NBTTagString;
 import net.minecraft.server.PathfinderGoalLookAtPlayer;
 import net.minecraft.server.PathfinderGoalSelector;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.craftbukkit.entity.CraftVillager;
+import org.bukkit.craftbukkit.inventory.CraftItemStack;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Villager;
 import org.bukkit.entity.Villager.Profession;
 import org.bukkit.inventory.ItemStack;
@@ -47,20 +54,43 @@ public class Shopkeeper {
 		z = config.getInt("z");
 		profession = config.getInt("prof");
 		recipes = new ArrayList<ItemStack[]>();
-		List<String> recipeDatas = config.getStringList("recipes");
-		if (recipeDatas != null) {
-			for (String string : recipeDatas) {
-				ItemStack[] recipe = new ItemStack[3];
-				String[] items = string.split(";");
-				for (int i = 0; i < 3; i++) {
-					if (!items[i].isEmpty()) {
-						String[] itemData = items[i].split(",");
-						recipe[i] = new ItemStack(Integer.parseInt(itemData[0]), Integer.parseInt(itemData[2]), Short.parseShort(itemData[1]));
-					}
+		ConfigurationSection recipesSection = config.getConfigurationSection("recipes");
+		for (String key : recipesSection.getKeys(false)) {
+			ConfigurationSection recipeSection = recipesSection.getConfigurationSection(key);
+			ItemStack[] recipe = new ItemStack[3];
+			for (int i = 0; i < 3; i++) {
+				if (recipeSection.contains(i + "")) {
+					recipe[i] = loadItemStack(recipeSection.getConfigurationSection(i + ""));
 				}
-				recipes.add(recipe);
+			}
+			recipes.add(recipe);
+		}
+	}
+	
+	private ItemStack loadItemStack(ConfigurationSection config) {
+		ItemStack item = new ItemStack(config.getInt("id"), config.getInt("amt"), (short)config.getInt("data"));
+		if (config.contains("enchants")) {
+			List<String> list = config.getStringList("enchants");
+			for (String s : list) {
+				String[] enchantData = s.split(" ");
+				item.addUnsafeEnchantment(Enchantment.getById(Integer.parseInt(enchantData[0])), Integer.parseInt(enchantData[1]));
 			}
 		}
+		if (item.getType() == Material.WRITTEN_BOOK && config.contains("title") && config.contains("author") && config.contains("pages")) {
+			NBTTagCompound tag = new NBTTagCompound();
+			tag.setString("title", config.getString("title"));
+			tag.setString("author", config.getString("author"));
+			List<String> pages = config.getStringList("pages");
+			NBTTagList tagPages = new NBTTagList();
+			for (String page : pages) {
+				NBTTagString tagPage = new NBTTagString(null, page);
+				tagPages.add(tagPage);
+			}
+			tag.set("pages", tagPages);
+			item = new CraftItemStack(item);
+			((CraftItemStack)item).getHandle().tag = tag;
+		}
+		return item;
 	}
 	
 	public void save(ConfigurationSection config) {
@@ -69,18 +99,47 @@ public class Shopkeeper {
 		config.set("y", y);
 		config.set("z", z);
 		config.set("prof", profession);
-		List<String> recipeDatas = new ArrayList<String>();
+		ConfigurationSection recipesSection = config.createSection("recipes");
+		int count = 0;
 		for (ItemStack[] recipe : recipes) {
-			String string = recipe[0].getTypeId() + "," + recipe[0].getDurability() + "," + recipe[0].getAmount();
-			if (recipe[1] != null) {
-				string += ";" + recipe[1].getTypeId() + "," + recipe[1].getDurability() + "," + recipe[1].getAmount();
-			} else {
-				string += ";";
+			ConfigurationSection recipeSection = recipesSection.createSection(count + "");
+			for (int i = 0; i < 3; i++) {
+				if (recipe[i] != null) {
+					saveItemStack(recipe[i], recipeSection.createSection(i + ""));
+				}
 			}
-			string += ";" + recipe[2].getTypeId() + "," + recipe[2].getDurability() + "," + recipe[2].getAmount();
-			recipeDatas.add(string);
+			count++;
 		}
-		config.set("recipes", recipeDatas);
+	}
+	
+	private void saveItemStack(ItemStack item, ConfigurationSection config) {
+		config.set("id", item.getTypeId());
+		config.set("data", item.getDurability());
+		config.set("amt", item.getAmount());
+		Map<Enchantment, Integer> enchants = item.getEnchantments();
+		if (enchants.size() > 0) {
+			List<String> list = new ArrayList<String>();
+			for (Enchantment enchant : enchants.keySet()) {
+				list.add(enchant.getId() + " " + enchants.get(enchant));
+			}
+			config.set("enchants", list);
+		}
+		if (item.getType() == Material.WRITTEN_BOOK && item instanceof CraftItemStack) {
+			NBTTagCompound tag = ((CraftItemStack)item).getHandle().tag;
+			if (tag != null && tag.hasKey("title") && tag.hasKey("author") && tag.hasKey("pages")) {
+				config.set("title", tag.getString("title"));
+				config.set("author", tag.getString("author"));
+				List<String> pages = new ArrayList<String>();
+				NBTTagList tagPages = (NBTTagList)tag.get("pages");
+				for (int i = 0; i < tagPages.size(); i++) {
+					NBTTagString tagPage = (NBTTagString)tagPages.get(i);
+					if (tagPage.data != null) {
+						pages.add(tagPage.data);
+					}
+				}
+				config.set("pages", pages);
+			}
+		}
 	}
 	
 	public void spawn() {

@@ -18,6 +18,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Villager.Profession;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -63,9 +64,16 @@ public class ShopKeepersPlugin extends JavaPlugin implements Listener {
 		
 		int prof = 0;
 		if (args.length > 0) {
-			prof = Integer.parseInt(args[0]);
-			if (prof > 4) {
-				prof = 0;
+			if (args[0].matches("[0-9]+")) {
+				prof = Integer.parseInt(args[0]);
+				if (prof > 4) {
+					prof = 0;
+				}
+			} else {
+				Profession p = Profession.valueOf(args[0].toUpperCase());
+				if (p != null) {
+					prof = p.getId();
+				}
 			}
 		}
 		
@@ -98,7 +106,7 @@ public class ShopKeepersPlugin extends JavaPlugin implements Listener {
 				inv.setItem(i + 9, recipe[1]);
 				inv.setItem(i + 18, recipe[2]);
 			}
-			inv.setItem(8, new ItemStack(Material.COOKIE));
+			inv.setItem(8, new ItemStack(Material.EMERALD_BLOCK));
 			inv.setItem(26, new ItemStack(Material.FIRE));
 			event.getPlayer().openInventory(inv);
 			editing.put(event.getPlayer().getName(), event.getRightClicked().getEntityId());

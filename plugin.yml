@@ -1,0 +1,15 @@
+name: ShopKeepers
+main: com.nisovin.shopkeepers.ShopKeepersPlugin
+version: 1.0
+author: nisovin
+commands:
+    shopkeeper:
+        description: Test
+        permission: shopkeeper.create
+permissions:
+    shopkeeper.create:
+        description: Create a shopkeeper
+        default: op
+    shopkeeper.modify:
+        description: Modify shopkeeper vendor items
+        default: op

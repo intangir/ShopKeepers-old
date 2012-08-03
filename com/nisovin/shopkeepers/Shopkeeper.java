@@ -150,6 +150,13 @@ public class Shopkeeper {
 		overwriteAI();
 	}
 	
+	public void teleport() {
+		if (villager != null) {
+			World w = Bukkit.getWorld(world);
+			villager.teleport(new Location(w, x + .5, y, z + .5, villager.getLocation().getYaw(), villager.getLocation().getPitch()));
+		}
+	}
+	
 	public void remove() {
 		if (villager != null) {
 			villager.remove();
@@ -180,11 +187,12 @@ public class Shopkeeper {
 		return villager != null;
 	}
 	
+	@SuppressWarnings("unchecked")
 	private void setRecipes() {
 		try {
 			EntityVillager ev = ((CraftVillager)villager).getHandle();
 			
-			Field recipeListField = EntityVillager.class.getDeclaredField("i");
+			Field recipeListField = EntityVillager.class.getDeclaredField(ShopkeepersPlugin.recipeListVar);
 			recipeListField.setAccessible(true);
 			MerchantRecipeList recipeList = (MerchantRecipeList)recipeListField.get(ev);
 			if (recipeList == null) {
@@ -193,7 +201,7 @@ public class Shopkeeper {
 			}
 			recipeList.clear();
 			for (ItemStack[] recipe : recipes) {
-				recipeList.a(ShopRecipe.factory(recipe[0], recipe[1], recipe[2]));
+				recipeList.add(ShopRecipe.factory(recipe[0], recipe[1], recipe[2]));
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -15,11 +15,13 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager.Profession;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -28,26 +30,50 @@ import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public class ShopKeepersPlugin extends JavaPlugin implements Listener {
+public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 
 	private Map<String, List<Shopkeeper>> allShopkeepersByChunk = new HashMap<String, List<Shopkeeper>>();
 	private Map<Integer, Shopkeeper> activeShopkeepers = new HashMap<Integer, Shopkeeper>();
 	private Map<String, Integer> editing = new HashMap<String, Integer>();
 	
+	private boolean disableOtherVillagers = true;
+	static String recipeListVar = "i";
+	
 	@Override
 	public void onEnable() {
+		// get config
+		File file = new File(getDataFolder(), "config.yml");
+		if (!file.exists()) {
+			saveDefaultConfig();
+		}
+		Configuration config = getConfig();
+		disableOtherVillagers = config.getBoolean("disable-other-villagers", disableOtherVillagers);
+		recipeListVar = config.getString("recipe-list-var", recipeListVar);
+		
+		// load shopkeeper saved data
 		load();
 		
+		// spawn villagers in loaded chunks
 		for (World world : Bukkit.getWorlds()) {
 			for (Chunk chunk : world.getLoadedChunks()) {
 				loadShopkeepersInChunk(chunk);
 			}
 		}
 		
+		// register events
 		getServer().getPluginManager().registerEvents(this, this);
 		
+		// start teleporter
+		Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
+			public void run() {
+				for (Shopkeeper shopkeeper : activeShopkeepers.values()) {
+					shopkeeper.teleport();
+				}
+			}
+		}, 200, 200);
 	}
 	
 	@Override
@@ -56,6 +82,10 @@ public class ShopKeepersPlugin extends JavaPlugin implements Listener {
 			shopkeeper.remove();
 		}
 		activeShopkeepers.clear();
+		
+		HandlerList.unregisterAll((Plugin)this);
+		
+		Bukkit.getScheduler().cancelTasks(this);
 	}
 	
 	@Override
@@ -110,7 +140,7 @@ public class ShopKeepersPlugin extends JavaPlugin implements Listener {
 			inv.setItem(26, new ItemStack(Material.FIRE));
 			event.getPlayer().openInventory(inv);
 			editing.put(event.getPlayer().getName(), event.getRightClicked().getEntityId());
-		} else if (!activeShopkeepers.containsKey(event.getRightClicked().getEntityId())) {
+		} else if (disableOtherVillagers && !activeShopkeepers.containsKey(event.getRightClicked().getEntityId())) {
 			event.setCancelled(true);
 		}
 	}
@@ -128,7 +158,7 @@ public class ShopKeepersPlugin extends JavaPlugin implements Listener {
 			int entityId = editing.get(event.getWhoClicked().getName());
 			Shopkeeper shopkeeper = activeShopkeepers.get(entityId);
 			if (shopkeeper != null) {
-				if (event.getSlot() == 8) {
+				if (event.getRawSlot() == 8) {
 					Inventory inv = event.getInventory();
 					List<ItemStack[]> recipes = new ArrayList<ItemStack[]>();
 					for (int i = 0; i < 8; i++) {
@@ -145,7 +175,7 @@ public class ShopKeepersPlugin extends JavaPlugin implements Listener {
 					event.setCancelled(true);
 					event.getWhoClicked().closeInventory();
 					editing.remove(event.getWhoClicked().getName());
-				} else if (event.getSlot() == 26) {
+				} else if (event.getRawSlot() == 26) {
 					shopkeeper.remove();
 					activeShopkeepers.remove(entityId);
 					allShopkeepersByChunk.get(shopkeeper.getChunk()).remove(shopkeeper);

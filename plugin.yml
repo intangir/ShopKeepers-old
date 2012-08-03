@@ -1,5 +1,5 @@
-name: ShopKeepers
-main: com.nisovin.shopkeepers.ShopKeepersPlugin
+name: Shopkeepers
+main: com.nisovin.shopkeepers.ShopkeepersPlugin
 version: 1.0
 author: nisovin
 commands:

@@ -139,7 +139,7 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 	 * @param location the location the shopkeeper should spawn
 	 * @param profession the shopkeeper's profession, a number from 0 to 5
 	 */
-	public void createNewShopkeeper(Location location, int profession) {
+	public Shopkeeper createNewShopkeeper(Location location, int profession) {
 		// make sure profession is valid
 		if (profession < 0 || profession > 5) {
 			profession = 0;
@@ -156,6 +156,8 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 		list.add(shopkeeper);
 		// save all data
 		save();
+		
+		return shopkeeper;
 	}
 	
 	/**

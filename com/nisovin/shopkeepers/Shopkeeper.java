@@ -37,6 +37,12 @@ public class Shopkeeper {
 	List<ItemStack[]> recipes;
 	Villager villager;
 	
+	/**
+	 * Creates a new shopkeeper and spawns it in the world. This should be used when a player is
+	 * creating a new shopkeeper.
+	 * @param location the location to spawn at
+	 * @param prof the id of the profession
+	 */
 	public Shopkeeper(Location location, int prof) {
 		world = location.getWorld().getName();
 		x = location.getBlockX();
@@ -47,6 +53,11 @@ public class Shopkeeper {
 		spawn();
 	}
 	
+	/**
+	 * Loads a shopkeeper from the provided configuration section. This is used when loading a 
+	 * shopkeeper from the save file.
+	 * @param config the config section the shopkeeper is stored in
+	 */
 	public Shopkeeper(ConfigurationSection config) {
 		world = config.getString("world");
 		x = config.getInt("x");
@@ -67,6 +78,162 @@ public class Shopkeeper {
 		}
 	}
 	
+	/**
+	 * Saves the shopkeeper's data to the specified configuration section.
+	 * @param config the config section
+	 */
+	public void save(ConfigurationSection config) {
+		config.set("world", world);
+		config.set("x", x);
+		config.set("y", y);
+		config.set("z", z);
+		config.set("prof", profession);
+		ConfigurationSection recipesSection = config.createSection("recipes");
+		int count = 0;
+		for (ItemStack[] recipe : recipes) {
+			ConfigurationSection recipeSection = recipesSection.createSection(count + "");
+			for (int i = 0; i < 3; i++) {
+				if (recipe[i] != null) {
+					saveItemStack(recipe[i], recipeSection.createSection(i + ""));
+				}
+			}
+			count++;
+		}
+	}
+	
+	/**
+	 * Spawns the shopkeeper into the world at its spawn location. Also sets the
+	 * trade recipes and overwrites the villager AI.
+	 */
+	public void spawn() {
+		World w = Bukkit.getWorld(world);
+		villager = w.spawn(new Location(w, x + .5, y, z + .5), Villager.class);
+		((CraftVillager)villager).getHandle().setProfession(profession);
+		updateRecipes();
+		overwriteAI();
+	}
+	
+	/**
+	 * Teleports this shopkeeper to its spawn location.
+	 */
+	public void teleport() {
+		if (villager != null) {
+			World w = Bukkit.getWorld(world);
+			villager.teleport(new Location(w, x + .5, y, z + .5, villager.getLocation().getYaw(), villager.getLocation().getPitch()));
+		}
+	}
+	
+	/**
+	 * Removes this shopkeeper from the world.
+	 */
+	public void remove() {
+		if (villager != null) {
+			villager.remove();
+		}
+	}
+	
+	/**
+	 * Gets a string identifying the chunk this shopkeeper spawns in, 
+	 * in the format world,x,z.
+	 * @return the chunk as a string
+	 */
+	public String getChunk() {
+		return world + "," + (x >> 4) + "," + (z >> 4);
+	}
+	
+	/**
+	 * Gets the shopkeeper's entity ID.
+	 * @return the entity id, or 0 if the shopkeeper is not in the world
+	 */
+	public int getEntityId() {
+		if (villager != null) {
+			return villager.getEntityId();
+		}
+		return 0;
+	}
+	
+	/**
+	 * Gets the shopkeeper's trade recipes. This will be a list of ItemStack[3],
+	 * where the first two elemets of the ItemStack[] array are the cost, and the third
+	 * element is the trade result (the item sold by the shopkeeper).
+	 * @return the trade recipes of this shopkeeper
+	 */
+	public List<ItemStack[]> getRecipes() {
+		return recipes;
+	}
+	
+	/**
+	 * Sets the shopkeeper's trade recipes. This should be set to a list of ItemStack[3], 
+	 * where the first two elemets of the ItemStack[] array are the cost, and the third
+	 * element is the trade result (the item sold by the shopkeeper).
+	 * @param recipes the trade recipes the shopkeeper should have
+	 */
+	public void setRecipes(List<ItemStack[]> recipes) {
+		this.recipes = recipes;
+		updateRecipes();
+	}
+	
+	/**
+	 * Checks if the shopkeeper is active (is alive in the world).
+	 * @return whether the shopkeeper is active
+	 */
+	public boolean isActive() {
+		return villager != null;
+	}
+	
+	/**
+	 * Sets the villager's trade options.
+	 */
+	@SuppressWarnings("unchecked")
+	public void updateRecipes() {
+		try {
+			EntityVillager ev = ((CraftVillager)villager).getHandle();
+			
+			Field recipeListField = EntityVillager.class.getDeclaredField(ShopkeepersPlugin.recipeListVar);
+			recipeListField.setAccessible(true);
+			MerchantRecipeList recipeList = (MerchantRecipeList)recipeListField.get(ev);
+			if (recipeList == null) {
+				recipeList = new MerchantRecipeList();
+				recipeListField.set(ev, recipeList);
+			}
+			recipeList.clear();
+			for (ItemStack[] recipe : recipes) {
+				recipeList.add(ShopRecipe.factory(recipe[0], recipe[1], recipe[2]));
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}		
+	}
+	
+	/**
+	 * Overwrites the AI of the villager to not wander, but to just look at customers.
+	 */
+	private void overwriteAI() {
+		try {
+			EntityVillager ev = ((CraftVillager)villager).getHandle();
+			
+			Field goalsField = EntityLiving.class.getDeclaredField("goalSelector");
+			goalsField.setAccessible(true);
+			PathfinderGoalSelector goals = (PathfinderGoalSelector) goalsField.get(ev);
+			
+			Field listField = PathfinderGoalSelector.class.getDeclaredField("a");
+			listField.setAccessible(true);
+			@SuppressWarnings("rawtypes")
+			List list = (List)listField.get(goals);
+			list.clear();
+			
+			goals.a(1, new PathfinderGoalLookAtTradingPlayer(ev));
+			goals.a(2, new PathfinderGoalLookAtPlayer(ev, EntityHuman.class, 12.0F, 1.0F));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}		
+	}
+	
+	/**
+	 * Loads an ItemStack from a config section.
+	 * @param config
+	 * @return
+	 */
 	private ItemStack loadItemStack(ConfigurationSection config) {
 		ItemStack item = new ItemStack(config.getInt("id"), config.getInt("amt"), (short)config.getInt("data"));
 		if (config.contains("enchants")) {
@@ -93,25 +260,11 @@ public class Shopkeeper {
 		return item;
 	}
 	
-	public void save(ConfigurationSection config) {
-		config.set("world", world);
-		config.set("x", x);
-		config.set("y", y);
-		config.set("z", z);
-		config.set("prof", profession);
-		ConfigurationSection recipesSection = config.createSection("recipes");
-		int count = 0;
-		for (ItemStack[] recipe : recipes) {
-			ConfigurationSection recipeSection = recipesSection.createSection(count + "");
-			for (int i = 0; i < 3; i++) {
-				if (recipe[i] != null) {
-					saveItemStack(recipe[i], recipeSection.createSection(i + ""));
-				}
-			}
-			count++;
-		}
-	}
-	
+	/**
+	 * Saves an ItemStack to a config section.
+	 * @param item
+	 * @param config
+	 */
 	private void saveItemStack(ItemStack item, ConfigurationSection config) {
 		config.set("id", item.getTypeId());
 		config.set("data", item.getDurability());
@@ -140,93 +293,6 @@ public class Shopkeeper {
 				config.set("pages", pages);
 			}
 		}
-	}
-	
-	public void spawn() {
-		World w = Bukkit.getWorld(world);
-		villager = w.spawn(new Location(w, x + .5, y, z + .5), Villager.class);
-		((CraftVillager)villager).getHandle().setProfession(profession);
-		updateRecipes();
-		overwriteAI();
-	}
-	
-	public void teleport() {
-		if (villager != null) {
-			World w = Bukkit.getWorld(world);
-			villager.teleport(new Location(w, x + .5, y, z + .5, villager.getLocation().getYaw(), villager.getLocation().getPitch()));
-		}
-	}
-	
-	public void remove() {
-		if (villager != null) {
-			villager.remove();
-		}
-	}
-	
-	public String getChunk() {
-		return world + "," + (x >> 4) + "," + (z >> 4);
-	}
-	
-	public int getEntityId() {
-		if (villager != null) {
-			return villager.getEntityId();
-		}
-		return 0;
-	}
-	
-	public List<ItemStack[]> getRecipes() {
-		return recipes;
-	}
-	
-	public void setRecipes(List<ItemStack[]> recipes) {
-		this.recipes = recipes;
-		updateRecipes();
-	}
-	
-	public boolean isActive() {
-		return villager != null;
-	}
-	
-	@SuppressWarnings("unchecked")
-	public void updateRecipes() {
-		try {
-			EntityVillager ev = ((CraftVillager)villager).getHandle();
-			
-			Field recipeListField = EntityVillager.class.getDeclaredField(ShopkeepersPlugin.recipeListVar);
-			recipeListField.setAccessible(true);
-			MerchantRecipeList recipeList = (MerchantRecipeList)recipeListField.get(ev);
-			if (recipeList == null) {
-				recipeList = new MerchantRecipeList();
-				recipeListField.set(ev, recipeList);
-			}
-			recipeList.clear();
-			for (ItemStack[] recipe : recipes) {
-				recipeList.add(ShopRecipe.factory(recipe[0], recipe[1], recipe[2]));
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}		
-	}
-	
-	private void overwriteAI() {
-		try {
-			EntityVillager ev = ((CraftVillager)villager).getHandle();
-			
-			Field goalsField = EntityLiving.class.getDeclaredField("goalSelector");
-			goalsField.setAccessible(true);
-			PathfinderGoalSelector goals = (PathfinderGoalSelector) goalsField.get(ev);
-			
-			Field listField = PathfinderGoalSelector.class.getDeclaredField("a");
-			listField.setAccessible(true);
-			@SuppressWarnings("rawtypes")
-			List list = (List)listField.get(goals);
-			list.clear();
-			
-			goals.a(1, new PathfinderGoalLookAtTradingPlayer(ev));
-			goals.a(2, new PathfinderGoalLookAtPlayer(ev, EntityHuman.class, 12.0F, 1.0F));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}		
 	}
 	
 }

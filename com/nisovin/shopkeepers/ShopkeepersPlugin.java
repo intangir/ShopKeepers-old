@@ -9,7 +9,9 @@ import java.util.Map;
 import java.util.Set;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -81,53 +83,97 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 		for (Shopkeeper shopkeeper : activeShopkeepers.values()) {
 			shopkeeper.remove();
 		}
-		activeShopkeepers.clear();
-		
-		HandlerList.unregisterAll((Plugin)this);
-		
+		activeShopkeepers.clear();		
+		HandlerList.unregisterAll((Plugin)this);		
 		Bukkit.getScheduler().cancelTasks(this);
 	}
 	
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-		Player player = (Player)sender;
-		
-		int prof = 0;
-		if (args.length > 0) {
-			if (args[0].matches("[0-9]+")) {
-				prof = Integer.parseInt(args[0]);
-				if (prof > 5) {
-					prof = 0;
+		if (args.length > 0 && args[0].equalsIgnoreCase("reload") && sender.hasPermission("shopkeeper.reload")) {
+			// reload command
+			onDisable();
+			onEnable();
+			sender.sendMessage(ChatColor.GREEN + "Shopkeepers plugin reloaded!");
+			return true;
+		} else if (sender instanceof Player) {
+			Player player = (Player)sender;		
+			
+			// get the profession, default to farmer if an invalid one is specified
+			int prof = 0;
+			if (args.length > 0) {
+				if (args[0].matches("[0-9]+")) {
+					prof = Integer.parseInt(args[0]);
+					if (prof > 5) {
+						prof = 0;
+					}
+				} else {
+					Profession p = Profession.valueOf(args[0].toUpperCase());
+					if (p != null) {
+						prof = p.getId();
+					}
 				}
+			}
+			
+			// get the spawn location for the shopkeeper
+			Block block = player.getTargetBlock(null, 10);
+			if (block != null && block.getType() != Material.AIR) {
+				// create the shopkeeper
+				createNewShopkeeper(block.getLocation().add(0, 1.5, 0), prof);
+				sender.sendMessage(ChatColor.GREEN + "Shopkeeper created!");
+				sender.sendMessage(ChatColor.GREEN + "Right-click the villager while sneaking to modify trades.");
 			} else {
-				Profession p = Profession.valueOf(args[0].toUpperCase());
-				if (p != null) {
-					prof = p.getId();
-				}
+				sender.sendMessage(ChatColor.GREEN + "Please look at a block to create a shopkeeper.");
 			}
+			
+			return true;
+		} else {
+			sender.sendMessage(ChatColor.GREEN + "You must be a player to create a shopkeeper.");
+			sender.sendMessage(ChatColor.GREEN + "Use 'shopkeeper reload' to reload the plugin.");
+			return true;
 		}
-		
-		Block block = player.getTargetBlock(null, 10);
-		if (block != null && block.getType() != Material.AIR) {
-			Shopkeeper shopkeeper = new Shopkeeper(block.getLocation().add(0, 1.5, 0), prof);
-			activeShopkeepers.put(shopkeeper.getEntityId(), shopkeeper);
-			List<Shopkeeper> list = allShopkeepersByChunk.get(shopkeeper.getChunk());
-			if (list == null) {
-				list = new ArrayList<Shopkeeper>();
-				allShopkeepersByChunk.put(shopkeeper.getChunk(), list);
-			}
-			list.add(shopkeeper);
-			save();
+	}
+	
+	/**
+	 * Creates a shopkeeper and spawns it into the world.
+	 * @param location the location the shopkeeper should spawn
+	 * @param profession the shopkeeper's profession, a number from 0 to 5
+	 */
+	public void createNewShopkeeper(Location location, int profession) {
+		// make sure profession is valid
+		if (profession < 0 || profession > 5) {
+			profession = 0;
 		}
-		
-		return true;
+		// create the shopkeeper (and spawn it)
+		Shopkeeper shopkeeper = new Shopkeeper(location, profession);
+		activeShopkeepers.put(shopkeeper.getEntityId(), shopkeeper);
+		// add to chunk list
+		List<Shopkeeper> list = allShopkeepersByChunk.get(shopkeeper.getChunk());
+		if (list == null) {
+			list = new ArrayList<Shopkeeper>();
+			allShopkeepersByChunk.put(shopkeeper.getChunk(), list);
+		}
+		list.add(shopkeeper);
+		// save all data
+		save();
+	}
+	
+	/**
+	 * Gets the shopkeeper by the villager's entity id.
+	 * @param entityId the entity id of the villager
+	 * @return the Shopkeeper, or null if the enitity with the given id is not a shopkeeper
+	 */
+	public Shopkeeper getShopkeeperByEntityId(int entityId) {
+		return activeShopkeepers.get(entityId);
 	}
 	
 	@EventHandler
 	public void onEntityInteract(PlayerInteractEntityEvent event) {
 		boolean isShopkeeper = activeShopkeepers.containsKey(event.getRightClicked().getEntityId());
 		if (event.getPlayer().hasPermission("shopkeeper.modify") && event.getPlayer().isSneaking() && isShopkeeper) {
+			// modifying a shopkeeper
 			event.setCancelled(true);
+			// get the shopkeeper's trade options
 			Shopkeeper shopkeeper = activeShopkeepers.get(event.getRightClicked().getEntityId());
 			Inventory inv = Bukkit.createInventory(event.getPlayer(), 27, "Shopkeeper Editor");
 			List<ItemStack[]> recipes = shopkeeper.getRecipes();
@@ -137,20 +183,25 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 				inv.setItem(i + 9, recipe[1]);
 				inv.setItem(i + 18, recipe[2]);
 			}
+			// add the special buttons
 			inv.setItem(8, new ItemStack(Material.EMERALD_BLOCK));
 			inv.setItem(26, new ItemStack(Material.FIRE));
+			// show editing inventory
 			event.getPlayer().openInventory(inv);
 			editing.put(event.getPlayer().getName(), event.getRightClicked().getEntityId());
 		} else if (isShopkeeper) {
+			// prevent shopkeepers adding their own recipes by refreshing them with our list
 			Shopkeeper shopkeeper = activeShopkeepers.get(event.getRightClicked().getEntityId());
-			shopkeeper.updateRecipes();			
+			shopkeeper.updateRecipes();
 		} else if (disableOtherVillagers && !isShopkeeper) {
+			// don't allow trading with other villagers
 			event.setCancelled(true);
 		}
 	}
 	
 	@EventHandler
 	public void onEntityDamage(EntityDamageEvent event) {
+		// don't allow damaging shopkeepers!
 		if (activeShopkeepers.containsKey(event.getEntity().getEntityId())) {
 			event.setCancelled(true);
 		}
@@ -158,11 +209,15 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 	
 	@EventHandler
 	public void onInventoryClick(InventoryClickEvent event) {
+		// shopkeeper editor click
 		if (editing.containsKey(event.getWhoClicked().getName()) && event.getInventory().getTitle().equals("Shopkeeper Editor")) {
+			// get the shopkeeper being edited
 			int entityId = editing.get(event.getWhoClicked().getName());
 			Shopkeeper shopkeeper = activeShopkeepers.get(entityId);
 			if (shopkeeper != null) {
+				// check for special buttons
 				if (event.getRawSlot() == 8) {
+					// it's the save button - get the trades and save them to the shopkeeper
 					Inventory inv = event.getInventory();
 					List<ItemStack[]> recipes = new ArrayList<ItemStack[]>();
 					for (int i = 0; i < 8; i++) {
@@ -176,14 +231,17 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 					}
 					shopkeeper.setRecipes(recipes);
 					save();
+					// close editing window
 					event.setCancelled(true);
 					event.getWhoClicked().closeInventory();
 					editing.remove(event.getWhoClicked().getName());
 				} else if (event.getRawSlot() == 26) {
+					// it's the delete button - remove the shopkeeper
 					shopkeeper.remove();
 					activeShopkeepers.remove(entityId);
 					allShopkeepersByChunk.get(shopkeeper.getChunk()).remove(shopkeeper);
 					save();
+					// close the editing window
 					event.setCancelled(true);
 					event.getWhoClicked().closeInventory();
 					editing.remove(event.getWhoClicked().getName());

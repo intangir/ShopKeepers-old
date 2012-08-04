@@ -7,6 +7,9 @@ commands:
         description: Test
         permission: shopkeeper.create
 permissions:
+    shopkeeper.reload:
+        description: Reloads the plugin
+        default: op
     shopkeeper.create:
         description: Create a shopkeeper
         default: op

@@ -96,7 +96,7 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 		if (args.length > 0) {
 			if (args[0].matches("[0-9]+")) {
 				prof = Integer.parseInt(args[0]);
-				if (prof > 4) {
+				if (prof > 5) {
 					prof = 0;
 				}
 			} else {
@@ -125,7 +125,8 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 	
 	@EventHandler
 	public void onEntityInteract(PlayerInteractEntityEvent event) {
-		if (event.getPlayer().hasPermission("shopkeeper.modify") && event.getPlayer().isSneaking() && activeShopkeepers.containsKey(event.getRightClicked().getEntityId())) {
+		boolean isShopkeeper = activeShopkeepers.containsKey(event.getRightClicked().getEntityId());
+		if (event.getPlayer().hasPermission("shopkeeper.modify") && event.getPlayer().isSneaking() && isShopkeeper) {
 			event.setCancelled(true);
 			Shopkeeper shopkeeper = activeShopkeepers.get(event.getRightClicked().getEntityId());
 			Inventory inv = Bukkit.createInventory(event.getPlayer(), 27, "Shopkeeper Editor");
@@ -140,7 +141,10 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 			inv.setItem(26, new ItemStack(Material.FIRE));
 			event.getPlayer().openInventory(inv);
 			editing.put(event.getPlayer().getName(), event.getRightClicked().getEntityId());
-		} else if (disableOtherVillagers && !activeShopkeepers.containsKey(event.getRightClicked().getEntityId())) {
+		} else if (isShopkeeper) {
+			Shopkeeper shopkeeper = activeShopkeepers.get(event.getRightClicked().getEntityId());
+			shopkeeper.updateRecipes();			
+		} else if (disableOtherVillagers && !isShopkeeper) {
 			event.setCancelled(true);
 		}
 	}

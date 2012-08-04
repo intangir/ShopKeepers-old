@@ -13,6 +13,7 @@ import net.minecraft.server.NBTTagCompound;
 import net.minecraft.server.NBTTagList;
 import net.minecraft.server.NBTTagString;
 import net.minecraft.server.PathfinderGoalLookAtPlayer;
+import net.minecraft.server.PathfinderGoalLookAtTradingPlayer;
 import net.minecraft.server.PathfinderGoalSelector;
 
 import org.bukkit.Bukkit;
@@ -24,7 +25,6 @@ import org.bukkit.craftbukkit.entity.CraftVillager;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Villager;
-import org.bukkit.entity.Villager.Profession;
 import org.bukkit.inventory.ItemStack;
 
 public class Shopkeeper {
@@ -145,8 +145,8 @@ public class Shopkeeper {
 	public void spawn() {
 		World w = Bukkit.getWorld(world);
 		villager = w.spawn(new Location(w, x + .5, y, z + .5), Villager.class);
-		villager.setProfession(Profession.getProfession(profession));
-		setRecipes();
+		((CraftVillager)villager).getHandle().setProfession(profession);
+		updateRecipes();
 		overwriteAI();
 	}
 	
@@ -180,7 +180,7 @@ public class Shopkeeper {
 	
 	public void setRecipes(List<ItemStack[]> recipes) {
 		this.recipes = recipes;
-		setRecipes();
+		updateRecipes();
 	}
 	
 	public boolean isActive() {
@@ -188,7 +188,7 @@ public class Shopkeeper {
 	}
 	
 	@SuppressWarnings("unchecked")
-	private void setRecipes() {
+	public void updateRecipes() {
 		try {
 			EntityVillager ev = ((CraftVillager)villager).getHandle();
 			
@@ -222,7 +222,8 @@ public class Shopkeeper {
 			List list = (List)listField.get(goals);
 			list.clear();
 			
-			goals.a(1, new PathfinderGoalLookAtPlayer(ev, EntityHuman.class, 8.0F));
+			goals.a(1, new PathfinderGoalLookAtTradingPlayer(ev));
+			goals.a(2, new PathfinderGoalLookAtPlayer(ev, EntityHuman.class, 12.0F, 1.0F));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}		

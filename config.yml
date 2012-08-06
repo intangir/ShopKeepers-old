@@ -1,1 +1,21 @@
 disable-other-villagers: true
+
+create-player-shop-with-command: true
+create-player-shop-with-egg: true
+
+editor-title: "Shopkeeper Editor"
+currency-item: 388
+currency-item-data: 0
+zero-item: 341
+save-item: 133
+delete-item: 51
+
+msg-player-shop-created: |
+    &aShopkeeper created!
+    &aAdd items you want to sell to your chest, then
+    &aright-click the villager while sneaking to modify costs.
+msg-admin-shop-created: |
+    &aShopkeeper created!
+    &aRight-click the villager while sneaking to modify trades.
+msg-shop-create-fail: "&aYou cannot create a shopkeeper there."
+msg-shop-in-use: "&aSomeone else is already purchasing from this shopkeeper."

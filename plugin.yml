@@ -5,14 +5,16 @@ author: nisovin
 commands:
     shopkeeper:
         description: Test
-        permission: shopkeeper.create
 permissions:
     shopkeeper.reload:
         description: Reloads the plugin
         default: op
-    shopkeeper.create:
-        description: Create a shopkeeper
+    shopkeeper.admin:
+        description: Create and modify an admin shopkeeper
         default: op
-    shopkeeper.modify:
-        description: Modify shopkeeper vendor items
+    shopkeeper.player:
+        description: Create and modify a player shopkeeper
+        default: true
+    shopkeeper.bypass:
+        description: Bypass player shop restrictions
         default: op

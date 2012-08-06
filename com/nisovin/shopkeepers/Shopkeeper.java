@@ -1,41 +1,38 @@
 package com.nisovin.shopkeepers;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import net.minecraft.server.EntityHuman;
 import net.minecraft.server.EntityLiving;
 import net.minecraft.server.EntityVillager;
 import net.minecraft.server.MerchantRecipeList;
-import net.minecraft.server.NBTTagCompound;
-import net.minecraft.server.NBTTagList;
-import net.minecraft.server.NBTTagString;
 import net.minecraft.server.PathfinderGoalLookAtPlayer;
 import net.minecraft.server.PathfinderGoalLookAtTradingPlayer;
 import net.minecraft.server.PathfinderGoalSelector;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.craftbukkit.entity.CraftVillager;
-import org.bukkit.craftbukkit.inventory.CraftItemStack;
-import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 
-public class Shopkeeper {
+public abstract class Shopkeeper {
 
 	String world;
 	int x;
 	int y;
 	int z;
 	int profession;
-	List<ItemStack[]> recipes;
 	Villager villager;
+
+	Shopkeeper(ConfigurationSection config) {
+		load(config);
+	}
 	
 	/**
 	 * Creates a new shopkeeper and spawns it in the world. This should be used when a player is
@@ -49,33 +46,14 @@ public class Shopkeeper {
 		y = location.getBlockY();
 		z = location.getBlockZ();
 		profession = prof;
-		recipes = new ArrayList<ItemStack[]>();
-		spawn();
 	}
 	
-	/**
-	 * Loads a shopkeeper from the provided configuration section. This is used when loading a 
-	 * shopkeeper from the save file.
-	 * @param config the config section the shopkeeper is stored in
-	 */
-	public Shopkeeper(ConfigurationSection config) {
+	public void load(ConfigurationSection config) {
 		world = config.getString("world");
 		x = config.getInt("x");
 		y = config.getInt("y");
 		z = config.getInt("z");
 		profession = config.getInt("prof");
-		recipes = new ArrayList<ItemStack[]>();
-		ConfigurationSection recipesSection = config.getConfigurationSection("recipes");
-		for (String key : recipesSection.getKeys(false)) {
-			ConfigurationSection recipeSection = recipesSection.getConfigurationSection(key);
-			ItemStack[] recipe = new ItemStack[3];
-			for (int i = 0; i < 3; i++) {
-				if (recipeSection.contains(i + "")) {
-					recipe[i] = loadItemStack(recipeSection.getConfigurationSection(i + ""));
-				}
-			}
-			recipes.add(recipe);
-		}
 	}
 	
 	/**
@@ -88,17 +66,6 @@ public class Shopkeeper {
 		config.set("y", y);
 		config.set("z", z);
 		config.set("prof", profession);
-		ConfigurationSection recipesSection = config.createSection("recipes");
-		int count = 0;
-		for (ItemStack[] recipe : recipes) {
-			ConfigurationSection recipeSection = recipesSection.createSection(count + "");
-			for (int i = 0; i < 3; i++) {
-				if (recipe[i] != null) {
-					saveItemStack(recipe[i], recipeSection.createSection(i + ""));
-				}
-			}
-			count++;
-		}
 	}
 	
 	/**
@@ -108,9 +75,20 @@ public class Shopkeeper {
 	public void spawn() {
 		World w = Bukkit.getWorld(world);
 		villager = w.spawn(new Location(w, x + .5, y, z + .5), Villager.class);
-		((CraftVillager)villager).getHandle().setProfession(profession);
-		updateRecipes();
+		setProfession();
 		overwriteAI();
+	}
+	
+	protected void setProfession() {
+		((CraftVillager)villager).getHandle().setProfession(profession);
+	}
+	
+	/**
+	 * Checks if the shopkeeper is active (is alive in the world).
+	 * @return whether the shopkeeper is active
+	 */
+	public boolean isActive() {
+		return villager != null;
 	}
 	
 	/**
@@ -129,6 +107,7 @@ public class Shopkeeper {
 	public void remove() {
 		if (villager != null) {
 			villager.remove();
+			villager = null;
 		}
 	}
 	
@@ -151,34 +130,39 @@ public class Shopkeeper {
 		}
 		return 0;
 	}
-	
+
 	/**
 	 * Gets the shopkeeper's trade recipes. This will be a list of ItemStack[3],
 	 * where the first two elemets of the ItemStack[] array are the cost, and the third
 	 * element is the trade result (the item sold by the shopkeeper).
 	 * @return the trade recipes of this shopkeeper
 	 */
-	public List<ItemStack[]> getRecipes() {
-		return recipes;
-	}
-	
+	public abstract List<ItemStack[]> getRecipes();
+
 	/**
 	 * Sets the shopkeeper's trade recipes. This should be set to a list of ItemStack[3], 
 	 * where the first two elemets of the ItemStack[] array are the cost, and the third
 	 * element is the trade result (the item sold by the shopkeeper).
 	 * @param recipes the trade recipes the shopkeeper should have
 	 */
-	public void setRecipes(List<ItemStack[]> recipes) {
-		this.recipes = recipes;
-		updateRecipes();
-	}
+	//public abstract void setRecipes(List<ItemStack[]> recipes);
 	
-	/**
-	 * Checks if the shopkeeper is active (is alive in the world).
-	 * @return whether the shopkeeper is active
-	 */
-	public boolean isActive() {
-		return villager != null;
+	public abstract boolean onEdit(Player player);
+	
+	public abstract EditorClickResult onEditorClick(InventoryClickEvent event);	
+	
+	public abstract void onPurchaseClick(InventoryClickEvent event);
+	
+	protected short getProfessionWoolColor() {
+		switch (profession) {
+		case 0: return 12;
+		case 1: return 0;
+		case 2: return 2;
+		case 3: return 7;
+		case 4: return 8;
+		case 5: return 5;
+		default: return 14;
+		}
 	}
 	
 	/**
@@ -197,7 +181,7 @@ public class Shopkeeper {
 				recipeListField.set(ev, recipeList);
 			}
 			recipeList.clear();
-			for (ItemStack[] recipe : recipes) {
+			for (ItemStack[] recipe : getRecipes()) {
 				recipeList.add(ShopRecipe.factory(recipe[0], recipe[1], recipe[2]));
 			}
 		} catch (Exception e) {
@@ -228,71 +212,4 @@ public class Shopkeeper {
 			e.printStackTrace();
 		}		
 	}
-	
-	/**
-	 * Loads an ItemStack from a config section.
-	 * @param config
-	 * @return
-	 */
-	private ItemStack loadItemStack(ConfigurationSection config) {
-		ItemStack item = new ItemStack(config.getInt("id"), config.getInt("amt"), (short)config.getInt("data"));
-		if (config.contains("enchants")) {
-			List<String> list = config.getStringList("enchants");
-			for (String s : list) {
-				String[] enchantData = s.split(" ");
-				item.addUnsafeEnchantment(Enchantment.getById(Integer.parseInt(enchantData[0])), Integer.parseInt(enchantData[1]));
-			}
-		}
-		if (item.getType() == Material.WRITTEN_BOOK && config.contains("title") && config.contains("author") && config.contains("pages")) {
-			NBTTagCompound tag = new NBTTagCompound();
-			tag.setString("title", config.getString("title"));
-			tag.setString("author", config.getString("author"));
-			List<String> pages = config.getStringList("pages");
-			NBTTagList tagPages = new NBTTagList();
-			for (String page : pages) {
-				NBTTagString tagPage = new NBTTagString(null, page);
-				tagPages.add(tagPage);
-			}
-			tag.set("pages", tagPages);
-			item = new CraftItemStack(item);
-			((CraftItemStack)item).getHandle().tag = tag;
-		}
-		return item;
-	}
-	
-	/**
-	 * Saves an ItemStack to a config section.
-	 * @param item
-	 * @param config
-	 */
-	private void saveItemStack(ItemStack item, ConfigurationSection config) {
-		config.set("id", item.getTypeId());
-		config.set("data", item.getDurability());
-		config.set("amt", item.getAmount());
-		Map<Enchantment, Integer> enchants = item.getEnchantments();
-		if (enchants.size() > 0) {
-			List<String> list = new ArrayList<String>();
-			for (Enchantment enchant : enchants.keySet()) {
-				list.add(enchant.getId() + " " + enchants.get(enchant));
-			}
-			config.set("enchants", list);
-		}
-		if (item.getType() == Material.WRITTEN_BOOK && item instanceof CraftItemStack) {
-			NBTTagCompound tag = ((CraftItemStack)item).getHandle().tag;
-			if (tag != null && tag.hasKey("title") && tag.hasKey("author") && tag.hasKey("pages")) {
-				config.set("title", tag.getString("title"));
-				config.set("author", tag.getString("author"));
-				List<String> pages = new ArrayList<String>();
-				NBTTagList tagPages = (NBTTagList)tag.get("pages");
-				for (int i = 0; i < tagPages.size(); i++) {
-					NBTTagString tagPage = (NBTTagString)tagPages.get(i);
-					if (tagPage.data != null) {
-						pages.add(tagPage.data);
-					}
-				}
-				config.set("pages", pages);
-			}
-		}
-	}
-	
 }

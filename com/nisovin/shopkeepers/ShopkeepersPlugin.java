@@ -15,46 +15,82 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Villager;
 import org.bukkit.entity.Villager.Profession;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 
+	static ShopkeepersPlugin plugin;
+	
 	private Map<String, List<Shopkeeper>> allShopkeepersByChunk = new HashMap<String, List<Shopkeeper>>();
 	private Map<Integer, Shopkeeper> activeShopkeepers = new HashMap<Integer, Shopkeeper>();
 	private Map<String, Integer> editing = new HashMap<String, Integer>();
+	private Map<String, Integer> purchasing = new HashMap<String, Integer>();
 	
 	private boolean disableOtherVillagers = true;
+	private boolean createPlayerShopWithCommand = true;
+	private boolean createPlayerShopWithEgg = true;
+	static String editorTitle = "Shopkeeper Editor";
+	static int currencyItem = Material.EMERALD.getId();
+	static short currencyData = 0;
+	static int zeroItem = Material.SLIME_BALL.getId();
+	static int saveItem = Material.EMERALD_BLOCK.getId();
+	static int deleteItem = Material.FIRE.getId();
 	static String recipeListVar = "i";
+	
+	private String msgPlayerShopCreated = "&aShopkeeper created!\n&aAdd items you want to sell to your chest, then\n&aright-click the villager while sneaking to modify costs.";
+	private String msgAdminShopCreated = "&aShopkeeper created!\n&aRight-click the villager while sneaking to modify trades.";
+	private String msgShopCreateFail = "&aYou cannot create a shopkeeper there.";
+	private String msgShopInUse = "&aSomeone else is already purchasing from this shopkeeper.";
 	
 	@Override
 	public void onEnable() {
+		plugin = this;
+		
 		// get config
 		File file = new File(getDataFolder(), "config.yml");
 		if (!file.exists()) {
 			saveDefaultConfig();
 		}
+		reloadConfig();
 		Configuration config = getConfig();
 		disableOtherVillagers = config.getBoolean("disable-other-villagers", disableOtherVillagers);
+		createPlayerShopWithCommand = config.getBoolean("create-player-shop-with-command", createPlayerShopWithCommand);
+		createPlayerShopWithEgg = config.getBoolean("create-player-shop-with-egg", createPlayerShopWithEgg);
+		editorTitle = config.getString("editor-title", editorTitle);
+		currencyItem = config.getInt("currency-item", currencyItem);
+		currencyData = (short)config.getInt("currency-item-data", currencyData);
+		zeroItem = config.getInt("zero-item", zeroItem);
+		saveItem = config.getInt("save-item", saveItem);
+		deleteItem = config.getInt("delete-item", deleteItem);
 		recipeListVar = config.getString("recipe-list-var", recipeListVar);
 		
+		msgPlayerShopCreated = config.getString("msg-player-shop-created", msgPlayerShopCreated);
+		msgAdminShopCreated = config.getString("msg-admin-shop-created", msgAdminShopCreated);
+		msgShopCreateFail = config.getString("msg-shop-create-fail", msgShopCreateFail);
+		msgShopInUse = config.getString("msg-shop-in-use", msgShopInUse);
+				
 		// load shopkeeper saved data
 		load();
 		
@@ -80,10 +116,27 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 	
 	@Override
 	public void onDisable() {
+		for (String playerName : editing.keySet()) {
+			Player player = Bukkit.getPlayerExact(playerName);
+			if (player != null) {
+				player.closeInventory();
+			}
+		}
+		editing.clear();
+		
+		for (String playerName : purchasing.keySet()) {
+			Player player = Bukkit.getPlayerExact(playerName);
+			if (player != null) {
+				player.closeInventory();
+			}
+		}
+		purchasing.clear();
+		
 		for (Shopkeeper shopkeeper : activeShopkeepers.values()) {
 			shopkeeper.remove();
 		}
-		activeShopkeepers.clear();		
+		activeShopkeepers.clear();
+		allShopkeepersByChunk.clear();
 		HandlerList.unregisterAll((Plugin)this);		
 		Bukkit.getScheduler().cancelTasks(this);
 	}
@@ -96,8 +149,9 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 			onEnable();
 			sender.sendMessage(ChatColor.GREEN + "Shopkeepers plugin reloaded!");
 			return true;
-		} else if (sender instanceof Player) {
-			Player player = (Player)sender;		
+		} else if (sender instanceof Player) {			
+			Player player = (Player)sender;
+			if (!player.hasPermission("shopkeeper.admin") && !player.hasPermission("shopkeeper.player")) return true;
 			
 			// get the profession, default to farmer if an invalid one is specified
 			int prof = 0;
@@ -118,18 +172,33 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 			// get the spawn location for the shopkeeper
 			Block block = player.getTargetBlock(null, 10);
 			if (block != null && block.getType() != Material.AIR) {
-				// create the shopkeeper
-				createNewShopkeeper(block.getLocation().add(0, 1.5, 0), prof);
-				sender.sendMessage(ChatColor.GREEN + "Shopkeeper created!");
-				sender.sendMessage(ChatColor.GREEN + "Right-click the villager while sneaking to modify trades.");
+				if (createPlayerShopWithCommand && block.getType() == Material.CHEST && player.hasPermission("shopkeeper.player")) {
+					// check if already a chest
+					if (isChestProtected(null, block)) {
+						return true;
+					}
+					// check for permission
+					PlayerInteractEvent event = new PlayerInteractEvent(player, Action.RIGHT_CLICK_BLOCK, new ItemStack(Material.AIR), block, BlockFace.UP);
+					Bukkit.getPluginManager().callEvent(event);
+					if (event.isCancelled()) {
+						return true;
+					}
+					// create the player shopkeeper
+					createNewPlayerShopkeeper(player, block, block.getLocation().add(0, 1.5, 0), prof);
+					sendMessage(player, msgPlayerShopCreated);
+				} else if (player.hasPermission("shopkeeper.admin")) {
+					// create the admin shopkeeper
+					createNewAdminShopkeeper(block.getLocation().add(0, 1.5, 0), prof);
+					sendMessage(player, msgAdminShopCreated);
+				}
 			} else {
-				sender.sendMessage(ChatColor.GREEN + "Please look at a block to create a shopkeeper.");
+				sendMessage(player, msgShopCreateFail);
 			}
 			
 			return true;
 		} else {
-			sender.sendMessage(ChatColor.GREEN + "You must be a player to create a shopkeeper.");
-			sender.sendMessage(ChatColor.GREEN + "Use 'shopkeeper reload' to reload the plugin.");
+			sender.sendMessage("You must be a player to create a shopkeeper.");
+			sender.sendMessage("Use 'shopkeeper reload' to reload the plugin.");
 			return true;
 		}
 	}
@@ -139,14 +208,35 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 	 * @param location the location the shopkeeper should spawn
 	 * @param profession the shopkeeper's profession, a number from 0 to 5
 	 */
-	public Shopkeeper createNewShopkeeper(Location location, int profession) {
+	public Shopkeeper createNewAdminShopkeeper(Location location, int profession) {
 		// make sure profession is valid
 		if (profession < 0 || profession > 5) {
 			profession = 0;
 		}
 		// create the shopkeeper (and spawn it)
-		Shopkeeper shopkeeper = new Shopkeeper(location, profession);
+		Shopkeeper shopkeeper = new AdminShopkeeper(location, profession);
+		shopkeeper.spawn();
 		activeShopkeepers.put(shopkeeper.getEntityId(), shopkeeper);
+		addShopkeeper(shopkeeper);
+		
+		return shopkeeper;
+	}
+	
+	public Shopkeeper createNewPlayerShopkeeper(Player player, Block chest, Location location, int profession) {
+		// make sure profession is valid
+		if (profession < 0 || profession > 5) {
+			profession = 0;
+		}
+		// create the shopkeeper (and spawn it)
+		Shopkeeper shopkeeper = new PlayerShopkeeper(player, chest, location, profession);
+		shopkeeper.spawn();
+		activeShopkeepers.put(shopkeeper.getEntityId(), shopkeeper);
+		addShopkeeper(shopkeeper);
+		
+		return shopkeeper;
+	}
+	
+	public void addShopkeeper(Shopkeeper shopkeeper) {
 		// add to chunk list
 		List<Shopkeeper> list = allShopkeepersByChunk.get(shopkeeper.getChunk());
 		if (list == null) {
@@ -156,8 +246,6 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 		list.add(shopkeeper);
 		// save all data
 		save();
-		
-		return shopkeeper;
 	}
 	
 	/**
@@ -171,34 +259,36 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 	
 	@EventHandler
 	public void onEntityInteract(PlayerInteractEntityEvent event) {
-		boolean isShopkeeper = activeShopkeepers.containsKey(event.getRightClicked().getEntityId());
-		if (event.getPlayer().hasPermission("shopkeeper.modify") && event.getPlayer().isSneaking() && isShopkeeper) {
-			// modifying a shopkeeper
-			event.setCancelled(true);
-			// get the shopkeeper's trade options
+		if (event.getRightClicked() instanceof Villager) {
 			Shopkeeper shopkeeper = activeShopkeepers.get(event.getRightClicked().getEntityId());
-			Inventory inv = Bukkit.createInventory(event.getPlayer(), 27, "Shopkeeper Editor");
-			List<ItemStack[]> recipes = shopkeeper.getRecipes();
-			for (int i = 0; i < recipes.size() && i < 8; i++) {
-				ItemStack[] recipe = recipes.get(i);
-				inv.setItem(i, recipe[0]);
-				inv.setItem(i + 9, recipe[1]);
-				inv.setItem(i + 18, recipe[2]);
+			if (shopkeeper != null && event.getPlayer().isSneaking()) {
+				// modifying a shopkeeper
+				boolean isEditing = shopkeeper.onEdit(event.getPlayer());
+				if (isEditing) {
+					event.setCancelled(true);
+					editing.put(event.getPlayer().getName(), event.getRightClicked().getEntityId());
+				}
+			} else if (shopkeeper != null) {
+				// only allow one person per shopkeeper
+				if (purchasing.containsValue(event.getRightClicked().getEntityId())) {
+					sendMessage(event.getPlayer(), msgShopInUse);
+					event.setCancelled(true);
+					return;
+				}
+				// set the trade recipe list (also prevent shopkeepers adding their own recipes by refreshing them with our list)
+				shopkeeper.updateRecipes();
+				purchasing.put(event.getPlayer().getName(), event.getRightClicked().getEntityId());
+			} else if (disableOtherVillagers && shopkeeper == null) {
+				// don't allow trading with other villagers
+				event.setCancelled(true);
 			}
-			// add the special buttons
-			inv.setItem(8, new ItemStack(Material.EMERALD_BLOCK));
-			inv.setItem(26, new ItemStack(Material.FIRE));
-			// show editing inventory
-			event.getPlayer().openInventory(inv);
-			editing.put(event.getPlayer().getName(), event.getRightClicked().getEntityId());
-		} else if (isShopkeeper) {
-			// prevent shopkeepers adding their own recipes by refreshing them with our list
-			Shopkeeper shopkeeper = activeShopkeepers.get(event.getRightClicked().getEntityId());
-			shopkeeper.updateRecipes();
-		} else if (disableOtherVillagers && !isShopkeeper) {
-			// don't allow trading with other villagers
-			event.setCancelled(true);
 		}
+	}
+	
+	@EventHandler
+	public void onInventoryClose(InventoryCloseEvent event) {
+		editing.remove(event.getPlayer().getName());
+		purchasing.remove(event.getPlayer().getName());
 	}
 	
 	@EventHandler
@@ -212,43 +302,102 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 	@EventHandler
 	public void onInventoryClick(InventoryClickEvent event) {
 		// shopkeeper editor click
-		if (editing.containsKey(event.getWhoClicked().getName()) && event.getInventory().getTitle().equals("Shopkeeper Editor")) {
+		if (editing.containsKey(event.getWhoClicked().getName()) && event.getInventory().getTitle().equals(editorTitle)) {
 			// get the shopkeeper being edited
 			int entityId = editing.get(event.getWhoClicked().getName());
 			Shopkeeper shopkeeper = activeShopkeepers.get(entityId);
 			if (shopkeeper != null) {
-				// check for special buttons
-				if (event.getRawSlot() == 8) {
-					// it's the save button - get the trades and save them to the shopkeeper
-					Inventory inv = event.getInventory();
-					List<ItemStack[]> recipes = new ArrayList<ItemStack[]>();
-					for (int i = 0; i < 8; i++) {
-						if (inv.getItem(i) != null && inv.getItem(i + 18) != null) {
-							ItemStack[] recipe = new ItemStack[3];
-							recipe[0] = inv.getItem(i);
-							recipe[1] = inv.getItem(i + 9);
-							recipe[2] = inv.getItem(i + 18);
-							recipes.add(recipe);
-						}
-					}
-					shopkeeper.setRecipes(recipes);
-					save();
-					// close editing window
-					event.setCancelled(true);
+				// editor click
+				EditorClickResult result = shopkeeper.onEditorClick(event);
+				if (result == EditorClickResult.DELETE_SHOPKEEPER) {
+					// delete the shopkeeper
 					event.getWhoClicked().closeInventory();
-					editing.remove(event.getWhoClicked().getName());
-				} else if (event.getRawSlot() == 26) {
-					// it's the delete button - remove the shopkeeper
-					shopkeeper.remove();
 					activeShopkeepers.remove(entityId);
 					allShopkeepersByChunk.get(shopkeeper.getChunk()).remove(shopkeeper);
 					save();
-					// close the editing window
-					event.setCancelled(true);
+				}
+				if (result == EditorClickResult.DONE_EDITING || result == EditorClickResult.DELETE_SHOPKEEPER) {
+					// end the editing session
 					event.getWhoClicked().closeInventory();
 					editing.remove(event.getWhoClicked().getName());
+					save();
+				}
+				if (result == EditorClickResult.SAVE_AND_CONTINUE) {
+					save();
 				}
 			}
+		}
+		// purchase click
+		if (event.getInventory().getName().equals("mob.villager") && event.getRawSlot() == 2 && purchasing.containsKey(event.getWhoClicked().getName())) {
+			int entityId = purchasing.get(event.getWhoClicked().getName());
+			Shopkeeper shopkeeper = activeShopkeepers.get(entityId);
+			if (shopkeeper != null) {
+				shopkeeper.onPurchaseClick(event);
+			}
+		}
+	}
+	
+	@EventHandler
+	public void onPlayerInteract(PlayerInteractEvent event) {
+		if (event.hasBlock() && event.getClickedBlock().getType() == Material.CHEST) {
+			Player player = event.getPlayer();
+			Block block = event.getClickedBlock();
+			
+			// check for protected chest
+			if (!event.getPlayer().hasPermission("shopkeeper.bypass")) {
+				if (isChestProtected(player, block)) {
+					event.setCancelled(true);
+					return;
+				}
+				BlockFace[] faces = {BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST};
+				for (BlockFace face : faces) {
+					if (block.getRelative(face).getType() == Material.CHEST) {
+						if (isChestProtected(player, block.getRelative(face))) {
+							event.setCancelled(true);
+							return;
+						}				
+					}
+				}
+			}
+			
+			// check for player shop spawn
+			if (createPlayerShopWithEgg && player.hasPermission("shopkeeper.player")) {
+				ItemStack inHand = player.getItemInHand();
+				if (inHand != null && inHand.getType() == Material.MONSTER_EGG && inHand.getDurability() == 120) {
+					// create player shopkeeper
+					createNewPlayerShopkeeper(player, block, block.getLocation().add(0, 1.5, 0), 0);
+					sendMessage(player, msgPlayerShopCreated);
+					// remove egg
+					event.setCancelled(true);
+					inHand.setAmount(inHand.getAmount() - 1);
+					if (inHand.getAmount() > 0) {
+						player.setItemInHand(inHand);
+					} else {
+						player.setItemInHand(null);
+					}
+				}
+			}
+		}
+		
+	}	
+
+	private boolean isChestProtected(Player player, Block block) {
+		for (Shopkeeper shopkeeper : activeShopkeepers.values()) {
+			if (shopkeeper instanceof PlayerShopkeeper) {
+				PlayerShopkeeper pshop = (PlayerShopkeeper)shopkeeper;
+				if ((player == null || !pshop.getOwner().equalsIgnoreCase(player.getName())) && pshop.usesChest(block)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	private void sendMessage(Player player, String message) {
+		message = ChatColor.translateAlternateColorCodes('&', message);
+		String[] msgs = message.split("\n");
+		for (String msg : msgs) {
+			player.sendMessage(msg);
 		}
 	}
 	
@@ -297,13 +446,20 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 		Set<String> keys = config.getKeys(false);
 		for (String key : keys) {
 			ConfigurationSection section = config.getConfigurationSection(key);
-			Shopkeeper shopkeeper = new Shopkeeper(section);
-			List<Shopkeeper> list = allShopkeepersByChunk.get(shopkeeper.getChunk());
-			if (list == null) {
-				list = new ArrayList<Shopkeeper>();
-				allShopkeepersByChunk.put(shopkeeper.getChunk(), list);
+			Shopkeeper shopkeeper = null;
+			if (section.contains("owner")) {
+				shopkeeper = new PlayerShopkeeper(section);
+			} else {
+				shopkeeper = new AdminShopkeeper(section);
 			}
-			list.add(shopkeeper);
+			if (shopkeeper != null) {
+				List<Shopkeeper> list = allShopkeepersByChunk.get(shopkeeper.getChunk());
+				if (list == null) {
+					list = new ArrayList<Shopkeeper>();
+					allShopkeepersByChunk.put(shopkeeper.getChunk(), list);
+				}
+				list.add(shopkeeper);
+			}
 		}
 	}
 	

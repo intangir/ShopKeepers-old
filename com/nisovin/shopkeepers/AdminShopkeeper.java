@@ -1,6 +1,7 @@
 package com.nisovin.shopkeepers;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -171,6 +172,12 @@ public class AdminShopkeeper extends Shopkeeper {
 				tagPages.add(tagPage);
 			}
 			tag.set("pages", tagPages);
+			if (config.contains("extra")) {
+				ConfigurationSection extraDataSection = config.getConfigurationSection("extra");
+				for (String key : extraDataSection.getKeys(false)) {
+					tag.setString(key, extraDataSection.getString(key));
+				}
+			}
 			item = new CraftItemStack(item);
 			((CraftItemStack)item).getHandle().tag = tag;
 		}
@@ -208,6 +215,22 @@ public class AdminShopkeeper extends Shopkeeper {
 					}
 				}
 				config.set("pages", pages);
+				Map<String, String> extraData = new HashMap<String, String>();
+				for (Object o : tag.c()) {
+					if (o instanceof NBTTagString) {
+						NBTTagString s = (NBTTagString)o;
+						String name = s.getName();
+						if (!name.equals("title") && !name.equals("author")) {
+							extraData.put(name, s.data);
+						}
+					}
+				}
+				if (extraData.size() > 0) {
+					ConfigurationSection extraDataSection = config.createSection("extra");
+					for (String key : extraData.keySet()) {
+						extraDataSection.set(key, extraData.get(key));
+					}
+				}
 			}
 		}
 	}

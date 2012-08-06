@@ -91,7 +91,7 @@ public class PlayerShopkeeper extends Shopkeeper {
 			if (costs.containsKey(type)) {
 				ItemStack[] recipe = new ItemStack[3];
 				int cost = costs.get(type);
-				if (ShopkeepersPlugin.highCurrencyItem > 0 && cost > ShopkeepersPlugin.highCurrencyValue) {
+				if (ShopkeepersPlugin.highCurrencyItem > 0 && cost > ShopkeepersPlugin.highCurrencyMinCost) {
 					int highCost = cost / ShopkeepersPlugin.highCurrencyValue;
 					int lowCost = cost % ShopkeepersPlugin.highCurrencyValue;
 					if (highCost > 0) {
@@ -122,7 +122,7 @@ public class PlayerShopkeeper extends Shopkeeper {
 				if (costs.containsKey(type)) {
 					// cost is already set, show it
 					int cost = costs.get(type);
-					if (ShopkeepersPlugin.highCurrencyItem > 0 && cost > ShopkeepersPlugin.highCurrencyValue) {
+					if (ShopkeepersPlugin.highCurrencyItem > 0 && cost > ShopkeepersPlugin.highCurrencyMinCost) {
 						int highCost = cost / ShopkeepersPlugin.highCurrencyValue;
 						int lowCost = cost % ShopkeepersPlugin.highCurrencyValue;
 						if (highCost > 0) {

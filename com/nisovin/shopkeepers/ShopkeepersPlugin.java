@@ -54,22 +54,27 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 	private boolean disableOtherVillagers = true;
 	private boolean createPlayerShopWithCommand = true;
 	private boolean createPlayerShopWithEgg = true;
+	
 	static String editorTitle = "Shopkeeper Editor";
+	static int saveItem = Material.EMERALD_BLOCK.getId();
+	static int deleteItem = Material.FIRE.getId();
+	
 	static int currencyItem = Material.EMERALD.getId();
 	static short currencyData = 0;
+	static int zeroItem = Material.SLIME_BALL.getId();
+	
 	static int highCurrencyItem = Material.EMERALD_BLOCK.getId();
 	static short highCurrencyData = 0;
 	static int highCurrencyValue = 9;
-	static int zeroItem = Material.SLIME_BALL.getId();
+	static int highCurrencyMinCost = 20;
 	static int highZeroItem = Material.SLIME_BALL.getId();
-	static int saveItem = Material.EMERALD_BLOCK.getId();
-	static int deleteItem = Material.FIRE.getId();
-	static String recipeListVar = "i";
-	
+		
 	private String msgPlayerShopCreated = "&aShopkeeper created!\n&aAdd items you want to sell to your chest, then\n&aright-click the villager while sneaking to modify costs.";
 	private String msgAdminShopCreated = "&aShopkeeper created!\n&aRight-click the villager while sneaking to modify trades.";
 	private String msgShopCreateFail = "&aYou cannot create a shopkeeper there.";
 	private String msgShopInUse = "&aSomeone else is already purchasing from this shopkeeper.";
+	
+	static String recipeListVar = "i";
 	
 	@Override
 	public void onEnable() {
@@ -82,26 +87,32 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 		}
 		reloadConfig();
 		Configuration config = getConfig();
+		
 		disableOtherVillagers = config.getBoolean("disable-other-villagers", disableOtherVillagers);
 		createPlayerShopWithCommand = config.getBoolean("create-player-shop-with-command", createPlayerShopWithCommand);
 		createPlayerShopWithEgg = config.getBoolean("create-player-shop-with-egg", createPlayerShopWithEgg);
+		
 		editorTitle = config.getString("editor-title", editorTitle);
+		saveItem = config.getInt("save-item", saveItem);
+		deleteItem = config.getInt("delete-item", deleteItem);
+		
 		currencyItem = config.getInt("currency-item", currencyItem);
 		currencyData = (short)config.getInt("currency-item-data", currencyData);
+		zeroItem = config.getInt("zero-item", zeroItem);
+		
 		highCurrencyItem = config.getInt("high-currency-item", highCurrencyItem);
 		highCurrencyData = (short)config.getInt("high-currency-item-data", highCurrencyData);
 		highCurrencyValue = config.getInt("high-currency-value", highCurrencyValue);
-		if (highCurrencyValue == 0) highCurrencyItem = 0;
-		zeroItem = config.getInt("zero-item", zeroItem);
+		highCurrencyMinCost = config.getInt("high-currency-min-cost", highCurrencyMinCost);
 		highZeroItem = config.getInt("high-zero-item", highZeroItem);
-		saveItem = config.getInt("save-item", saveItem);
-		deleteItem = config.getInt("delete-item", deleteItem);
-		recipeListVar = config.getString("recipe-list-var", recipeListVar);
+		if (highCurrencyValue <= 0) highCurrencyItem = 0;
 		
 		msgPlayerShopCreated = config.getString("msg-player-shop-created", msgPlayerShopCreated);
 		msgAdminShopCreated = config.getString("msg-admin-shop-created", msgAdminShopCreated);
 		msgShopCreateFail = config.getString("msg-shop-create-fail", msgShopCreateFail);
 		msgShopInUse = config.getString("msg-shop-in-use", msgShopInUse);
+		
+		recipeListVar = config.getString("recipe-list-var", recipeListVar);
 				
 		// load shopkeeper saved data
 		load();
@@ -417,18 +428,6 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 	public void onChunkLoad(ChunkLoadEvent event) {
 		loadShopkeepersInChunk(event.getChunk());
 	}
-	
-	private void loadShopkeepersInChunk(Chunk chunk) {
-		List<Shopkeeper> shopkeepers = allShopkeepersByChunk.get(chunk.getWorld().getName() + "," + chunk.getX() + "," + chunk.getZ());
-		if (shopkeepers != null) {
-			for (Shopkeeper shopkeeper : shopkeepers) {
-				if (!shopkeeper.isActive()) {
-					shopkeeper.spawn();
-					activeShopkeepers.put(shopkeeper.getEntityId(), shopkeeper);
-				}
-			}
-		}
-	}
 
 	@EventHandler
 	public void onChunkUnload(ChunkUnloadEvent event) {
@@ -459,6 +458,18 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 			if (shopkeeper.getWorldName().equals(worldName)) {
 				shopkeeper.remove();
 				iter.remove();
+			}
+		}
+	}
+	
+	private void loadShopkeepersInChunk(Chunk chunk) {
+		List<Shopkeeper> shopkeepers = allShopkeepersByChunk.get(chunk.getWorld().getName() + "," + chunk.getX() + "," + chunk.getZ());
+		if (shopkeepers != null) {
+			for (Shopkeeper shopkeeper : shopkeepers) {
+				if (!shopkeeper.isActive()) {
+					shopkeeper.spawn();
+					activeShopkeepers.put(shopkeeper.getEntityId(), shopkeeper);
+				}
 			}
 		}
 	}

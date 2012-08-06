@@ -144,7 +144,6 @@ public class AdminShopkeeper extends Shopkeeper {
 	
 	private void setRecipes(List<ItemStack[]> recipes) {
 		this.recipes = recipes;
-		updateRecipes();
 	}
 	
 	/**

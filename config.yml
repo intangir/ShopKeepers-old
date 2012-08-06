@@ -6,7 +6,11 @@ create-player-shop-with-egg: true
 editor-title: "Shopkeeper Editor"
 currency-item: 388
 currency-item-data: 0
+high-currency-item: 133
+high-currency-item-data: 0
+high-currency-value: 9
 zero-item: 341
+high-zero-item: 341
 save-item: 133
 delete-item: 51
 

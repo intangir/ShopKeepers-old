@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -35,6 +36,8 @@ import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
+import org.bukkit.event.world.WorldLoadEvent;
+import org.bukkit.event.world.WorldUnloadEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -54,7 +57,11 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 	static String editorTitle = "Shopkeeper Editor";
 	static int currencyItem = Material.EMERALD.getId();
 	static short currencyData = 0;
+	static int highCurrencyItem = Material.EMERALD_BLOCK.getId();
+	static short highCurrencyData = 0;
+	static int highCurrencyValue = 9;
 	static int zeroItem = Material.SLIME_BALL.getId();
+	static int highZeroItem = Material.SLIME_BALL.getId();
 	static int saveItem = Material.EMERALD_BLOCK.getId();
 	static int deleteItem = Material.FIRE.getId();
 	static String recipeListVar = "i";
@@ -81,7 +88,12 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 		editorTitle = config.getString("editor-title", editorTitle);
 		currencyItem = config.getInt("currency-item", currencyItem);
 		currencyData = (short)config.getInt("currency-item-data", currencyData);
+		highCurrencyItem = config.getInt("high-currency-item", highCurrencyItem);
+		highCurrencyData = (short)config.getInt("high-currency-item-data", highCurrencyData);
+		highCurrencyValue = config.getInt("high-currency-value", highCurrencyValue);
+		if (highCurrencyValue == 0) highCurrencyItem = 0;
 		zeroItem = config.getInt("zero-item", zeroItem);
+		highZeroItem = config.getInt("high-zero-item", highZeroItem);
 		saveItem = config.getInt("save-item", saveItem);
 		deleteItem = config.getInt("delete-item", deleteItem);
 		recipeListVar = config.getString("recipe-list-var", recipeListVar);
@@ -427,6 +439,26 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 					activeShopkeepers.remove(shopkeeper.getEntityId());
 					shopkeeper.remove();
 				}
+			}
+		}
+	}
+	
+	@EventHandler
+	public void onWorldLoad(WorldLoadEvent event) {
+		for (Chunk chunk : event.getWorld().getLoadedChunks()) {
+			loadShopkeepersInChunk(chunk);
+		}
+	}
+	
+	@EventHandler
+	public void onWorldUnload(WorldUnloadEvent event) {
+		String worldName = event.getWorld().getName();
+		Iterator<Shopkeeper> iter = activeShopkeepers.values().iterator();
+		while (iter.hasNext()) {
+			Shopkeeper shopkeeper = iter.next();
+			if (shopkeeper.getWorldName().equals(worldName)) {
+				shopkeeper.remove();
+				iter.remove();
 			}
 		}
 	}

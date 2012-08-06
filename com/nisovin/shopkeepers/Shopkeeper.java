@@ -120,6 +120,10 @@ public abstract class Shopkeeper {
 		return world + "," + (x >> 4) + "," + (z >> 4);
 	}
 	
+	public String getWorldName() {
+		return world;
+	}
+	
 	/**
 	 * Gets the shopkeeper's entity ID.
 	 * @return the entity id, or 0 if the shopkeeper is not in the world

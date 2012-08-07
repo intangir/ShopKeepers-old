@@ -310,6 +310,13 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 	
 	@EventHandler
 	public void onInventoryClose(InventoryCloseEvent event) {
+		if (editing.containsKey(event.getPlayer().getName()) && event.getInventory().getTitle().equals(editorTitle)) {
+			int entityId = editing.get(event.getPlayer().getName());
+			Shopkeeper shopkeeper = activeShopkeepers.get(entityId);
+			if (shopkeeper != null) {
+				shopkeeper.onEditorClose(event);
+			}
+		}
 		editing.remove(event.getPlayer().getName());
 		purchasing.remove(event.getPlayer().getName());
 	}

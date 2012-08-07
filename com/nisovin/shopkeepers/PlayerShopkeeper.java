@@ -12,6 +12,7 @@ import org.bukkit.block.Chest;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
@@ -166,25 +167,7 @@ public class PlayerShopkeeper extends Shopkeeper {
 		event.setCancelled(true);
 		if (event.getRawSlot() == 8) {
 			// save
-			for (int i = 0; i < 8; i++) {
-				ItemStack item = event.getInventory().getItem(i);
-				if (item != null && item.getType() != Material.AIR) {
-					ItemStack lowCostItem = event.getInventory().getItem(i + 18);
-					ItemStack highCostItem = event.getInventory().getItem(i + 9);
-					int cost = 0;
-					if (lowCostItem != null && lowCostItem.getTypeId() == ShopkeepersPlugin.currencyItem && lowCostItem.getAmount() > 0) {
-						cost += lowCostItem.getAmount();
-					}
-					if (ShopkeepersPlugin.highCurrencyItem > 0 && highCostItem != null && highCostItem.getTypeId() == ShopkeepersPlugin.highCurrencyItem && highCostItem.getAmount() > 0) {
-						cost += highCostItem.getAmount() * ShopkeepersPlugin.highCurrencyValue;
-					}
-					if (cost > 0) {
-						costs.put(new ItemType(item), cost);
-					} else {
-						costs.remove(new ItemType(item));
-					}
-				}
-			}
+			saveEditor(event.getInventory());
 			return EditorClickResult.DONE_EDITING;
 		} else if (event.getRawSlot() == 17) {
 			// change profession
@@ -257,6 +240,33 @@ public class PlayerShopkeeper extends Shopkeeper {
 			}
 		}
 		return EditorClickResult.NOTHING;
+	}
+
+	@Override
+	public void onEditorClose(InventoryCloseEvent event) {
+		saveEditor(event.getInventory());
+	}
+	
+	private void saveEditor(Inventory inv) {
+		for (int i = 0; i < 8; i++) {
+			ItemStack item = inv.getItem(i);
+			if (item != null && item.getType() != Material.AIR) {
+				ItemStack lowCostItem = inv.getItem(i + 18);
+				ItemStack highCostItem = inv.getItem(i + 9);
+				int cost = 0;
+				if (lowCostItem != null && lowCostItem.getTypeId() == ShopkeepersPlugin.currencyItem && lowCostItem.getAmount() > 0) {
+					cost += lowCostItem.getAmount();
+				}
+				if (ShopkeepersPlugin.highCurrencyItem > 0 && highCostItem != null && highCostItem.getTypeId() == ShopkeepersPlugin.highCurrencyItem && highCostItem.getAmount() > 0) {
+					cost += highCostItem.getAmount() * ShopkeepersPlugin.highCurrencyValue;
+				}
+				if (cost > 0) {
+					costs.put(new ItemType(item), cost);
+				} else {
+					costs.remove(new ItemType(item));
+				}
+			}
+		}
 	}
 	
 	@Override

@@ -17,6 +17,7 @@ import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
@@ -102,17 +103,7 @@ public class AdminShopkeeper extends Shopkeeper {
 		if (event.getRawSlot() == 8) {
 			// it's the save button - get the trades and save them to the shopkeeper
 			Inventory inv = event.getInventory();
-			List<ItemStack[]> recipes = new ArrayList<ItemStack[]>();
-			for (int i = 0; i < 8; i++) {
-				if (inv.getItem(i) != null && inv.getItem(i + 18) != null) {
-					ItemStack[] recipe = new ItemStack[3];
-					recipe[0] = inv.getItem(i);
-					recipe[1] = inv.getItem(i + 9);
-					recipe[2] = inv.getItem(i + 18);
-					recipes.add(recipe);
-				}
-			}
-			setRecipes(recipes);
+			saveEditor(inv);
 			event.setCancelled(true);
 			return EditorClickResult.DONE_EDITING;
 		} else if (event.getRawSlot() == 17) {
@@ -131,6 +122,26 @@ public class AdminShopkeeper extends Shopkeeper {
 		} else {
 			return EditorClickResult.NOTHING;
 		}
+	}
+
+	@Override
+	public void onEditorClose(InventoryCloseEvent event) {
+		Inventory inv = event.getInventory();
+		saveEditor(inv);
+	}
+	
+	private void saveEditor(Inventory inv) {
+		List<ItemStack[]> recipes = new ArrayList<ItemStack[]>();
+		for (int i = 0; i < 8; i++) {
+			if (inv.getItem(i) != null && inv.getItem(i + 18) != null) {
+				ItemStack[] recipe = new ItemStack[3];
+				recipe[0] = inv.getItem(i);
+				recipe[1] = inv.getItem(i + 9);
+				recipe[2] = inv.getItem(i + 18);
+				recipes.add(recipe);
+			}
+		}
+		setRecipes(recipes);
 	}
 	
 	@Override

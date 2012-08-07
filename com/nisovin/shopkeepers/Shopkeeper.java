@@ -19,6 +19,7 @@ import org.bukkit.craftbukkit.entity.CraftVillager;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.ItemStack;
 
 public abstract class Shopkeeper {
@@ -74,7 +75,7 @@ public abstract class Shopkeeper {
 	 */
 	public void spawn() {
 		World w = Bukkit.getWorld(world);
-		villager = w.spawn(new Location(w, x + .5, y, z + .5), Villager.class);
+		villager = w.spawn(new Location(w, x + .5, y + .5, z + .5), Villager.class);
 		setProfession();
 		overwriteAI();
 	}
@@ -155,6 +156,8 @@ public abstract class Shopkeeper {
 	
 	public abstract EditorClickResult onEditorClick(InventoryClickEvent event);	
 	
+	public abstract void onEditorClose(InventoryCloseEvent event);
+	
 	public abstract void onPurchaseClick(InventoryClickEvent event);
 	
 	protected short getProfessionWoolColor() {
@@ -215,5 +218,9 @@ public abstract class Shopkeeper {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}		
+	}
+	
+	public static void main(String[] args) {
+		System.out.println(1025 >> 4);
 	}
 }

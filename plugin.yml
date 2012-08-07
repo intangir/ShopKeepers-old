@@ -1,6 +1,6 @@
 name: Shopkeepers
 main: com.nisovin.shopkeepers.ShopkeepersPlugin
-version: 1.1
+version: 1.2
 author: nisovin
 commands:
     shopkeeper:

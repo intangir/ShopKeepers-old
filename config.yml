@@ -26,3 +26,5 @@ msg-admin-shop-created: |
     &aRight-click the villager while sneaking to modify trades.
 msg-shop-create-fail: "&aYou cannot create a shopkeeper there."
 msg-shop-in-use: "&aSomeone else is already purchasing from this shopkeeper."
+
+debug: false

@@ -16,13 +16,19 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+/**
+ * A shopkeeper that is managed by a player. This shopkeeper draws its supplies from a chest that it
+ * stands on, and will deposit earnings back into that chest.
+ *
+ */
 public class PlayerShopkeeper extends Shopkeeper {
 
-	private String owner;
-	private int chestx;
-	private int chesty;
-	private int chestz;
-	private HashMap<ItemType, Integer> costs;
+	protected String owner;
+	protected int chestx;
+	protected int chesty;
+	protected int chestz;
+	protected HashMap<ItemType, Integer> costs;
+	private int unpaid = 0;
 	
 	PlayerShopkeeper(ConfigurationSection config) {
 		super(config);
@@ -76,10 +82,19 @@ public class PlayerShopkeeper extends Shopkeeper {
 		}
 	}
 	
+	/**
+	 * Gets the name of the player who owns this shop.
+	 * @return the player name
+	 */
 	public String getOwner() {
 		return owner;
 	}
 	
+	/**
+	 * Checks whether this shop uses the indicated chest.
+	 * @param chest the chest to check
+	 * @return
+	 */
 	public boolean usesChest(Block chest) {
 		return (chest.getWorld().getName().equals(world) && chest.getX() == chestx && chest.getY() == chesty && chest.getZ() == chestz);
 	}
@@ -295,11 +310,18 @@ public class PlayerShopkeeper extends Shopkeeper {
 		// find item in chest
 		Inventory inv = ((Chest)chest.getState()).getInventory();
 		ItemStack[] contents = inv.getContents();
-		for (ItemStack item : contents) {
+		for (int i = 0; i < contents.length; i++) {
+			ItemStack item = contents[i];
 			if (item != null && item.getTypeId() == type.id && item.getDurability() == type.data && item.getAmount() == type.amount) {
-				item.setTypeId(ShopkeepersPlugin.currencyItem);
-				item.setDurability(ShopkeepersPlugin.currencyData);
-				item.setAmount(cost);
+				contents[i] = null;
+				if (ShopkeepersPlugin.highCurrencyItem <= 0 || cost <= ShopkeepersPlugin.highCurrencyMinCost) {
+					addToInventory(new ItemStack(ShopkeepersPlugin.currencyItem, cost, ShopkeepersPlugin.currencyData), contents);
+				} else {
+					int highCost = cost / ShopkeepersPlugin.highCurrencyValue;
+					int lowCost = cost % ShopkeepersPlugin.highCurrencyValue;
+					addToInventory(new ItemStack(ShopkeepersPlugin.highCurrencyItem, highCost, ShopkeepersPlugin.highCurrencyData), contents);
+					addToInventory(new ItemStack(ShopkeepersPlugin.currencyItem, lowCost, ShopkeepersPlugin.currencyData), contents);
+				}
 				inv.setContents(contents);				
 				return;
 			}
@@ -308,6 +330,39 @@ public class PlayerShopkeeper extends Shopkeeper {
 		// item not found
 		event.setCancelled(true);
 		event.getWhoClicked().closeInventory();
+	}
+	
+	private void addToInventory(ItemStack item, ItemStack[] contents) {
+		if (unpaid > 0 && item.getTypeId() == ShopkeepersPlugin.currencyItem) {
+			// add previously unpaid amount to this item
+			int amt = item.getAmount() + unpaid;
+			if (amt > item.getMaxStackSize()) {
+				unpaid = amt - item.getMaxStackSize();
+				item.setAmount(item.getMaxStackSize());
+			} else {
+				item.setAmount(amt);
+				unpaid = 0;
+			}
+		}
+		for (int i = 0; i < contents.length; i++) {
+			if (contents[i] == null) {
+				contents[i] = item;
+				return;
+			} else if (contents[i].getTypeId() == item.getTypeId() && contents[i].getDurability() == item.getDurability() && contents[i].getAmount() != contents[i].getMaxStackSize()) {
+				int amt = contents[i].getAmount() + item.getAmount();
+				if (amt <= contents[i].getMaxStackSize()) {
+					contents[i].setAmount(amt);
+					return;
+				} else {
+					item.setAmount(amt - contents[i].getMaxStackSize());
+					contents[i].setAmount(contents[i].getMaxStackSize());
+				}
+			}
+		}
+		if (item.getAmount() > 0 && item.getTypeId() == ShopkeepersPlugin.currencyItem) {
+			// save unpaid amount
+			unpaid += item.getAmount();
+		}
 	}
 	
 	private List<ItemType> getTypesFromChest() {

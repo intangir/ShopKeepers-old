@@ -24,12 +24,12 @@ import org.bukkit.inventory.ItemStack;
 
 public abstract class Shopkeeper {
 
-	String world;
-	int x;
-	int y;
-	int z;
-	int profession;
-	Villager villager;
+	protected String world;
+	protected int x;
+	protected int y;
+	protected int z;
+	protected int profession;
+	protected Villager villager;
 
 	Shopkeeper(ConfigurationSection config) {
 		load(config);
@@ -49,6 +49,10 @@ public abstract class Shopkeeper {
 		profession = prof;
 	}
 	
+	/**
+	 * Loads a shopkeeper's saved data from a config section of a config file.
+	 * @param config the config section
+	 */
 	public void load(ConfigurationSection config) {
 		world = config.getString("world");
 		x = config.getInt("x");
@@ -78,10 +82,6 @@ public abstract class Shopkeeper {
 		villager = w.spawn(new Location(w, x + .5, y + .5, z + .5), Villager.class);
 		setProfession();
 		overwriteAI();
-	}
-	
-	protected void setProfession() {
-		((CraftVillager)villager).getHandle().setProfession(profession);
 	}
 	
 	/**
@@ -121,6 +121,10 @@ public abstract class Shopkeeper {
 		return world + "," + (x >> 4) + "," + (z >> 4);
 	}
 	
+	/**
+	 * Gets the name of the world this shopkeeper lives in.
+	 * @return the world name
+	 */
 	public String getWorldName() {
 		return world;
 	}
@@ -145,20 +149,35 @@ public abstract class Shopkeeper {
 	public abstract List<ItemStack[]> getRecipes();
 
 	/**
-	 * Sets the shopkeeper's trade recipes. This should be set to a list of ItemStack[3], 
-	 * where the first two elemets of the ItemStack[] array are the cost, and the third
-	 * element is the trade result (the item sold by the shopkeeper).
-	 * @param recipes the trade recipes the shopkeeper should have
+	 * Called when a player shift-right-clicks on the villager in an attempt to edit
+	 * the shopkeeper information. This method should open the editing interface.
+	 * @param player the player doing the edit
+	 * @return whether the player is now editing (returns false if permission fails)
 	 */
-	//public abstract void setRecipes(List<ItemStack[]> recipes);
-	
 	public abstract boolean onEdit(Player player);
 	
+	/**
+	 * Called when a player clicks on any slot in the editor window.
+	 * @param event the click event
+	 * @return how the main plugin should handle the click
+	 */
 	public abstract EditorClickResult onEditorClick(InventoryClickEvent event);	
 	
+	/**
+	 * Called when a player closes the editor window.
+	 * @param event the close event
+	 */
 	public abstract void onEditorClose(InventoryCloseEvent event);
 	
+	/**
+	 * Called when a player purchases an item from a shopkeeper.
+	 * @param event the click event of the purchase
+	 */
 	public abstract void onPurchaseClick(InventoryClickEvent event);
+	
+	protected void setProfession() {
+		((CraftVillager)villager).getHandle().setProfession(profession);
+	}
 	
 	protected short getProfessionWoolColor() {
 		switch (profession) {
@@ -172,11 +191,8 @@ public abstract class Shopkeeper {
 		}
 	}
 	
-	/**
-	 * Sets the villager's trade options.
-	 */
 	@SuppressWarnings("unchecked")
-	public void updateRecipes() {
+	protected void updateRecipes() {
 		try {
 			EntityVillager ev = ((CraftVillager)villager).getHandle();
 			
@@ -218,9 +234,5 @@ public abstract class Shopkeeper {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}		
-	}
-	
-	public static void main(String[] args) {
-		System.out.println(1025 >> 4);
 	}
 }

@@ -57,6 +57,7 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 	private boolean disableOtherVillagers = true;
 	private boolean createPlayerShopWithCommand = true;
 	private boolean createPlayerShopWithEgg = true;
+	private boolean allowCustomQuantities = false;
 	
 	static String editorTitle = "Shopkeeper Editor";
 	static int saveItem = Material.EMERALD_BLOCK.getId();
@@ -96,6 +97,7 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 		disableOtherVillagers = config.getBoolean("disable-other-villagers", disableOtherVillagers);
 		createPlayerShopWithCommand = config.getBoolean("create-player-shop-with-command", createPlayerShopWithCommand);
 		createPlayerShopWithEgg = config.getBoolean("create-player-shop-with-egg", createPlayerShopWithEgg);
+		allowCustomQuantities = config.getBoolean("allow-custom-quantities", allowCustomQuantities);
 		
 		editorTitle = config.getString("editor-title", editorTitle);
 		saveItem = config.getInt("save-item", saveItem);
@@ -272,7 +274,12 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 			profession = 0;
 		}
 		// create the shopkeeper (and spawn it)
-		Shopkeeper shopkeeper = new PlayerShopkeeper(player, chest, location, profession);
+		Shopkeeper shopkeeper;
+		if (allowCustomQuantities) {
+			shopkeeper = new AltPlayerShopkeeper(player, chest, location, profession);
+		} else {
+			shopkeeper = new PlayerShopkeeper(player, chest, location, profession);
+		}
 		shopkeeper.spawn();
 		activeShopkeepers.put(shopkeeper.getEntityId(), shopkeeper);
 		addShopkeeper(shopkeeper);
@@ -575,7 +582,11 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 			ConfigurationSection section = config.getConfigurationSection(key);
 			Shopkeeper shopkeeper = null;
 			if (section.contains("owner")) {
-				shopkeeper = new PlayerShopkeeper(section);
+				if (allowCustomQuantities) {
+					shopkeeper = new AltPlayerShopkeeper(section);
+				} else {
+					shopkeeper = new PlayerShopkeeper(section);
+				}
 			} else {
 				shopkeeper = new AdminShopkeeper(section);
 			}

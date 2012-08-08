@@ -262,7 +262,7 @@ public class PlayerShopkeeper extends Shopkeeper {
 		saveEditor(event.getInventory());
 	}
 	
-	private void saveEditor(Inventory inv) {
+	protected void saveEditor(Inventory inv) {
 		for (int i = 0; i < 8; i++) {
 			ItemStack item = inv.getItem(i);
 			if (item != null && item.getType() != Material.AIR) {
@@ -322,7 +322,7 @@ public class PlayerShopkeeper extends Shopkeeper {
 					addToInventory(new ItemStack(ShopkeepersPlugin.highCurrencyItem, highCost, ShopkeepersPlugin.highCurrencyData), contents);
 					addToInventory(new ItemStack(ShopkeepersPlugin.currencyItem, lowCost, ShopkeepersPlugin.currencyData), contents);
 				}
-				inv.setContents(contents);				
+				inv.setContents(contents);
 				return;
 			}
 		}
@@ -331,25 +331,6 @@ public class PlayerShopkeeper extends Shopkeeper {
 		event.setCancelled(true);
 		event.getWhoClicked().closeInventory();
 	}
-	
-	/*private boolean removeFromInventory(ItemStack item, ItemStack[] contents) {
-		item = item.clone();
-		for (int i = 0; i < contents.length; i++) {
-			if (contents[i] != null && contents[i].getTypeId() == item.getTypeId() && contents[i].getDurability() == contents[i].getDurability()) {
-				if (contents[i].getAmount() > item.getAmount()) {
-					contents[i].setAmount(contents[i].getAmount() - item.getAmount());
-					return true;
-				} else if (contents[i].getAmount() == item.getAmount()) {
-					contents[i] = null;
-					return true;
-				} else {
-					item.setAmount(item.getAmount() - contents[i].getAmount());
-					contents[i] = null;
-				}
-			}
-		}
-		return false;
-	}*/
 	
 	private void addToInventory(ItemStack item, ItemStack[] contents) {
 		if (unpaid > 0 && item.getTypeId() == ShopkeepersPlugin.currencyItem) {
@@ -391,7 +372,7 @@ public class PlayerShopkeeper extends Shopkeeper {
 			Inventory inv = ((Chest)chest.getState()).getInventory();
 			ItemStack[] contents = inv.getContents();
 			for (ItemStack item : contents) {
-				if (item != null && item.getType() != Material.AIR && item.getTypeId() != ShopkeepersPlugin.currencyItem && item.getType() != Material.WRITTEN_BOOK && item.getEnchantments().size() == 0) {
+				if (item != null && item.getType() != Material.AIR && item.getTypeId() != ShopkeepersPlugin.currencyItem && item.getTypeId() != ShopkeepersPlugin.highCurrencyItem && item.getType() != Material.WRITTEN_BOOK && item.getEnchantments().size() == 0) {
 					ItemType type = new ItemType(item);
 					if (!types.contains(type)) {
 						types.add(type);

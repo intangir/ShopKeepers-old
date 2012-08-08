@@ -30,6 +30,8 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
@@ -77,6 +79,8 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 	private String msgAdminShopCreated = "&aShopkeeper created!\n&aRight-click the villager while sneaking to modify trades.";
 	private String msgShopCreateFail = "&aYou cannot create a shopkeeper there.";
 	private String msgShopInUse = "&aSomeone else is already purchasing from this shopkeeper.";
+
+	private BlockFace[] faces = {BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST};
 	
 	static String recipeListVar = "i";
 	
@@ -434,7 +438,6 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 					event.setCancelled(true);
 					return;
 				}
-				BlockFace[] faces = {BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST};
 				for (BlockFace face : faces) {
 					if (block.getRelative(face).getType() == Material.CHEST) {
 						if (isChestProtected(player, block.getRelative(face))) {
@@ -463,6 +466,44 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 				}
 			}
 		}		
+	}
+	
+	@EventHandler(ignoreCancelled=true)
+	void onBlockBreak(BlockBreakEvent event) {
+		if (event.getBlock().getType() == Material.CHEST) {
+			Player player = event.getPlayer();
+			Block block = event.getBlock();
+			if (!event.getPlayer().hasPermission("shopkeeper.bypass")) {
+				if (isChestProtected(player, block)) {
+					event.setCancelled(true);
+					return;
+				}
+				for (BlockFace face : faces) {
+					if (block.getRelative(face).getType() == Material.CHEST) {
+						if (isChestProtected(player, block.getRelative(face))) {
+							event.setCancelled(true);
+							return;
+						}				
+					}
+				}
+			}
+		}
+	}
+	
+	@EventHandler(ignoreCancelled=true)
+	void onBlockPlace(BlockPlaceEvent event) {
+		if (event.getBlock().getType() == Material.CHEST) {
+			Player player = event.getPlayer();
+			Block block = event.getBlock();
+			for (BlockFace face : faces) {
+				if (block.getRelative(face).getType() == Material.CHEST) {
+					if (isChestProtected(player, block.getRelative(face))) {
+						event.setCancelled(true);
+						return;
+					}				
+				}
+			}
+		}
 	}
 	
 	@EventHandler(priority=EventPriority.LOWEST)

@@ -197,7 +197,7 @@ public class WrittenBookPlayerShopkeeper extends PlayerShopkeeper {
 		if (chest.getType() == Material.CHEST) {
 			Inventory inv = ((Chest)chest.getState()).getInventory();
 			for (ItemStack item : inv.getContents()) {
-				if (item != null && item.getType() == Material.WRITTEN_BOOK) {
+				if (item != null && item.getType() == Material.WRITTEN_BOOK && isBookAuthoredByShopOwner(item)) {
 					list.add(item);
 				}
 			}
@@ -213,6 +213,16 @@ public class WrittenBookPlayerShopkeeper extends PlayerShopkeeper {
 			}
 		}
 		return null;
+	}
+	
+	private boolean isBookAuthoredByShopOwner(ItemStack book) {
+		if (book instanceof CraftItemStack) {
+			NBTTagCompound tag = ((CraftItemStack)book).getHandle().tag;
+			if (tag != null && tag.hasKey("author")) {
+				return tag.getString("author").equalsIgnoreCase(owner);
+			}
+		}
+		return false;
 	}
 	
 	private boolean chestHasBlankBooks() {

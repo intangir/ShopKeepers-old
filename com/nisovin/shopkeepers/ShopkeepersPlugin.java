@@ -55,10 +55,15 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 	private Map<String, Integer> editing = new HashMap<String, Integer>();
 	private Map<String, Integer> purchasing = new HashMap<String, Integer>();
 	
+	private boolean dirty = false;
+	
 	private boolean disableOtherVillagers = true;
+	private boolean saveInstantly = true;
 	private boolean createPlayerShopWithCommand = true;
 	private boolean createPlayerShopWithEgg = true;
+	private boolean deletingPlayerShopReturnsEgg = false;
 	private boolean allowCustomQuantities = false;
+	private boolean allowPlayerBookShop = true;
 	private boolean protectChests = true;
 	
 	static String editorTitle = "Shopkeeper Editor";
@@ -79,7 +84,7 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 	private String msgAdminShopCreated = "&aShopkeeper created!\n&aRight-click the villager while sneaking to modify trades.";
 	private String msgShopCreateFail = "&aYou cannot create a shopkeeper there.";
 	private String msgShopInUse = "&aSomeone else is already purchasing from this shopkeeper.";
-
+	
 	BlockFace[] faces = {BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST};
 	
 	static String recipeListVar = "i";
@@ -99,9 +104,12 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 		debug = config.getBoolean("debug", debug);
 		
 		disableOtherVillagers = config.getBoolean("disable-other-villagers", disableOtherVillagers);
+		saveInstantly = config.getBoolean("save-instantly", saveInstantly);
 		createPlayerShopWithCommand = config.getBoolean("create-player-shop-with-command", createPlayerShopWithCommand);
 		createPlayerShopWithEgg = config.getBoolean("create-player-shop-with-egg", createPlayerShopWithEgg);
+		deletingPlayerShopReturnsEgg = config.getBoolean("deleting-player-shop-returns-egg", deletingPlayerShopReturnsEgg);
 		allowCustomQuantities = config.getBoolean("allow-custom-quantities", allowCustomQuantities);
+		allowPlayerBookShop = config.getBoolean("allow-player-book-shop", allowPlayerBookShop);
 		protectChests = config.getBoolean("protect-chests", protectChests);
 		
 		editorTitle = config.getString("editor-title", editorTitle);
@@ -150,10 +158,27 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 				}
 			}
 		}, 200, 200);
+		
+		// start saver
+		if (!saveInstantly) {
+			Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
+				public void run() {
+					if (dirty) {
+						saveReal();
+						dirty = false;
+					}
+				}
+			}, 6000, 6000);
+		}
 	}
 	
 	@Override
 	public void onDisable() {
+		if (dirty) {
+			saveReal();
+			dirty = false;
+		}
+		
 		for (String playerName : editing.keySet()) {
 			Player player = Bukkit.getPlayerExact(playerName);
 			if (player != null) {
@@ -175,6 +200,7 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 		}
 		activeShopkeepers.clear();
 		allShopkeepersByChunk.clear();
+		
 		HandlerList.unregisterAll((Plugin)this);		
 		Bukkit.getScheduler().cancelTasks(this);
 	}
@@ -283,11 +309,13 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 		}
 		// check for book shopkeeper
 		boolean book = false;
-		if (chest.getType() == Material.CHEST) {
-			Chest c = (Chest)chest.getState();
-			ItemStack item = c.getInventory().getItem(0);
-			if (item != null && item.getType() == Material.WRITTEN_BOOK) {
-				book = true;
+		if (allowPlayerBookShop) {
+			if (chest.getType() == Material.CHEST) {
+				Chest c = (Chest)chest.getState();
+				ItemStack item = c.getInventory().getItem(0);
+				if (item != null && item.getType() == Material.WRITTEN_BOOK) {
+					book = true;
+				}
 			}
 		}
 		// create the shopkeeper (and spawn it)
@@ -415,6 +443,11 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 					event.getWhoClicked().closeInventory();
 					editing.remove(event.getWhoClicked().getName());
 					closeTradingForShopkeeper(entityId);
+					
+					// return egg
+					if (deletingPlayerShopReturnsEgg && shopkeeper instanceof PlayerShopkeeper) {
+						event.getWhoClicked().getInventory().addItem(new ItemStack(Material.MONSTER_EGG, 1, (short)120));
+					}
 					
 					// remove shopkeeper
 					activeShopkeepers.remove(entityId);
@@ -601,7 +634,9 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 			Shopkeeper shopkeeper = null;
 			String type = section.getString("type", "");
 			if (type.equals("book")) {
-				shopkeeper = new WrittenBookPlayerShopkeeper(section);
+				if (allowPlayerBookShop) {
+					shopkeeper = new WrittenBookPlayerShopkeeper(section);
+				}
 			} else if (type.equals("player") || section.contains("owner")) {
 				if (allowCustomQuantities) {
 					shopkeeper = new CustomQuantityPlayerShopkeeper(section);
@@ -623,6 +658,14 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 	}
 	
 	private void save() {
+		if (saveInstantly) {
+			saveReal();
+		} else {
+			dirty = true;
+		}
+	}
+	
+	private void saveReal() {
 		YamlConfiguration config = new YamlConfiguration();
 		int counter = 0;
 		for (List<Shopkeeper> shopkeepers : allShopkeepersByChunk.values()) {

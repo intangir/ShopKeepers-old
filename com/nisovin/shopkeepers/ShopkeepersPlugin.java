@@ -621,6 +621,7 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 					activeShopkeepers.put(shopkeeper.getEntityId(), shopkeeper);
 				}
 			}
+			save();
 		}
 	}
 	

@@ -2,6 +2,7 @@ package com.nisovin.shopkeepers;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -264,7 +265,7 @@ public class CustomQuantityPlayerShopkeeper extends PlayerShopkeeper {
 	}
 	
 	private Map<SaleType, Integer> getItemsFromChest() {
-		Map<SaleType, Integer> map = new HashMap<SaleType, Integer>();
+		Map<SaleType, Integer> map = new LinkedHashMap<SaleType, Integer>();
 		Block chest = Bukkit.getWorld(world).getBlockAt(chestx, chesty, chestz);
 		if (chest.getType() == Material.CHEST) {
 			Inventory inv = ((Chest)chest.getState()).getInventory();

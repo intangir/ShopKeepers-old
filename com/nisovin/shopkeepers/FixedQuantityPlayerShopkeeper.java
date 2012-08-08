@@ -144,7 +144,11 @@ public class FixedQuantityPlayerShopkeeper extends PlayerShopkeeper {
 			if (item != null && item.getTypeId() == type.id && item.getDurability() == type.data && item.getAmount() == type.amount) {
 				contents[i] = null;
 				if (ShopkeepersPlugin.highCurrencyItem <= 0 || cost <= ShopkeepersPlugin.highCurrencyMinCost) {
-					addToInventory(new ItemStack(ShopkeepersPlugin.currencyItem, cost, ShopkeepersPlugin.currencyData), contents);
+					boolean added = addToInventory(new ItemStack(ShopkeepersPlugin.currencyItem, cost, ShopkeepersPlugin.currencyData), contents);
+					if (!added) {
+						event.setCancelled(true);
+						return;
+					}
 				} else {
 					int highCost = cost / ShopkeepersPlugin.highCurrencyValue;
 					int lowCost = cost % ShopkeepersPlugin.highCurrencyValue;

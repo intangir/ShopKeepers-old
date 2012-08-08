@@ -69,6 +69,7 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 	private boolean allowCustomQuantities = true;
 	private boolean allowPlayerBookShop = true;
 	private boolean protectChests = true;
+	private int maxShopsPerPlayer = 0;
 	
 	static String editorTitle = "Shopkeeper Editor";
 	static int saveItem = Material.EMERALD_BLOCK.getId();
@@ -96,6 +97,7 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 	private String msgBuyShopCreated = "&aShopkeeper created!\n&aAdd one of each item you want to sell to your chest, then\n&aright-click the villager while sneaking to modify costs.";
 	private String msgAdminShopCreated = "&aShopkeeper created!\n&aRight-click the villager while sneaking to modify trades.";
 	private String msgShopCreateFail = "&aYou cannot create a shopkeeper there.";
+	private String msgTooManyShops = "&aYou have too many shops.";
 	private String msgShopInUse = "&aSomeone else is already purchasing from this shopkeeper.";
 	
 	BlockFace[] faces = {BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST};
@@ -125,6 +127,7 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 		allowCustomQuantities = config.getBoolean("allow-custom-quantities", allowCustomQuantities);
 		allowPlayerBookShop = config.getBoolean("allow-player-book-shop", allowPlayerBookShop);
 		protectChests = config.getBoolean("protect-chests", protectChests);
+		maxShopsPerPlayer = config.getInt("max-shops-per-player", maxShopsPerPlayer);
 		
 		editorTitle = config.getString("editor-title", editorTitle);
 		saveItem = config.getInt("save-item", saveItem);
@@ -153,6 +156,7 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 		msgBuyShopCreated = config.getString("msg-buy-shop-created", msgBuyShopCreated);
 		msgAdminShopCreated = config.getString("msg-admin-shop-created", msgAdminShopCreated);
 		msgShopCreateFail = config.getString("msg-shop-create-fail", msgShopCreateFail);
+		msgTooManyShops = config.getString("msg-too-many-shops", msgTooManyShops);
 		msgShopInUse = config.getString("msg-shop-in-use", msgShopInUse);
 		
 		recipeListVar = config.getString("recipe-list-var", recipeListVar);
@@ -281,7 +285,7 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 						return true;
 					}
 					// create the player shopkeeper
-					createNewPlayerShopkeeper(player, block, block.getLocation().add(0, 1.5, 0), prof);
+					createNewPlayerShopkeeper(player, block, block.getLocation().add(0, 1.5, 0), prof, 0);
 					sendMessage(player, msgPlayerShopCreated);
 				} else if (player.hasPermission("shopkeeper.admin")) {
 					// create the admin shopkeeper
@@ -319,58 +323,58 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 		
 		return shopkeeper;
 	}
-	
+
 	/**
 	 * Creates a new player-based shopkeeper and spawns it into the world.
 	 * @param player the player who created the shopkeeper
 	 * @param chest the backing chest for the shop
 	 * @param location the block location the shopkeeper should spawn
 	 * @param profession the shopkeeper's profession, a number from 0 to 5
+	 * @param type the player shop type (0=normal, 1=book, 2=buy)
 	 * @return the shopkeeper created
 	 */
-	public Shopkeeper createNewPlayerShopkeeper(Player player, Block chest, Location location, int profession) {
+	public Shopkeeper createNewPlayerShopkeeper(Player player, Block chest, Location location, int profession, int type) {
 		// make sure profession is valid
 		if (profession < 0 || profession > 5) {
 			profession = 0;
 		}
-		// create the shopkeeper (and spawn it)
-		Shopkeeper shopkeeper;
-		if (allowCustomQuantities) {
-			shopkeeper = new CustomQuantityPlayerShopkeeper(player, chest, location, profession);
-		} else {
-			shopkeeper = new FixedQuantityPlayerShopkeeper(player, chest, location, profession);
-		}
-		shopkeeper.spawn();
-		activeShopkeepers.put(shopkeeper.getEntityId(), shopkeeper);
-		addShopkeeper(shopkeeper);
 		
-		return shopkeeper;
-	}
-	
-	public Shopkeeper createNewBookShopkeeper(Player player, Block chest, Location location, int profession) {
-		// make sure profession is valid
-		if (profession < 0 || profession > 5) {
-			profession = 0;
+		// count owned shops
+		if (maxShopsPerPlayer > 0) {
+			int count = 0;
+			for (List<Shopkeeper> list : allShopkeepersByChunk.values()) {
+				for (Shopkeeper shopkeeper : list) {
+					if (shopkeeper instanceof PlayerShopkeeper && ((PlayerShopkeeper)shopkeeper).getOwner().equalsIgnoreCase(player.getName())) {
+						count++;
+					}
+				}
+			}
+			if (count >= maxShopsPerPlayer) {
+				sendMessage(player, msgTooManyShops);
+				return null;
+			}
 		}
-		// create the shopkeeper (and spawn it)
-		Shopkeeper shopkeeper = new WrittenBookPlayerShopkeeper(player, chest, location, profession);	
-		shopkeeper.spawn();
-		activeShopkeepers.put(shopkeeper.getEntityId(), shopkeeper);
-		addShopkeeper(shopkeeper);
 		
-		return shopkeeper;
-	}
-	
-	public Shopkeeper createNewBuyingShopkeeper(Player player, Block chest, Location location, int profession) {
-		// make sure profession is valid
-		if (profession < 0 || profession > 5) {
-			profession = 0;
+		// create the shopkeeper
+		Shopkeeper shopkeeper = null;
+		if (type == 0) {
+			if (allowCustomQuantities) {
+				shopkeeper = new CustomQuantityPlayerShopkeeper(player, chest, location, profession);
+			} else {
+				shopkeeper = new FixedQuantityPlayerShopkeeper(player, chest, location, profession);
+			}
+		} else if (type == 1) {
+			shopkeeper = new WrittenBookPlayerShopkeeper(player, chest, location, profession);
+		} else if (type == 2) {
+			shopkeeper = new BuyingPlayerShopkeeper(player, chest, location, profession);
 		}
-		// create the shopkeeper (and spawn it)
-		Shopkeeper shopkeeper = new BuyingPlayerShopkeeper(player, chest, location, profession);	
-		shopkeeper.spawn();
-		activeShopkeepers.put(shopkeeper.getEntityId(), shopkeeper);
-		addShopkeeper(shopkeeper);
+
+		// spawn and save the shopkeeper
+		if (shopkeeper != null) {
+			shopkeeper.spawn();
+			activeShopkeepers.put(shopkeeper.getEntityId(), shopkeeper);
+			addShopkeeper(shopkeeper);
+		}
 		
 		return shopkeeper;
 	}
@@ -563,6 +567,9 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 							option = 0;
 						}
 					}
+					if (option == 1 && !allowPlayerBookShop) {
+						option = 2;
+					}
 					selectedShopType.put(playerName, option);
 					if (option == 0) {
 						sendMessage(player, msgSelectedNormalShop);
@@ -589,24 +596,25 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 							if (selectedShopType.containsKey(playerName)) {
 								option = selectedShopType.get(playerName);
 							}
-							if (option == 0) {
-								createNewPlayerShopkeeper(player, chest, block.getLocation().add(0, 1.5, 0), 0);								
-								sendMessage(player, msgPlayerShopCreated);
-							} else if (option == 1) {
-								createNewBookShopkeeper(player, chest, block.getLocation().add(0, 1.5, 0), 0);
-								sendMessage(player, msgBookShopCreated);
-							} else if (option == 2) {
-								createNewBuyingShopkeeper(player, chest, block.getLocation().add(0, 1.5, 0), 0);
-								sendMessage(player, msgBuyShopCreated);
-							} else {
-								return;
-							}
-							// remove egg
-							inHand.setAmount(inHand.getAmount() - 1);
-							if (inHand.getAmount() > 0) {
-								player.setItemInHand(inHand);
-							} else {
-								player.setItemInHand(null);
+							Shopkeeper shopkeeper = createNewPlayerShopkeeper(player, chest, block.getLocation().add(0, 1.5, 0), 0, option);
+							if (shopkeeper != null) {
+								// send message
+								if (option == 0) {
+									sendMessage(player, msgPlayerShopCreated);
+								} else if (option == 1) {
+									sendMessage(player, msgBookShopCreated);
+								} else if (option == 2) {
+									sendMessage(player, msgBuyShopCreated);
+								} else {
+									return;
+								}
+								// remove egg
+								inHand.setAmount(inHand.getAmount() - 1);
+								if (inHand.getAmount() > 0) {
+									player.setItemInHand(inHand);
+								} else {
+									player.setItemInHand(null);
+								}
 							}
 							// clear selection vars
 							selectedShopType.remove(playerName);

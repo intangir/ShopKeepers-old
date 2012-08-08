@@ -356,6 +356,7 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 			if (shopkeeper != null) {
 				if (event.getInventory().getTitle().equals(editorTitle)) {
 					shopkeeper.onEditorClose(event);
+					closeTradingForShopkeeper(entityId);
 				}
 			}
 		}
@@ -384,19 +385,22 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 				// editor click
 				EditorClickResult result = shopkeeper.onEditorClick(event);
 				if (result == EditorClickResult.DELETE_SHOPKEEPER) {
-					// delete the shopkeeper
+					// close inventories
 					event.getWhoClicked().closeInventory();
+					editing.remove(event.getWhoClicked().getName());
+					closeTradingForShopkeeper(entityId);
+					
+					// remove shopkeeper
 					activeShopkeepers.remove(entityId);
 					allShopkeepersByChunk.get(shopkeeper.getChunk()).remove(shopkeeper);
 					save();
-				}
-				if (result == EditorClickResult.DONE_EDITING || result == EditorClickResult.DELETE_SHOPKEEPER) {
+				} else if (result == EditorClickResult.DONE_EDITING) {
 					// end the editing session
 					event.getWhoClicked().closeInventory();
 					editing.remove(event.getWhoClicked().getName());
+					closeTradingForShopkeeper(entityId);
 					save();
-				}
-				if (result == EditorClickResult.SAVE_AND_CONTINUE) {
+				} else if (result == EditorClickResult.SAVE_AND_CONTINUE) {
 					save();
 				}
 			}
@@ -496,6 +500,31 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 		debug("Unloaded " + count + " shopkeepers in unloaded world " + worldName);
 	}
 
+	private void closeTradingForShopkeeper(int entityId) {
+		Iterator<String> editors = editing.keySet().iterator();
+		while (editors.hasNext()) {
+			String name = editors.next();
+			if (editing.get(name).equals(entityId)) {
+				Player player = Bukkit.getPlayerExact(name);
+				if (player != null) {
+					player.closeInventory();
+				}
+				editors.remove();
+			}
+		}
+		Iterator<String> purchasers = purchasing.keySet().iterator();
+		while (purchasers.hasNext()) {
+			String name = purchasers.next();
+			if (purchasing.get(name).equals(entityId)) {
+				Player player = Bukkit.getPlayerExact(name);
+				if (player != null) {
+					player.closeInventory();
+				}
+				purchasers.remove();
+			}
+		}
+	}
+	
 	private boolean isChestProtected(Player player, Block block) {
 		for (Shopkeeper shopkeeper : activeShopkeepers.values()) {
 			if (shopkeeper instanceof PlayerShopkeeper) {

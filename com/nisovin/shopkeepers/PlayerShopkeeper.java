@@ -332,6 +332,25 @@ public class PlayerShopkeeper extends Shopkeeper {
 		event.getWhoClicked().closeInventory();
 	}
 	
+	/*private boolean removeFromInventory(ItemStack item, ItemStack[] contents) {
+		item = item.clone();
+		for (int i = 0; i < contents.length; i++) {
+			if (contents[i] != null && contents[i].getTypeId() == item.getTypeId() && contents[i].getDurability() == contents[i].getDurability()) {
+				if (contents[i].getAmount() > item.getAmount()) {
+					contents[i].setAmount(contents[i].getAmount() - item.getAmount());
+					return true;
+				} else if (contents[i].getAmount() == item.getAmount()) {
+					contents[i] = null;
+					return true;
+				} else {
+					item.setAmount(item.getAmount() - contents[i].getAmount());
+					contents[i] = null;
+				}
+			}
+		}
+		return false;
+	}*/
+	
 	private void addToInventory(ItemStack item, ItemStack[] contents) {
 		if (unpaid > 0 && item.getTypeId() == ShopkeepersPlugin.currencyItem) {
 			// add previously unpaid amount to this item

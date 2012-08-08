@@ -46,6 +46,7 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 	@Override
 	public void save(ConfigurationSection config) {
 		super.save(config);
+		config.set("type", "player");
 		config.set("owner", owner);
 		config.set("chestx", chestx);
 		config.set("chesty", chesty);
@@ -69,6 +70,18 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 		return (chest.getWorld().getName().equals(world) && chest.getX() == chestx && chest.getY() == chesty && chest.getZ() == chestz);
 	}
 
+
+	@Override
+	public boolean onEdit(Player player) {
+		if ((player.getName().equalsIgnoreCase(owner) && player.hasPermission("shopkeeper.player")) || player.hasPermission("shopkeeper.bypass")) {
+			return onPlayerEdit(player);
+		} else {
+			return false;
+		}
+	}
+	
+	protected abstract boolean onPlayerEdit(Player player);
+	
 	@Override
 	public EditorClickResult onEditorClick(InventoryClickEvent event) {
 		event.setCancelled(true);
@@ -156,4 +169,67 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 	
 	protected abstract void saveEditor(Inventory inv);	
 
+	protected void setRecipeCost(ItemStack[] recipe, int cost) {
+		if (ShopkeepersPlugin.highCurrencyItem > 0 && cost > ShopkeepersPlugin.highCurrencyMinCost) {
+			int highCost = cost / ShopkeepersPlugin.highCurrencyValue;
+			int lowCost = cost % ShopkeepersPlugin.highCurrencyValue;
+			if (highCost > 0) {
+				recipe[0] = new ItemStack(ShopkeepersPlugin.highCurrencyItem, highCost, ShopkeepersPlugin.highCurrencyData);
+			}
+			if (lowCost > 0) {
+				recipe[1] = new ItemStack(ShopkeepersPlugin.currencyItem, lowCost, ShopkeepersPlugin.currencyData);
+			}
+		} else {
+			recipe[0] = new ItemStack(ShopkeepersPlugin.currencyItem, cost, ShopkeepersPlugin.currencyData);
+		}
+	}
+	
+	protected void setEditColumnCost(Inventory inv, int column, int cost) {
+		if (cost > 0) {
+			if (ShopkeepersPlugin.highCurrencyItem > 0 && cost > ShopkeepersPlugin.highCurrencyMinCost) {
+				int highCost = cost / ShopkeepersPlugin.highCurrencyValue;
+				int lowCost = cost % ShopkeepersPlugin.highCurrencyValue;
+				if (highCost > 0) {
+					inv.setItem(column + 9, new ItemStack(ShopkeepersPlugin.highCurrencyItem, highCost, ShopkeepersPlugin.highCurrencyData));
+				} else {
+					inv.setItem(column + 9, new ItemStack(ShopkeepersPlugin.highZeroItem));
+				}
+				if (lowCost > 0) {
+					inv.setItem(column + 18, new ItemStack(ShopkeepersPlugin.currencyItem, lowCost, ShopkeepersPlugin.currencyData));
+				} else {
+					inv.setItem(column + 18, new ItemStack(ShopkeepersPlugin.zeroItem));
+				}
+			} else {
+				inv.setItem(column + 18, new ItemStack(ShopkeepersPlugin.currencyItem, cost, ShopkeepersPlugin.currencyData));
+				if (ShopkeepersPlugin.highCurrencyItem > 0) {
+					inv.setItem(column + 9, new ItemStack(ShopkeepersPlugin.highZeroItem));
+				}
+			}
+		} else {
+			inv.setItem(column + 18, new ItemStack(ShopkeepersPlugin.zeroItem));
+			if (ShopkeepersPlugin.highCurrencyItem > 0) {
+				inv.setItem(column + 9, new ItemStack(ShopkeepersPlugin.highZeroItem));
+			}
+		}
+	}
+	
+	protected void setActionButtons(Inventory inv) {
+		inv.setItem(8, new ItemStack(ShopkeepersPlugin.saveItem));
+		inv.setItem(17, new ItemStack(Material.WOOL, 1, getProfessionWoolColor()));
+		inv.setItem(26, new ItemStack(ShopkeepersPlugin.deleteItem));
+	}
+	
+	protected int getCostFromColumn(Inventory inv, int column) {
+		ItemStack lowCostItem = inv.getItem(column + 18);
+		ItemStack highCostItem = inv.getItem(column + 9);
+		int cost = 0;
+		if (lowCostItem != null && lowCostItem.getTypeId() == ShopkeepersPlugin.currencyItem && lowCostItem.getAmount() > 0) {
+			cost += lowCostItem.getAmount();
+		}
+		if (ShopkeepersPlugin.highCurrencyItem > 0 && highCostItem != null && highCostItem.getTypeId() == ShopkeepersPlugin.highCurrencyItem && highCostItem.getAmount() > 0) {
+			cost += highCostItem.getAmount() * ShopkeepersPlugin.highCurrencyValue;
+		}
+		return cost;
+	}
+	
 }

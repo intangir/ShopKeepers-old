@@ -17,6 +17,7 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.Chest;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.Configuration;
@@ -30,8 +31,6 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
-import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
@@ -60,6 +59,7 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 	private boolean createPlayerShopWithCommand = true;
 	private boolean createPlayerShopWithEgg = true;
 	private boolean allowCustomQuantities = false;
+	private boolean protectChests = true;
 	
 	static String editorTitle = "Shopkeeper Editor";
 	static int saveItem = Material.EMERALD_BLOCK.getId();
@@ -80,7 +80,7 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 	private String msgShopCreateFail = "&aYou cannot create a shopkeeper there.";
 	private String msgShopInUse = "&aSomeone else is already purchasing from this shopkeeper.";
 
-	private BlockFace[] faces = {BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST};
+	BlockFace[] faces = {BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST};
 	
 	static String recipeListVar = "i";
 	
@@ -102,6 +102,7 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 		createPlayerShopWithCommand = config.getBoolean("create-player-shop-with-command", createPlayerShopWithCommand);
 		createPlayerShopWithEgg = config.getBoolean("create-player-shop-with-egg", createPlayerShopWithEgg);
 		allowCustomQuantities = config.getBoolean("allow-custom-quantities", allowCustomQuantities);
+		protectChests = config.getBoolean("protect-chests", protectChests);
 		
 		editorTitle = config.getString("editor-title", editorTitle);
 		saveItem = config.getInt("save-item", saveItem);
@@ -137,6 +138,9 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 		
 		// register events
 		getServer().getPluginManager().registerEvents(this, this);
+		if (protectChests) {
+			getServer().getPluginManager().registerEvents(new ChestProtectListener(this), this);
+		}
 		
 		// start teleporter
 		Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
@@ -277,9 +281,20 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 		if (profession < 0 || profession > 5) {
 			profession = 0;
 		}
+		// check for book shopkeeper
+		boolean book = false;
+		if (chest.getType() == Material.CHEST) {
+			Chest c = (Chest)chest.getState();
+			ItemStack item = c.getInventory().getItem(0);
+			if (item != null && item.getType() == Material.WRITTEN_BOOK) {
+				book = true;
+			}
+		}
 		// create the shopkeeper (and spawn it)
 		Shopkeeper shopkeeper;
-		if (allowCustomQuantities) {
+		if (book) {
+			shopkeeper = new WrittenBookPlayerShopkeeper(player, chest, location, profession);		
+		} else if (allowCustomQuantities) {
 			shopkeeper = new CustomQuantityPlayerShopkeeper(player, chest, location, profession);
 		} else {
 			shopkeeper = new FixedQuantityPlayerShopkeeper(player, chest, location, profession);
@@ -467,45 +482,7 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 			}
 		}		
 	}
-	
-	@EventHandler(ignoreCancelled=true)
-	void onBlockBreak(BlockBreakEvent event) {
-		if (event.getBlock().getType() == Material.CHEST) {
-			Player player = event.getPlayer();
-			Block block = event.getBlock();
-			if (!event.getPlayer().hasPermission("shopkeeper.bypass")) {
-				if (isChestProtected(player, block)) {
-					event.setCancelled(true);
-					return;
-				}
-				for (BlockFace face : faces) {
-					if (block.getRelative(face).getType() == Material.CHEST) {
-						if (isChestProtected(player, block.getRelative(face))) {
-							event.setCancelled(true);
-							return;
-						}				
-					}
-				}
-			}
-		}
-	}
-	
-	@EventHandler(ignoreCancelled=true)
-	void onBlockPlace(BlockPlaceEvent event) {
-		if (event.getBlock().getType() == Material.CHEST) {
-			Player player = event.getPlayer();
-			Block block = event.getBlock();
-			for (BlockFace face : faces) {
-				if (block.getRelative(face).getType() == Material.CHEST) {
-					if (isChestProtected(player, block.getRelative(face))) {
-						event.setCancelled(true);
-						return;
-					}				
-				}
-			}
-		}
-	}
-	
+		
 	@EventHandler(priority=EventPriority.LOWEST)
 	void onChunkLoad(ChunkLoadEvent event) {
 		loadShopkeepersInChunk(event.getChunk());
@@ -573,7 +550,7 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 		}
 	}
 	
-	private boolean isChestProtected(Player player, Block block) {
+	public boolean isChestProtected(Player player, Block block) {
 		for (Shopkeeper shopkeeper : activeShopkeepers.values()) {
 			if (shopkeeper instanceof PlayerShopkeeper) {
 				PlayerShopkeeper pshop = (PlayerShopkeeper)shopkeeper;
@@ -622,7 +599,10 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 		for (String key : keys) {
 			ConfigurationSection section = config.getConfigurationSection(key);
 			Shopkeeper shopkeeper = null;
-			if (section.contains("owner")) {
+			String type = section.getString("type", "");
+			if (type.equals("book")) {
+				shopkeeper = new WrittenBookPlayerShopkeeper(section);
+			} else if (type.equals("player") || section.contains("owner")) {
 				if (allowCustomQuantities) {
 					shopkeeper = new CustomQuantityPlayerShopkeeper(section);
 				} else {

@@ -34,21 +34,23 @@ public class CustomQuantityPlayerShopkeeper extends PlayerShopkeeper {
 		super.load(config);		
 		costs = new HashMap<CustomQuantityPlayerShopkeeper.SaleType, CustomQuantityPlayerShopkeeper.Cost>();
 		ConfigurationSection costsSection = config.getConfigurationSection("costs");
-		for (String key : costsSection.getKeys(false)) {
-			ConfigurationSection itemSection = costsSection.getConfigurationSection(key);
-			SaleType item = new SaleType();
-			Cost cost = new Cost();
-			item.id = itemSection.getInt("id");
-			item.data = (short)itemSection.getInt("data");
-			cost.amount = itemSection.getInt("amount");
-			cost.cost = itemSection.getInt("cost");
-			costs.put(item, cost);
+		if (costsSection != null) {
+			for (String key : costsSection.getKeys(false)) {
+				ConfigurationSection itemSection = costsSection.getConfigurationSection(key);
+				SaleType item = new SaleType();
+				Cost cost = new Cost();
+				item.id = itemSection.getInt("id");
+				item.data = (short)itemSection.getInt("data");
+				cost.amount = itemSection.getInt("amount");
+				cost.cost = itemSection.getInt("cost");
+				costs.put(item, cost);
+			}
 		}
 	}
 	
 	@Override
 	public void save(ConfigurationSection config) {
-		super.save(config);		
+		super.save(config);
 		ConfigurationSection costsSection = config.createSection("costs");
 		int count = 0;
 		for (SaleType item : costs.keySet()) {
@@ -72,18 +74,7 @@ public class CustomQuantityPlayerShopkeeper extends PlayerShopkeeper {
 				int chestAmt = chestItems.get(type);
 				if (chestAmt >= cost.amount) {
 					ItemStack[] recipe = new ItemStack[3];
-					if (ShopkeepersPlugin.highCurrencyItem > 0 && cost.cost > ShopkeepersPlugin.highCurrencyMinCost) {
-						int highCost = cost.cost / ShopkeepersPlugin.highCurrencyValue;
-						int lowCost = cost.cost % ShopkeepersPlugin.highCurrencyValue;
-						if (highCost > 0) {
-							recipe[0] = new ItemStack(ShopkeepersPlugin.highCurrencyItem, highCost, ShopkeepersPlugin.highCurrencyData);
-						}
-						if (lowCost > 0) {
-							recipe[1] = new ItemStack(ShopkeepersPlugin.currencyItem, lowCost, ShopkeepersPlugin.currencyData);
-						}
-					} else {
-						recipe[0] = new ItemStack(ShopkeepersPlugin.currencyItem, cost.cost, ShopkeepersPlugin.currencyData);
-					}
+					setRecipeCost(recipe, cost.cost);
 					recipe[2] = new ItemStack(type.id, cost.amount, type.data);
 					recipes.add(recipe);
 				}
@@ -93,57 +84,31 @@ public class CustomQuantityPlayerShopkeeper extends PlayerShopkeeper {
 	}
 	
 	@Override
-	public boolean onEdit(Player player) {
-		if ((player.getName().equalsIgnoreCase(owner) && player.hasPermission("shopkeeper.player")) || player.hasPermission("shopkeeper.bypass")) {
-			Inventory inv = Bukkit.createInventory(player, 27, ShopkeepersPlugin.editorTitle);
-			
-			// add the sale types
-			Map<SaleType, Integer> typesFromChest = getItemsFromChest();
-			int i = 0;
-			for (SaleType type : typesFromChest.keySet()) {
-				Cost cost = costs.get(type);
-				if (cost != null) {
-					inv.setItem(i, new ItemStack(type.id, cost.amount, type.data));
-					if (ShopkeepersPlugin.highCurrencyItem > 0 && cost.cost > ShopkeepersPlugin.highCurrencyMinCost) {
-						int highCost = cost.cost / ShopkeepersPlugin.highCurrencyValue;
-						int lowCost = cost.cost % ShopkeepersPlugin.highCurrencyValue;
-						if (highCost > 0) {
-							inv.setItem(i + 9, new ItemStack(ShopkeepersPlugin.highCurrencyItem, highCost, ShopkeepersPlugin.highCurrencyData));
-						} else {
-							inv.setItem(i + 9, new ItemStack(ShopkeepersPlugin.highZeroItem));
-						}
-						if (lowCost > 0) {
-							inv.setItem(i + 18, new ItemStack(ShopkeepersPlugin.currencyItem, lowCost, ShopkeepersPlugin.currencyData));
-						} else {
-							inv.setItem(i + 18, new ItemStack(ShopkeepersPlugin.zeroItem));
-						}
-					} else {
-						inv.setItem(i + 18, new ItemStack(ShopkeepersPlugin.currencyItem, cost.cost, ShopkeepersPlugin.currencyData));
-						if (ShopkeepersPlugin.highCurrencyItem > 0) {
-							inv.setItem(i + 9, new ItemStack(ShopkeepersPlugin.highZeroItem));
-						}
-					}
-				} else {
-					inv.setItem(i, new ItemStack(type.id, 1, type.data));
-					inv.setItem(i + 18, new ItemStack(ShopkeepersPlugin.zeroItem));
-					if (ShopkeepersPlugin.highCurrencyItem > 0) {
-						inv.setItem(i + 9, new ItemStack(ShopkeepersPlugin.highZeroItem));
-					}
-				}
-				i++;
-				if (i > 8) break;
+	public boolean onPlayerEdit(Player player) {
+		Inventory inv = Bukkit.createInventory(player, 27, ShopkeepersPlugin.editorTitle);
+		
+		// add the sale types
+		Map<SaleType, Integer> typesFromChest = getItemsFromChest();
+		int i = 0;
+		for (SaleType type : typesFromChest.keySet()) {
+			Cost cost = costs.get(type);
+			if (cost != null) {
+				inv.setItem(i, new ItemStack(type.id, cost.amount, type.data));
+				setEditColumnCost(inv, i, cost.cost);
+			} else {
+				inv.setItem(i, new ItemStack(type.id, 1, type.data));
+				setEditColumnCost(inv, i, 0);
 			}
-			
-			// add the special buttons
-			inv.setItem(8, new ItemStack(ShopkeepersPlugin.saveItem));
-			inv.setItem(17, new ItemStack(Material.WOOL, 1, getProfessionWoolColor()));
-			inv.setItem(26, new ItemStack(ShopkeepersPlugin.deleteItem));
-			
-			player.openInventory(inv);
-			
-			return true;
+			i++;
+			if (i > 8) break;
 		}
-		return false;
+		
+		// add the special buttons
+		setActionButtons(inv);
+		
+		player.openInventory(inv);
+		
+		return true;
 	}
 
 	@Override
@@ -182,15 +147,7 @@ public class CustomQuantityPlayerShopkeeper extends PlayerShopkeeper {
 		for (int i = 0; i < 8; i++) {
 			ItemStack item = inv.getItem(i);
 			if (item != null && item.getType() != Material.AIR) {
-				ItemStack lowCostItem = inv.getItem(i + 18);
-				ItemStack highCostItem = inv.getItem(i + 9);
-				int cost = 0;
-				if (lowCostItem != null && lowCostItem.getTypeId() == ShopkeepersPlugin.currencyItem && lowCostItem.getAmount() > 0) {
-					cost += lowCostItem.getAmount();
-				}
-				if (ShopkeepersPlugin.highCurrencyItem > 0 && highCostItem != null && highCostItem.getTypeId() == ShopkeepersPlugin.highCurrencyItem && highCostItem.getAmount() > 0) {
-					cost += highCostItem.getAmount() * ShopkeepersPlugin.highCurrencyValue;
-				}
+				int cost = getCostFromColumn(inv, i);
 				if (cost > 0) {
 					costs.put(new SaleType(item), new Cost(item.getAmount(), cost));
 				} else {
@@ -247,15 +204,20 @@ public class CustomQuantityPlayerShopkeeper extends PlayerShopkeeper {
 		} else {
 			int highCost = cost.cost / ShopkeepersPlugin.highCurrencyValue;
 			int lowCost = cost.cost % ShopkeepersPlugin.highCurrencyValue;
-			boolean added = addToInventory(new ItemStack(ShopkeepersPlugin.highCurrencyItem, highCost, ShopkeepersPlugin.highCurrencyData), contents);
-			if (!added) {
-				event.setCancelled(true);
-				return;
+			boolean added = false;
+			if (highCost > 0) {
+				added = addToInventory(new ItemStack(ShopkeepersPlugin.highCurrencyItem, highCost, ShopkeepersPlugin.highCurrencyData), contents);
+				if (!added) {
+					event.setCancelled(true);
+					return;
+				}
 			}
-			added = addToInventory(new ItemStack(ShopkeepersPlugin.currencyItem, lowCost, ShopkeepersPlugin.currencyData), contents);
-			if (!added) {
-				event.setCancelled(true);
-				return;
+			if (lowCost > 0) {
+				added = addToInventory(new ItemStack(ShopkeepersPlugin.currencyItem, lowCost, ShopkeepersPlugin.currencyData), contents);
+				if (!added) {
+					event.setCancelled(true);
+					return;
+				}
 			}
 		}
 
@@ -308,7 +270,7 @@ public class CustomQuantityPlayerShopkeeper extends PlayerShopkeeper {
 			Inventory inv = ((Chest)chest.getState()).getInventory();
 			ItemStack[] contents = inv.getContents();
 			for (ItemStack item : contents) {
-				if (item != null && item.getTypeId() != ShopkeepersPlugin.currencyItem && item.getTypeId() != ShopkeepersPlugin.highCurrencyItem) {
+				if (item != null && item.getType() != Material.AIR && item.getTypeId() != ShopkeepersPlugin.currencyItem && item.getTypeId() != ShopkeepersPlugin.highCurrencyItem && item.getType() != Material.WRITTEN_BOOK && item.getEnchantments().size() == 0) {
 					SaleType si = new SaleType(item);
 					if (map.containsKey(si)) {
 						map.put(si, map.get(si) + item.getAmount());

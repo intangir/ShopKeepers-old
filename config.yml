@@ -3,6 +3,7 @@ disable-other-villagers: true
 create-player-shop-with-command: true
 create-player-shop-with-egg: true
 allow-custom-quantities: false
+protect-chests: true
 
 editor-title: "Shopkeeper Editor"
 save-item: 133

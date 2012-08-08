@@ -52,21 +52,24 @@ public class AdminShopkeeper extends Shopkeeper {
 		super.load(config);
 		recipes = new ArrayList<ItemStack[]>();
 		ConfigurationSection recipesSection = config.getConfigurationSection("recipes");
-		for (String key : recipesSection.getKeys(false)) {
-			ConfigurationSection recipeSection = recipesSection.getConfigurationSection(key);
-			ItemStack[] recipe = new ItemStack[3];
-			for (int i = 0; i < 3; i++) {
-				if (recipeSection.contains(i + "")) {
-					recipe[i] = loadItemStack(recipeSection.getConfigurationSection(i + ""));
+		if (recipesSection != null) {
+			for (String key : recipesSection.getKeys(false)) {
+				ConfigurationSection recipeSection = recipesSection.getConfigurationSection(key);
+				ItemStack[] recipe = new ItemStack[3];
+				for (int i = 0; i < 3; i++) {
+					if (recipeSection.contains(i + "")) {
+						recipe[i] = loadItemStack(recipeSection.getConfigurationSection(i + ""));
+					}
 				}
+				recipes.add(recipe);
 			}
-			recipes.add(recipe);
 		}
 	}
 	
 	@Override
 	public void save(ConfigurationSection config) {
 		super.save(config);
+		config.set("type", "admin");
 		ConfigurationSection recipesSection = config.createSection("recipes");
 		int count = 0;
 		for (ItemStack[] recipe : recipes) {

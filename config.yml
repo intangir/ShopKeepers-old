@@ -4,7 +4,7 @@ save-instantly: true
 create-player-shop-with-command: true
 create-player-shop-with-egg: true
 deleting-player-shop-returns-egg: false
-allow-custom-quantities: false
+allow-custom-quantities: true
 allow-player-book-shop: true
 protect-chests: true
 

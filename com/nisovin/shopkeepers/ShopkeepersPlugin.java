@@ -62,7 +62,7 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 	private boolean createPlayerShopWithCommand = true;
 	private boolean createPlayerShopWithEgg = true;
 	private boolean deletingPlayerShopReturnsEgg = false;
-	private boolean allowCustomQuantities = false;
+	private boolean allowCustomQuantities = true;
 	private boolean allowPlayerBookShop = true;
 	private boolean protectChests = true;
 	
@@ -431,37 +431,45 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 	@EventHandler
 	void onInventoryClick(InventoryClickEvent event) {
 		// shopkeeper editor click
-		if (editing.containsKey(event.getWhoClicked().getName()) && event.getInventory().getTitle().equals(editorTitle)) {
-			// get the shopkeeper being edited
-			int entityId = editing.get(event.getWhoClicked().getName());
-			Shopkeeper shopkeeper = activeShopkeepers.get(entityId);
-			if (shopkeeper != null) {
-				// editor click
-				EditorClickResult result = shopkeeper.onEditorClick(event);
-				if (result == EditorClickResult.DELETE_SHOPKEEPER) {
-					// close inventories
-					event.getWhoClicked().closeInventory();
-					editing.remove(event.getWhoClicked().getName());
-					closeTradingForShopkeeper(entityId);
-					
-					// return egg
-					if (deletingPlayerShopReturnsEgg && shopkeeper instanceof PlayerShopkeeper) {
-						event.getWhoClicked().getInventory().addItem(new ItemStack(Material.MONSTER_EGG, 1, (short)120));
+		if (event.getInventory().getTitle().equals(editorTitle)) {
+			if (editing.containsKey(event.getWhoClicked().getName())) {
+				// get the shopkeeper being edited
+				int entityId = editing.get(event.getWhoClicked().getName());
+				Shopkeeper shopkeeper = activeShopkeepers.get(entityId);
+				if (shopkeeper != null) {
+					// editor click
+					EditorClickResult result = shopkeeper.onEditorClick(event);
+					if (result == EditorClickResult.DELETE_SHOPKEEPER) {
+						// close inventories
+						event.getWhoClicked().closeInventory();
+						editing.remove(event.getWhoClicked().getName());
+						closeTradingForShopkeeper(entityId);
+						
+						// return egg
+						if (deletingPlayerShopReturnsEgg && shopkeeper instanceof PlayerShopkeeper) {
+							event.getWhoClicked().getInventory().addItem(new ItemStack(Material.MONSTER_EGG, 1, (short)120));
+						}
+						
+						// remove shopkeeper
+						activeShopkeepers.remove(entityId);
+						allShopkeepersByChunk.get(shopkeeper.getChunk()).remove(shopkeeper);
+						save();
+					} else if (result == EditorClickResult.DONE_EDITING) {
+						// end the editing session
+						event.getWhoClicked().closeInventory();
+						editing.remove(event.getWhoClicked().getName());
+						closeTradingForShopkeeper(entityId);
+						save();
+					} else if (result == EditorClickResult.SAVE_AND_CONTINUE) {
+						save();
 					}
-					
-					// remove shopkeeper
-					activeShopkeepers.remove(entityId);
-					allShopkeepersByChunk.get(shopkeeper.getChunk()).remove(shopkeeper);
-					save();
-				} else if (result == EditorClickResult.DONE_EDITING) {
-					// end the editing session
+				} else {
+					event.setCancelled(true);
 					event.getWhoClicked().closeInventory();
-					editing.remove(event.getWhoClicked().getName());
-					closeTradingForShopkeeper(entityId);
-					save();
-				} else if (result == EditorClickResult.SAVE_AND_CONTINUE) {
-					save();
 				}
+			} else {
+				event.setCancelled(true);
+				event.getWhoClicked().closeInventory();
 			}
 		}
 		// purchase click

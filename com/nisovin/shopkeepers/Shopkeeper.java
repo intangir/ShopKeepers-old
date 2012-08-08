@@ -16,6 +16,7 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.craftbukkit.entity.CraftVillager;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -30,6 +31,7 @@ public abstract class Shopkeeper {
 	protected int z;
 	protected int profession;
 	protected Villager villager;
+	protected String uuid;
 
 	Shopkeeper(ConfigurationSection config) {
 		load(config);
@@ -59,6 +61,9 @@ public abstract class Shopkeeper {
 		y = config.getInt("y");
 		z = config.getInt("z");
 		profession = config.getInt("prof");
+		if (config.contains("uuid")) {
+			uuid = config.getString("uuid");
+		}
 	}
 	
 	/**
@@ -71,6 +76,9 @@ public abstract class Shopkeeper {
 		config.set("y", y);
 		config.set("z", z);
 		config.set("prof", profession);
+		if (villager != null) {
+			config.set("uuid", villager.getUniqueId().toString());
+		}
 	}
 	
 	/**
@@ -78,8 +86,24 @@ public abstract class Shopkeeper {
 	 * trade recipes and overwrites the villager AI.
 	 */
 	public void spawn() {
+		// prepare location
 		World w = Bukkit.getWorld(world);
-		villager = w.spawn(new Location(w, x + .5, y + .5, z + .5), Villager.class);
+		Location loc = new Location(w, x + .5, y + .5, z + .5);
+		// find old villager
+		if (uuid != null && !uuid.isEmpty()) {
+			Entity[] entities = loc.getChunk().getEntities();
+			for (Entity e : entities) {
+				if (e instanceof Villager && e.getUniqueId().toString().equalsIgnoreCase(uuid)) {
+					villager = (Villager)e;
+					teleport();
+					break;
+				}
+			}
+		}
+		// spawn villager
+		if (villager != null) {
+			villager = w.spawn(loc, Villager.class);
+		}
 		setProfession();
 		overwriteAI();
 	}

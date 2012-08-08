@@ -16,23 +16,23 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-public class AltPlayerShopkeeper extends PlayerShopkeeper {
+public class CustomQuantityPlayerShopkeeper extends PlayerShopkeeper {
 
 	private Map<SaleType, Cost> costs;
 	
-	AltPlayerShopkeeper(ConfigurationSection config) {
+	CustomQuantityPlayerShopkeeper(ConfigurationSection config) {
 		super(config);
-	}	
+	}
 
-	public AltPlayerShopkeeper(Player owner, Block chest, Location location, int profession) {
+	public CustomQuantityPlayerShopkeeper(Player owner, Block chest, Location location, int profession) {
 		super(owner, chest, location, profession);
-		this.costs = new HashMap<AltPlayerShopkeeper.SaleType, AltPlayerShopkeeper.Cost>();
+		this.costs = new HashMap<CustomQuantityPlayerShopkeeper.SaleType, CustomQuantityPlayerShopkeeper.Cost>();
 	}
 	
 	@Override
 	public void load(ConfigurationSection config) {
 		super.load(config);		
-		costs = new HashMap<AltPlayerShopkeeper.SaleType, AltPlayerShopkeeper.Cost>();
+		costs = new HashMap<CustomQuantityPlayerShopkeeper.SaleType, CustomQuantityPlayerShopkeeper.Cost>();
 		ConfigurationSection costsSection = config.getConfigurationSection("costs");
 		for (String key : costsSection.getKeys(false)) {
 			ConfigurationSection itemSection = costsSection.getConfigurationSection(key);

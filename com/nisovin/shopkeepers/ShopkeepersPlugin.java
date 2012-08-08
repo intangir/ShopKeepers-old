@@ -276,9 +276,9 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 		// create the shopkeeper (and spawn it)
 		Shopkeeper shopkeeper;
 		if (allowCustomQuantities) {
-			shopkeeper = new AltPlayerShopkeeper(player, chest, location, profession);
+			shopkeeper = new CustomQuantityPlayerShopkeeper(player, chest, location, profession);
 		} else {
-			shopkeeper = new PlayerShopkeeper(player, chest, location, profession);
+			shopkeeper = new FixedQuantityPlayerShopkeeper(player, chest, location, profession);
 		}
 		shopkeeper.spawn();
 		activeShopkeepers.put(shopkeeper.getEntityId(), shopkeeper);
@@ -463,7 +463,7 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 				}
 			}
 		}		
-	}	
+	}
 	
 	@EventHandler(priority=EventPriority.LOWEST)
 	void onChunkLoad(ChunkLoadEvent event) {
@@ -583,9 +583,9 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 			Shopkeeper shopkeeper = null;
 			if (section.contains("owner")) {
 				if (allowCustomQuantities) {
-					shopkeeper = new AltPlayerShopkeeper(section);
+					shopkeeper = new CustomQuantityPlayerShopkeeper(section);
 				} else {
-					shopkeeper = new PlayerShopkeeper(section);
+					shopkeeper = new FixedQuantityPlayerShopkeeper(section);
 				}
 			} else {
 				shopkeeper = new AdminShopkeeper(section);

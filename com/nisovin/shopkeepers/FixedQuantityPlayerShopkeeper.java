@@ -18,7 +18,6 @@ import org.bukkit.inventory.ItemStack;
 public class FixedQuantityPlayerShopkeeper extends PlayerShopkeeper {
 
 	protected HashMap<ItemType, Integer> costs;
-	private int unpaid = 0;
 	
 	FixedQuantityPlayerShopkeeper(ConfigurationSection config) {
 		super(config);
@@ -149,8 +148,21 @@ public class FixedQuantityPlayerShopkeeper extends PlayerShopkeeper {
 				} else {
 					int highCost = cost / ShopkeepersPlugin.highCurrencyValue;
 					int lowCost = cost % ShopkeepersPlugin.highCurrencyValue;
-					addToInventory(new ItemStack(ShopkeepersPlugin.highCurrencyItem, highCost, ShopkeepersPlugin.highCurrencyData), contents);
-					addToInventory(new ItemStack(ShopkeepersPlugin.currencyItem, lowCost, ShopkeepersPlugin.currencyData), contents);
+					boolean added = false;
+					if (highCost > 0) {
+						added = addToInventory(new ItemStack(ShopkeepersPlugin.highCurrencyItem, highCost, ShopkeepersPlugin.highCurrencyData), contents);
+						if (!added) {
+							event.setCancelled(true);
+							return;
+						}
+					}
+					if (lowCost > 0) {
+						added = addToInventory(new ItemStack(ShopkeepersPlugin.currencyItem, lowCost, ShopkeepersPlugin.currencyData), contents);
+						if (!added) {
+							event.setCancelled(true);
+							return;
+						}
+					}
 				}
 				inv.setContents(contents);
 				return;
@@ -160,39 +172,6 @@ public class FixedQuantityPlayerShopkeeper extends PlayerShopkeeper {
 		// item not found
 		event.setCancelled(true);
 		event.getWhoClicked().closeInventory();
-	}	
-
-	private void addToInventory(ItemStack item, ItemStack[] contents) {
-		if (unpaid > 0 && item.getTypeId() == ShopkeepersPlugin.currencyItem) {
-			// add previously unpaid amount to this item
-			int amt = item.getAmount() + unpaid;
-			if (amt > item.getMaxStackSize()) {
-				unpaid = amt - item.getMaxStackSize();
-				item.setAmount(item.getMaxStackSize());
-			} else {
-				item.setAmount(amt);
-				unpaid = 0;
-			}
-		}
-		for (int i = 0; i < contents.length; i++) {
-			if (contents[i] == null) {
-				contents[i] = item;
-				return;
-			} else if (contents[i].getTypeId() == item.getTypeId() && contents[i].getDurability() == item.getDurability() && contents[i].getAmount() != contents[i].getMaxStackSize()) {
-				int amt = contents[i].getAmount() + item.getAmount();
-				if (amt <= contents[i].getMaxStackSize()) {
-					contents[i].setAmount(amt);
-					return;
-				} else {
-					item.setAmount(amt - contents[i].getMaxStackSize());
-					contents[i].setAmount(contents[i].getMaxStackSize());
-				}
-			}
-		}
-		if (item.getAmount() > 0 && item.getTypeId() == ShopkeepersPlugin.currencyItem) {
-			// save unpaid amount
-			unpaid += item.getAmount();
-		}
 	}
 	
 	private List<ItemType> getTypesFromChest() {

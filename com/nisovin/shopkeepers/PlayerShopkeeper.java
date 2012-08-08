@@ -232,4 +232,43 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 		return cost;
 	}
 	
+	protected boolean removeFromInventory(ItemStack item, ItemStack[] contents) {
+		item = item.clone();
+		for (int i = 0; i < contents.length; i++) {
+			if (contents[i] != null && contents[i].getTypeId() == item.getTypeId() && contents[i].getDurability() == contents[i].getDurability()) {
+				if (contents[i].getAmount() > item.getAmount()) {
+					contents[i].setAmount(contents[i].getAmount() - item.getAmount());
+					return true;
+				} else if (contents[i].getAmount() == item.getAmount()) {
+					contents[i] = null;
+					return true;
+				} else {
+					item.setAmount(item.getAmount() - contents[i].getAmount());
+					contents[i] = null;
+				}
+			}
+		}
+		return false;
+	}
+	
+	protected boolean addToInventory(ItemStack item, ItemStack[] contents) {
+		item = item.clone();
+		for (int i = 0; i < contents.length; i++) {
+			if (contents[i] == null) {
+				contents[i] = item;
+				return true;
+			} else if (contents[i].getTypeId() == item.getTypeId() && contents[i].getDurability() == item.getDurability() && contents[i].getAmount() != contents[i].getMaxStackSize()) {
+				int amt = contents[i].getAmount() + item.getAmount();
+				if (amt <= contents[i].getMaxStackSize()) {
+					contents[i].setAmount(amt);
+					return true;
+				} else {
+					item.setAmount(amt - contents[i].getMaxStackSize());
+					contents[i].setAmount(contents[i].getMaxStackSize());
+				}
+			}
+		}
+		return false;
+	}
+	
 }

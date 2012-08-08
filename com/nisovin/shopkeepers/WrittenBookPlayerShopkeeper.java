@@ -80,9 +80,6 @@ public class WrittenBookPlayerShopkeeper extends PlayerShopkeeper {
 		Inventory inv = Bukkit.createInventory(player, 27, ShopkeepersPlugin.editorTitle);
 		
 		List<ItemStack> books = getBooksFromChest();
-		if (books.size() == 0) {
-			return false;
-		}
 		
 		for (int i = 0; i < books.size() && i < 8; i++) {
 			String title = getTitleOfBook(books.get(i));
@@ -230,25 +227,6 @@ public class WrittenBookPlayerShopkeeper extends PlayerShopkeeper {
 		if (chest.getType() == Material.CHEST) {
 			Inventory inv = ((Chest)chest.getState()).getInventory();
 			return inv.contains(Material.BOOK_AND_QUILL);
-		}
-		return false;
-	}
-	
-	private boolean addToInventory(ItemStack item, ItemStack[] contents) {
-		for (int i = 0; i < contents.length; i++) {
-			if (contents[i] == null) {
-				contents[i] = item;
-				return true;
-			} else if (contents[i].getTypeId() == item.getTypeId() && contents[i].getDurability() == item.getDurability() && contents[i].getAmount() != contents[i].getMaxStackSize()) {
-				int amt = contents[i].getAmount() + item.getAmount();
-				if (amt <= contents[i].getMaxStackSize()) {
-					contents[i].setAmount(amt);
-					return true;
-				} else {
-					item.setAmount(amt - contents[i].getMaxStackSize());
-					contents[i].setAmount(contents[i].getMaxStackSize());
-				}
-			}
 		}
 		return false;
 	}

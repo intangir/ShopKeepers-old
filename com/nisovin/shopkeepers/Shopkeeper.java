@@ -93,7 +93,7 @@ public abstract class Shopkeeper {
 		if (uuid != null && !uuid.isEmpty()) {
 			Entity[] entities = loc.getChunk().getEntities();
 			for (Entity e : entities) {
-				if (e instanceof Villager && e.getUniqueId().toString().equalsIgnoreCase(uuid)) {
+				if (e instanceof Villager && e.getUniqueId().toString().equalsIgnoreCase(uuid) && !e.isDead()) {
 					villager = (Villager)e;
 					teleport();
 					break;
@@ -101,7 +101,7 @@ public abstract class Shopkeeper {
 			}
 		}
 		// spawn villager
-		if (villager != null) {
+		if (villager == null) {
 			villager = w.spawn(loc, Villager.class);
 		}
 		setProfession();

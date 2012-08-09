@@ -1,4 +1,4 @@
-package com.nisovin.shopkeepers;
+package com.nisovin.shopkeepers.shoptypes;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -9,6 +9,10 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+
+import com.nisovin.shopkeepers.EditorClickResult;
+import com.nisovin.shopkeepers.Settings;
+import com.nisovin.shopkeepers.Shopkeeper;
 
 
 /**
@@ -105,7 +109,7 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 			// change low cost
 			ItemStack item = event.getCurrentItem();
 			if (item != null) {
-				if (item.getTypeId() == ShopkeepersPlugin.currencyItem) {
+				if (item.getTypeId() == Settings.currencyItem) {
 					int amount = item.getAmount();
 					if (event.isShiftClick() && event.isLeftClick()) {
 						amount += 10;
@@ -118,23 +122,23 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 					}
 					if (amount > 64) amount = 64;
 					if (amount <= 0) {
-						item.setTypeId(ShopkeepersPlugin.zeroItem);
+						item.setTypeId(Settings.zeroItem);
 						item.setDurability((short)0);
 						item.setAmount(1);
 					} else {
 						item.setAmount(amount);
 					}
-				} else if (item.getTypeId() == ShopkeepersPlugin.zeroItem) {
-					item.setTypeId(ShopkeepersPlugin.currencyItem);
-					item.setDurability(ShopkeepersPlugin.currencyData);
+				} else if (item.getTypeId() == Settings.zeroItem) {
+					item.setTypeId(Settings.currencyItem);
+					item.setDurability(Settings.currencyData);
 					item.setAmount(1);
 				}
 			}
 		} else if (event.getRawSlot() >= 9 && event.getRawSlot() <= 16) {
 			// change high cost
 			ItemStack item = event.getCurrentItem();
-			if (item != null && ShopkeepersPlugin.highCurrencyItem > 0) {
-				if (item.getTypeId() == ShopkeepersPlugin.highCurrencyItem) {
+			if (item != null && Settings.highCurrencyItem > 0) {
+				if (item.getTypeId() == Settings.highCurrencyItem) {
 					int amount = item.getAmount();
 					if (event.isShiftClick() && event.isLeftClick()) {
 						amount += 10;
@@ -147,15 +151,15 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 					}
 					if (amount > 64) amount = 64;
 					if (amount <= 0) {
-						item.setTypeId(ShopkeepersPlugin.highZeroItem);
+						item.setTypeId(Settings.highZeroItem);
 						item.setDurability((short)0);
 						item.setAmount(1);
 					} else {
 						item.setAmount(amount);
 					}
-				} else if (item.getTypeId() == ShopkeepersPlugin.highZeroItem) {
-					item.setTypeId(ShopkeepersPlugin.highCurrencyItem);
-					item.setDurability(ShopkeepersPlugin.highCurrencyData);
+				} else if (item.getTypeId() == Settings.highZeroItem) {
+					item.setTypeId(Settings.highCurrencyItem);
+					item.setDurability(Settings.highCurrencyData);
 					item.setAmount(1);
 				}
 			}
@@ -171,64 +175,64 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 	protected abstract void saveEditor(Inventory inv);	
 
 	protected void setRecipeCost(ItemStack[] recipe, int cost) {
-		if (ShopkeepersPlugin.highCurrencyItem > 0 && cost > ShopkeepersPlugin.highCurrencyMinCost) {
-			int highCost = cost / ShopkeepersPlugin.highCurrencyValue;
-			int lowCost = cost % ShopkeepersPlugin.highCurrencyValue;
+		if (Settings.highCurrencyItem > 0 && cost > Settings.highCurrencyMinCost) {
+			int highCost = cost / Settings.highCurrencyValue;
+			int lowCost = cost % Settings.highCurrencyValue;
 			if (highCost > 0) {
-				recipe[0] = new ItemStack(ShopkeepersPlugin.highCurrencyItem, highCost, ShopkeepersPlugin.highCurrencyData);
+				recipe[0] = new ItemStack(Settings.highCurrencyItem, highCost, Settings.highCurrencyData);
 			}
 			if (lowCost > 0) {
-				recipe[1] = new ItemStack(ShopkeepersPlugin.currencyItem, lowCost, ShopkeepersPlugin.currencyData);
+				recipe[1] = new ItemStack(Settings.currencyItem, lowCost, Settings.currencyData);
 			}
 		} else {
-			recipe[0] = new ItemStack(ShopkeepersPlugin.currencyItem, cost, ShopkeepersPlugin.currencyData);
+			recipe[0] = new ItemStack(Settings.currencyItem, cost, Settings.currencyData);
 		}
 	}
 	
 	protected void setEditColumnCost(Inventory inv, int column, int cost) {
 		if (cost > 0) {
-			if (ShopkeepersPlugin.highCurrencyItem > 0 && cost > ShopkeepersPlugin.highCurrencyMinCost) {
-				int highCost = cost / ShopkeepersPlugin.highCurrencyValue;
-				int lowCost = cost % ShopkeepersPlugin.highCurrencyValue;
+			if (Settings.highCurrencyItem > 0 && cost > Settings.highCurrencyMinCost) {
+				int highCost = cost / Settings.highCurrencyValue;
+				int lowCost = cost % Settings.highCurrencyValue;
 				if (highCost > 0) {
-					inv.setItem(column + 9, new ItemStack(ShopkeepersPlugin.highCurrencyItem, highCost, ShopkeepersPlugin.highCurrencyData));
+					inv.setItem(column + 9, new ItemStack(Settings.highCurrencyItem, highCost, Settings.highCurrencyData));
 				} else {
-					inv.setItem(column + 9, new ItemStack(ShopkeepersPlugin.highZeroItem));
+					inv.setItem(column + 9, new ItemStack(Settings.highZeroItem));
 				}
 				if (lowCost > 0) {
-					inv.setItem(column + 18, new ItemStack(ShopkeepersPlugin.currencyItem, lowCost, ShopkeepersPlugin.currencyData));
+					inv.setItem(column + 18, new ItemStack(Settings.currencyItem, lowCost, Settings.currencyData));
 				} else {
-					inv.setItem(column + 18, new ItemStack(ShopkeepersPlugin.zeroItem));
+					inv.setItem(column + 18, new ItemStack(Settings.zeroItem));
 				}
 			} else {
-				inv.setItem(column + 18, new ItemStack(ShopkeepersPlugin.currencyItem, cost, ShopkeepersPlugin.currencyData));
-				if (ShopkeepersPlugin.highCurrencyItem > 0) {
-					inv.setItem(column + 9, new ItemStack(ShopkeepersPlugin.highZeroItem));
+				inv.setItem(column + 18, new ItemStack(Settings.currencyItem, cost, Settings.currencyData));
+				if (Settings.highCurrencyItem > 0) {
+					inv.setItem(column + 9, new ItemStack(Settings.highZeroItem));
 				}
 			}
 		} else {
-			inv.setItem(column + 18, new ItemStack(ShopkeepersPlugin.zeroItem));
-			if (ShopkeepersPlugin.highCurrencyItem > 0) {
-				inv.setItem(column + 9, new ItemStack(ShopkeepersPlugin.highZeroItem));
+			inv.setItem(column + 18, new ItemStack(Settings.zeroItem));
+			if (Settings.highCurrencyItem > 0) {
+				inv.setItem(column + 9, new ItemStack(Settings.highZeroItem));
 			}
 		}
 	}
 	
 	protected void setActionButtons(Inventory inv) {
-		inv.setItem(8, new ItemStack(ShopkeepersPlugin.saveItem));
+		inv.setItem(8, new ItemStack(Settings.saveItem));
 		inv.setItem(17, new ItemStack(Material.WOOL, 1, getProfessionWoolColor()));
-		inv.setItem(26, new ItemStack(ShopkeepersPlugin.deleteItem));
+		inv.setItem(26, new ItemStack(Settings.deleteItem));
 	}
 	
 	protected int getCostFromColumn(Inventory inv, int column) {
 		ItemStack lowCostItem = inv.getItem(column + 18);
 		ItemStack highCostItem = inv.getItem(column + 9);
 		int cost = 0;
-		if (lowCostItem != null && lowCostItem.getTypeId() == ShopkeepersPlugin.currencyItem && lowCostItem.getAmount() > 0) {
+		if (lowCostItem != null && lowCostItem.getTypeId() == Settings.currencyItem && lowCostItem.getAmount() > 0) {
 			cost += lowCostItem.getAmount();
 		}
-		if (ShopkeepersPlugin.highCurrencyItem > 0 && highCostItem != null && highCostItem.getTypeId() == ShopkeepersPlugin.highCurrencyItem && highCostItem.getAmount() > 0) {
-			cost += highCostItem.getAmount() * ShopkeepersPlugin.highCurrencyValue;
+		if (Settings.highCurrencyItem > 0 && highCostItem != null && highCostItem.getTypeId() == Settings.highCurrencyItem && highCostItem.getAmount() > 0) {
+			cost += highCostItem.getAmount() * Settings.highCurrencyValue;
 		}
 		return cost;
 	}

@@ -1,4 +1,4 @@
-package com.nisovin.shopkeepers;
+package com.nisovin.shopkeepers.shoptypes;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,6 +16,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+
+import com.nisovin.shopkeepers.EditorClickResult;
+import com.nisovin.shopkeepers.Settings;
+import com.nisovin.shopkeepers.ShopkeeperType;
 
 
 public class CustomQuantityPlayerShopkeeper extends PlayerShopkeeper {
@@ -92,7 +96,7 @@ public class CustomQuantityPlayerShopkeeper extends PlayerShopkeeper {
 	
 	@Override
 	public boolean onPlayerEdit(Player player) {
-		Inventory inv = Bukkit.createInventory(player, 27, ShopkeepersPlugin.editorTitle);
+		Inventory inv = Bukkit.createInventory(player, 27, Settings.editorTitle);
 		
 		// add the sale types
 		Map<SaleType, Integer> typesFromChest = getItemsFromChest();
@@ -202,25 +206,25 @@ public class CustomQuantityPlayerShopkeeper extends PlayerShopkeeper {
 		}
 		
 		// add earnings to chest
-		if (ShopkeepersPlugin.highCurrencyItem <= 0 || cost.cost <= ShopkeepersPlugin.highCurrencyMinCost) {
-			boolean added = addToInventory(new ItemStack(ShopkeepersPlugin.currencyItem, cost.cost, ShopkeepersPlugin.currencyData), contents);
+		if (Settings.highCurrencyItem <= 0 || cost.cost <= Settings.highCurrencyMinCost) {
+			boolean added = addToInventory(new ItemStack(Settings.currencyItem, cost.cost, Settings.currencyData), contents);
 			if (!added) {
 				event.setCancelled(true);
 				return;
 			}
 		} else {
-			int highCost = cost.cost / ShopkeepersPlugin.highCurrencyValue;
-			int lowCost = cost.cost % ShopkeepersPlugin.highCurrencyValue;
+			int highCost = cost.cost / Settings.highCurrencyValue;
+			int lowCost = cost.cost % Settings.highCurrencyValue;
 			boolean added = false;
 			if (highCost > 0) {
-				added = addToInventory(new ItemStack(ShopkeepersPlugin.highCurrencyItem, highCost, ShopkeepersPlugin.highCurrencyData), contents);
+				added = addToInventory(new ItemStack(Settings.highCurrencyItem, highCost, Settings.highCurrencyData), contents);
 				if (!added) {
 					event.setCancelled(true);
 					return;
 				}
 			}
 			if (lowCost > 0) {
-				added = addToInventory(new ItemStack(ShopkeepersPlugin.currencyItem, lowCost, ShopkeepersPlugin.currencyData), contents);
+				added = addToInventory(new ItemStack(Settings.currencyItem, lowCost, Settings.currencyData), contents);
 				if (!added) {
 					event.setCancelled(true);
 					return;
@@ -239,7 +243,7 @@ public class CustomQuantityPlayerShopkeeper extends PlayerShopkeeper {
 			Inventory inv = ((Chest)chest.getState()).getInventory();
 			ItemStack[] contents = inv.getContents();
 			for (ItemStack item : contents) {
-				if (item != null && item.getType() != Material.AIR && item.getTypeId() != ShopkeepersPlugin.currencyItem && item.getTypeId() != ShopkeepersPlugin.highCurrencyItem && item.getType() != Material.WRITTEN_BOOK && item.getEnchantments().size() == 0) {
+				if (item != null && item.getType() != Material.AIR && item.getTypeId() != Settings.currencyItem && item.getTypeId() != Settings.highCurrencyItem && item.getType() != Material.WRITTEN_BOOK && item.getEnchantments().size() == 0) {
 					SaleType si = new SaleType(item);
 					if (map.containsKey(si)) {
 						map.put(si, map.get(si) + item.getAmount());

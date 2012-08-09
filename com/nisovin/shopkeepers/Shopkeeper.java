@@ -232,7 +232,7 @@ public abstract class Shopkeeper {
 		try {
 			EntityVillager ev = ((CraftVillager)villager).getHandle();
 			
-			Field recipeListField = EntityVillager.class.getDeclaredField(ShopkeepersPlugin.recipeListVar);
+			Field recipeListField = EntityVillager.class.getDeclaredField(Settings.recipeListVar);
 			recipeListField.setAccessible(true);
 			MerchantRecipeList recipeList = (MerchantRecipeList)recipeListField.get(ev);
 			if (recipeList == null) {

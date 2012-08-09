@@ -1,4 +1,4 @@
-package com.nisovin.shopkeepers;
+package com.nisovin.shopkeepers.shoptypes;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,6 +22,11 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+
+import com.nisovin.shopkeepers.EditorClickResult;
+import com.nisovin.shopkeepers.Settings;
+import com.nisovin.shopkeepers.Shopkeeper;
+import com.nisovin.shopkeepers.ShopkeeperType;
 
 
 /**
@@ -93,7 +98,7 @@ public class AdminShopkeeper extends Shopkeeper {
 	public boolean onEdit(Player player) {
 		if (player.hasPermission("shopkeeper.admin")) {
 			// get the shopkeeper's trade options
-			Inventory inv = Bukkit.createInventory(player, 27, ShopkeepersPlugin.editorTitle);
+			Inventory inv = Bukkit.createInventory(player, 27, Settings.editorTitle);
 			List<ItemStack[]> recipes = getRecipes();
 			for (int i = 0; i < recipes.size() && i < 8; i++) {
 				ItemStack[] recipe = recipes.get(i);
@@ -102,9 +107,9 @@ public class AdminShopkeeper extends Shopkeeper {
 				inv.setItem(i + 18, recipe[2]);
 			}
 			// add the special buttons
-			inv.setItem(8, new ItemStack(ShopkeepersPlugin.saveItem));
+			inv.setItem(8, new ItemStack(Settings.saveItem));
 			inv.setItem(17, new ItemStack(Material.WOOL, 1, getProfessionWoolColor()));
-			inv.setItem(26, new ItemStack(ShopkeepersPlugin.deleteItem));
+			inv.setItem(26, new ItemStack(Settings.deleteItem));
 			// show editing inventory
 			player.openInventory(inv);
 			return true;

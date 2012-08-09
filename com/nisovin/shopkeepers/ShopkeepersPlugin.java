@@ -47,6 +47,12 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import com.nisovin.shopkeepers.events.CreatePlayerShopkeeperEvent;
 import com.nisovin.shopkeepers.events.OpenTradeEvent;
+import com.nisovin.shopkeepers.shoptypes.AdminShopkeeper;
+import com.nisovin.shopkeepers.shoptypes.BuyingPlayerShopkeeper;
+import com.nisovin.shopkeepers.shoptypes.CustomQuantityPlayerShopkeeper;
+import com.nisovin.shopkeepers.shoptypes.FixedQuantityPlayerShopkeeper;
+import com.nisovin.shopkeepers.shoptypes.PlayerShopkeeper;
+import com.nisovin.shopkeepers.shoptypes.WrittenBookPlayerShopkeeper;
 
 
 public class ShopkeepersPlugin extends JavaPlugin implements Listener {
@@ -74,21 +80,7 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 	private boolean allowPlayerBookShop = true;
 	private boolean protectChests = true;
 	private int maxShopsPerPlayer = 0;
-	
-	static String editorTitle = "Shopkeeper Editor";
-	static int saveItem = Material.EMERALD_BLOCK.getId();
-	static int deleteItem = Material.FIRE.getId();
-	
-	static int currencyItem = Material.EMERALD.getId();
-	static short currencyData = 0;
-	static int zeroItem = Material.SLIME_BALL.getId();
-	
-	static int highCurrencyItem = Material.EMERALD_BLOCK.getId();
-	static short highCurrencyData = 0;
-	static int highCurrencyValue = 9;
-	static int highCurrencyMinCost = 20;
-	static int highZeroItem = Material.SLIME_BALL.getId();
-		
+			
 	private String msgSelectedNormalShop = "&aNormal shopkeeper selected (sells items to players).";
 	private String msgSelectedBookShop = "&aBook shopkeeper selected (sell books).";
 	private String msgSelectedBuyShop = "&aBuying shopkeeper selected (buys items from players).";
@@ -105,8 +97,6 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 	private String msgShopInUse = "&aSomeone else is already purchasing from this shopkeeper.";
 	
 	BlockFace[] faces = {BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST};
-	
-	static String recipeListVar = "i";
 	
 	@Override
 	public void onEnable() {
@@ -133,20 +123,20 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 		protectChests = config.getBoolean("protect-chests", protectChests);
 		maxShopsPerPlayer = config.getInt("max-shops-per-player", maxShopsPerPlayer);
 		
-		editorTitle = config.getString("editor-title", editorTitle);
-		saveItem = config.getInt("save-item", saveItem);
-		deleteItem = config.getInt("delete-item", deleteItem);
+		Settings.editorTitle = config.getString("editor-title", Settings.editorTitle);
+		Settings.saveItem = config.getInt("save-item", Settings.saveItem);
+		Settings.deleteItem = config.getInt("delete-item", Settings.deleteItem);
 		
-		currencyItem = config.getInt("currency-item", currencyItem);
-		currencyData = (short)config.getInt("currency-item-data", currencyData);
-		zeroItem = config.getInt("zero-item", zeroItem);
+		Settings.currencyItem = config.getInt("currency-item", Settings.currencyItem);
+		Settings.currencyData = (short)config.getInt("currency-item-data", Settings.currencyData);
+		Settings.zeroItem = config.getInt("zero-item", Settings.zeroItem);
 		
-		highCurrencyItem = config.getInt("high-currency-item", highCurrencyItem);
-		highCurrencyData = (short)config.getInt("high-currency-item-data", highCurrencyData);
-		highCurrencyValue = config.getInt("high-currency-value", highCurrencyValue);
-		highCurrencyMinCost = config.getInt("high-currency-min-cost", highCurrencyMinCost);
-		highZeroItem = config.getInt("high-zero-item", highZeroItem);
-		if (highCurrencyValue <= 0) highCurrencyItem = 0;
+		Settings.highCurrencyItem = config.getInt("high-currency-item", Settings.highCurrencyItem);
+		Settings.highCurrencyData = (short)config.getInt("high-currency-item-data", Settings.highCurrencyData);
+		Settings.highCurrencyValue = config.getInt("high-currency-value", Settings.highCurrencyValue);
+		Settings.highCurrencyMinCost = config.getInt("high-currency-min-cost", Settings.highCurrencyMinCost);
+		Settings.highZeroItem = config.getInt("high-zero-item", Settings.highZeroItem);
+		if (Settings.highCurrencyValue <= 0) Settings.highCurrencyItem = 0;
 		
 		msgSelectedNormalShop = config.getString("msg-selected-normal-shop", msgSelectedNormalShop);
 		msgSelectedBookShop = config.getString("msg-selected-book-shop", msgSelectedBookShop);
@@ -163,7 +153,7 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 		msgTooManyShops = config.getString("msg-too-many-shops", msgTooManyShops);
 		msgShopInUse = config.getString("msg-shop-in-use", msgShopInUse);
 		
-		recipeListVar = config.getString("recipe-list-var", recipeListVar);
+		Settings.recipeListVar = config.getString("recipe-list-var", Settings.recipeListVar);
 				
 		// load shopkeeper saved data
 		load();
@@ -409,11 +399,7 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 		return shopkeeper;
 	}
 	
-	/**
-	 * Adds a shopkeeper to the plugin. This does not spawn the shopkeeper, only adds it to the shopkeeper list.
-	 * @param shopkeeper the shopkeeper to add
-	 */
-	public void addShopkeeper(Shopkeeper shopkeeper) {
+	void addShopkeeper(Shopkeeper shopkeeper) {
 		// add to chunk list
 		List<Shopkeeper> list = allShopkeepersByChunk.get(shopkeeper.getChunk());
 		if (list == null) {
@@ -501,7 +487,7 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 			int entityId = editing.remove(name);
 			Shopkeeper shopkeeper = activeShopkeepers.get(entityId);
 			if (shopkeeper != null) {
-				if (event.getInventory().getTitle().equals(editorTitle)) {
+				if (event.getInventory().getTitle().equals(Settings.editorTitle)) {
 					shopkeeper.onEditorClose(event);
 					closeTradingForShopkeeper(entityId);
 				}
@@ -524,7 +510,7 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 	@EventHandler
 	void onInventoryClick(InventoryClickEvent event) {
 		// shopkeeper editor click
-		if (event.getInventory().getTitle().equals(editorTitle)) {
+		if (event.getInventory().getTitle().equals(Settings.editorTitle)) {
 			if (editing.containsKey(event.getWhoClicked().getName())) {
 				// get the shopkeeper being edited
 				int entityId = editing.get(event.getWhoClicked().getName());

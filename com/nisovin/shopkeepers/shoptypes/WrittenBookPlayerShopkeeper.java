@@ -1,4 +1,4 @@
-package com.nisovin.shopkeepers;
+package com.nisovin.shopkeepers.shoptypes;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,6 +18,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+
+import com.nisovin.shopkeepers.Settings;
+import com.nisovin.shopkeepers.ShopkeeperType;
 
 
 public class WrittenBookPlayerShopkeeper extends PlayerShopkeeper {
@@ -83,7 +86,7 @@ public class WrittenBookPlayerShopkeeper extends PlayerShopkeeper {
 
 	@Override
 	public boolean onPlayerEdit(Player player) {
-		Inventory inv = Bukkit.createInventory(player, 27, ShopkeepersPlugin.editorTitle);
+		Inventory inv = Bukkit.createInventory(player, 27, Settings.editorTitle);
 		
 		List<ItemStack> books = getBooksFromChest();
 		
@@ -172,18 +175,18 @@ public class WrittenBookPlayerShopkeeper extends PlayerShopkeeper {
 		}
 		
 		// add earnings to chest
-		int highCost = cost / ShopkeepersPlugin.highCurrencyValue;
-		int lowCost = cost % ShopkeepersPlugin.highCurrencyValue;
+		int highCost = cost / Settings.highCurrencyValue;
+		int lowCost = cost % Settings.highCurrencyValue;
 		boolean added = false;
 		if (highCost > 0) {
-			added = addToInventory(new ItemStack(ShopkeepersPlugin.highCurrencyItem, highCost, ShopkeepersPlugin.highCurrencyData), contents);
+			added = addToInventory(new ItemStack(Settings.highCurrencyItem, highCost, Settings.highCurrencyData), contents);
 			if (!added) {
 				event.setCancelled(true);
 				return;
 			}
 		}
 		if (lowCost > 0) {
-			added = addToInventory(new ItemStack(ShopkeepersPlugin.currencyItem, lowCost, ShopkeepersPlugin.currencyData), contents);
+			added = addToInventory(new ItemStack(Settings.currencyItem, lowCost, Settings.currencyData), contents);
 			if (!added) {
 				event.setCancelled(true);
 				return;

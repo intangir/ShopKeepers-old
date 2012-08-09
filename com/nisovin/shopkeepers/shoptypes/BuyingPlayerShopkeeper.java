@@ -1,4 +1,4 @@
-package com.nisovin.shopkeepers;
+package com.nisovin.shopkeepers.shoptypes;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,6 +15,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+
+import com.nisovin.shopkeepers.EditorClickResult;
+import com.nisovin.shopkeepers.Settings;
+import com.nisovin.shopkeepers.ShopkeeperType;
 
 
 public class BuyingPlayerShopkeeper extends PlayerShopkeeper {
@@ -82,7 +86,7 @@ public class BuyingPlayerShopkeeper extends PlayerShopkeeper {
 				if (chestTotal >= cost.cost) {
 					ItemStack[] recipe = new ItemStack[3];
 					recipe[0] = new ItemStack(type.id, cost.amount, type.data);
-					recipe[2] = new ItemStack(ShopkeepersPlugin.currencyItem, cost.cost, ShopkeepersPlugin.currencyData);
+					recipe[2] = new ItemStack(Settings.currencyItem, cost.cost, Settings.currencyData);
 					recipes.add(recipe);
 				}
 			}
@@ -92,7 +96,7 @@ public class BuyingPlayerShopkeeper extends PlayerShopkeeper {
 
 	@Override
 	protected boolean onPlayerEdit(Player player) {
-		Inventory inv = Bukkit.createInventory(player, 27, ShopkeepersPlugin.editorTitle);
+		Inventory inv = Bukkit.createInventory(player, 27, Settings.editorTitle);
 		
 		List<SaleType> types = getTypesFromChest();
 		for (int i = 0; i < types.size() && i < 8; i++) {
@@ -101,15 +105,15 @@ public class BuyingPlayerShopkeeper extends PlayerShopkeeper {
 			
 			if (cost != null) {
 				if (cost.cost == 0) {
-					inv.setItem(i, new ItemStack(ShopkeepersPlugin.zeroItem));
+					inv.setItem(i, new ItemStack(Settings.zeroItem));
 				} else {
-					inv.setItem(i, new ItemStack(ShopkeepersPlugin.currencyItem, cost.cost, ShopkeepersPlugin.currencyData));
+					inv.setItem(i, new ItemStack(Settings.currencyItem, cost.cost, Settings.currencyData));
 				}
 				int amt = cost.amount;
 				if (amt <= 0) amt = 1;
 				inv.setItem(i + 18, new ItemStack(type.id, amt, type.data));
 			} else {
-				inv.setItem(i, new ItemStack(ShopkeepersPlugin.zeroItem));
+				inv.setItem(i, new ItemStack(Settings.zeroItem));
 				inv.setItem(i + 18, new ItemStack(type.id, 1, type.data));
 			}
 		}
@@ -127,7 +131,7 @@ public class BuyingPlayerShopkeeper extends PlayerShopkeeper {
 			// modifying cost
 			ItemStack item = event.getCurrentItem();
 			if (item != null) {
-				if (item.getTypeId() == ShopkeepersPlugin.currencyItem) {
+				if (item.getTypeId() == Settings.currencyItem) {
 					int amount = item.getAmount();
 					if (event.isShiftClick() && event.isLeftClick()) {
 						amount += 10;
@@ -140,15 +144,15 @@ public class BuyingPlayerShopkeeper extends PlayerShopkeeper {
 					}
 					if (amount > 64) amount = 64;
 					if (amount <= 0) {
-						item.setTypeId(ShopkeepersPlugin.zeroItem);
+						item.setTypeId(Settings.zeroItem);
 						item.setDurability((short)0);
 						item.setAmount(1);
 					} else {
 						item.setAmount(amount);
 					}
-				} else if (item.getTypeId() == ShopkeepersPlugin.zeroItem) {
-					item.setTypeId(ShopkeepersPlugin.currencyItem);
-					item.setDurability(ShopkeepersPlugin.currencyData);
+				} else if (item.getTypeId() == Settings.zeroItem) {
+					item.setTypeId(Settings.currencyItem);
+					item.setDurability(Settings.currencyData);
 					item.setAmount(1);
 				}
 			}
@@ -190,7 +194,7 @@ public class BuyingPlayerShopkeeper extends PlayerShopkeeper {
 			ItemStack item = inv.getItem(i + 18);
 			if (item != null) {
 				ItemStack costItem = inv.getItem(i);
-				if (costItem != null && costItem.getTypeId() == ShopkeepersPlugin.currencyItem && costItem.getAmount() > 0) {
+				if (costItem != null && costItem.getTypeId() == Settings.currencyItem && costItem.getAmount() > 0) {
 					costs.put(new SaleType(item), new Cost(item.getAmount(), costItem.getAmount()));
 				} else {
 					costs.remove(new SaleType(item));
@@ -230,7 +234,7 @@ public class BuyingPlayerShopkeeper extends PlayerShopkeeper {
 		// remove currency from chest
 		Inventory inv = ((Chest)chest.getState()).getInventory();
 		ItemStack[] contents = inv.getContents();
-		boolean removed = removeFromInventory(new ItemStack(ShopkeepersPlugin.currencyItem, cost.cost, ShopkeepersPlugin.currencyData), contents);
+		boolean removed = removeFromInventory(new ItemStack(Settings.currencyItem, cost.cost, Settings.currencyData), contents);
 		if (!removed) {
 			event.setCancelled(true);
 			return;
@@ -255,7 +259,7 @@ public class BuyingPlayerShopkeeper extends PlayerShopkeeper {
 			Inventory inv = ((Chest)chest.getState()).getInventory();
 			ItemStack[] contents = inv.getContents();
 			for (ItemStack item : contents) {
-				if (item != null && item.getType() != Material.AIR && item.getTypeId() != ShopkeepersPlugin.currencyItem && item.getTypeId() != ShopkeepersPlugin.highCurrencyItem && item.getType() != Material.WRITTEN_BOOK && item.getEnchantments().size() == 0) {
+				if (item != null && item.getType() != Material.AIR && item.getTypeId() != Settings.currencyItem && item.getTypeId() != Settings.highCurrencyItem && item.getType() != Material.WRITTEN_BOOK && item.getEnchantments().size() == 0) {
 					SaleType si = new SaleType(item);
 					if (!list.contains(si)) {
 						list.add(si);
@@ -273,7 +277,7 @@ public class BuyingPlayerShopkeeper extends PlayerShopkeeper {
 			Inventory inv = ((Chest)chest.getState()).getInventory();
 			ItemStack[] contents = inv.getContents();
 			for (ItemStack item : contents) {
-				if (item != null && item.getTypeId() == ShopkeepersPlugin.currencyItem && item.getDurability() == ShopkeepersPlugin.currencyData) {
+				if (item != null && item.getTypeId() == Settings.currencyItem && item.getDurability() == Settings.currencyData) {
 					total += item.getAmount();
 				}
 			}

@@ -84,7 +84,14 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 			return false;
 		}
 	}
-	
+
+	/**
+	 * Called when a player shift-right-clicks on the player shopkeeper villager in an attempt to edit
+	 * the shopkeeper information. This method should open the editing interface. The permission and owner
+	 * check has already occurred before this is called.
+	 * @param player the player doing the edit
+	 * @return whether the player is now editing (returns false if permission fails)
+	 */
 	protected abstract boolean onPlayerEdit(Player player);
 	
 	@Override

@@ -2,7 +2,7 @@ package com.nisovin.shopkeepers;
 
 import net.minecraft.server.MerchantRecipe;
 
-public class ShopRecipe extends MerchantRecipe {
+class ShopRecipe extends MerchantRecipe {
 
 	public static ShopRecipe factory(org.bukkit.inventory.ItemStack cost1, org.bukkit.inventory.ItemStack cost2, org.bukkit.inventory.ItemStack result) {
 		return new ShopRecipe(convertItemStack(cost1), convertItemStack(cost2), convertItemStack(result));

@@ -81,6 +81,10 @@ public abstract class Shopkeeper {
 		}
 	}
 	
+	/**
+	 * Gets the type of this shopkeeper (admin, normal player, book player, or buying player).
+	 * @return the shopkeeper type
+	 */
 	public abstract ShopkeeperType getType();
 	
 	/**

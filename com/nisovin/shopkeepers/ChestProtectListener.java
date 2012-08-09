@@ -9,11 +9,11 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 
-public class ChestProtectListener implements Listener {
+class ChestProtectListener implements Listener {
 
 	ShopkeepersPlugin plugin;
 	
-	public ChestProtectListener(ShopkeepersPlugin plugin) {
+	ChestProtectListener(ShopkeepersPlugin plugin) {
 		this.plugin = plugin;
 	}
 	

@@ -17,11 +17,12 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+
 public class CustomQuantityPlayerShopkeeper extends PlayerShopkeeper {
 
 	private Map<SaleType, Cost> costs;
 	
-	CustomQuantityPlayerShopkeeper(ConfigurationSection config) {
+	public CustomQuantityPlayerShopkeeper(ConfigurationSection config) {
 		super(config);
 	}
 
@@ -63,6 +64,11 @@ public class CustomQuantityPlayerShopkeeper extends PlayerShopkeeper {
 			itemSection.set("cost", cost.cost);
 			count++;
 		}
+	}
+	
+	@Override
+	public ShopkeeperType getType() {
+		return ShopkeeperType.PLAYER_NORMAL;
 	}
 	
 	@Override

@@ -19,11 +19,12 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+
 public class WrittenBookPlayerShopkeeper extends PlayerShopkeeper {
 
 	private Map<String, Integer> costs;
 	
-	WrittenBookPlayerShopkeeper(ConfigurationSection config) {
+	public WrittenBookPlayerShopkeeper(ConfigurationSection config) {
 		super(config);
 	}
 
@@ -52,6 +53,11 @@ public class WrittenBookPlayerShopkeeper extends PlayerShopkeeper {
 		for (String title : costs.keySet()) {
 			costsSection.set(title, costs.get(title));
 		}
+	}
+	
+	@Override
+	public ShopkeeperType getType() {
+		return ShopkeeperType.PLAYER_BOOK;
 	}
 
 	@Override

@@ -10,6 +10,7 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+
 /**
  * A shopkeeper that is managed by a player. This shopkeeper draws its supplies from a chest that it
  * stands on, and will deposit earnings back into that chest.
@@ -22,7 +23,7 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 	protected int chesty;
 	protected int chestz;
 	
-	PlayerShopkeeper(ConfigurationSection config) {
+	public PlayerShopkeeper(ConfigurationSection config) {
 		super(config);
 	}
 	

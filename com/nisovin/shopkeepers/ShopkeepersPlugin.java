@@ -45,6 +45,10 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.nisovin.shopkeepers.events.CreatePlayerShopkeeperEvent;
+import com.nisovin.shopkeepers.events.OpenTradeEvent;
+
+
 public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 
 	static ShopkeepersPlugin plugin;
@@ -339,8 +343,34 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 			profession = 0;
 		}
 		
+		ShopkeeperType shopType = null;
+		if (type == 0) {
+			shopType = ShopkeeperType.PLAYER_NORMAL;
+		} else if (type == 1) {
+			shopType = ShopkeeperType.PLAYER_BOOK;
+		} else if (type == 2) {
+			shopType = ShopkeeperType.PLAYER_BUY;
+		}
+		if (shopType == null) {
+			return null;
+		}
+		
+		int maxShops = maxShopsPerPlayer;
+		
+		// call event
+		CreatePlayerShopkeeperEvent event = new CreatePlayerShopkeeperEvent(player, chest, location, profession, shopType, maxShops);
+		Bukkit.getPluginManager().callEvent(event);
+		if (event.isCancelled()) {
+			return null;
+		} else {
+			location = event.getSpawnLocation();
+			profession = event.getProfessionId();
+			shopType = event.getType();
+			maxShops = event.getMaxShopsForPlayer();
+		}
+		
 		// count owned shops
-		if (maxShopsPerPlayer > 0) {
+		if (maxShops > 0) {
 			int count = 0;
 			for (List<Shopkeeper> list : allShopkeepersByChunk.values()) {
 				for (Shopkeeper shopkeeper : list) {
@@ -349,7 +379,7 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 					}
 				}
 			}
-			if (count >= maxShopsPerPlayer) {
+			if (count >= maxShops) {
 				sendMessage(player, msgTooManyShops);
 				return null;
 			}
@@ -357,15 +387,15 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 		
 		// create the shopkeeper
 		Shopkeeper shopkeeper = null;
-		if (type == 0) {
+		if (shopType == ShopkeeperType.PLAYER_NORMAL) {
 			if (allowCustomQuantities) {
 				shopkeeper = new CustomQuantityPlayerShopkeeper(player, chest, location, profession);
 			} else {
 				shopkeeper = new FixedQuantityPlayerShopkeeper(player, chest, location, profession);
 			}
-		} else if (type == 1) {
+		} else if (shopType == ShopkeeperType.PLAYER_BOOK) {
 			shopkeeper = new WrittenBookPlayerShopkeeper(player, chest, location, profession);
-		} else if (type == 2) {
+		} else if (shopType == ShopkeeperType.PLAYER_BUY) {
 			shopkeeper = new BuyingPlayerShopkeeper(player, chest, location, profession);
 		}
 
@@ -404,6 +434,17 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 		return activeShopkeepers.get(entityId);
 	}
 	
+	/**
+	 * Gets all shopkeepers from a given chunk. Returns null if there are no shopkeepers in that chunk.
+	 * @param world the world
+	 * @param x chunk x-coordinate
+	 * @param z chunk z-coordinate
+	 * @return a list of shopkeepers, or null if there are none
+	 */
+	public List<Shopkeeper> getShopkeepersInChunk(String world, int x, int z) {
+		return allShopkeepersByChunk.get(world + "," + x + "," + z);
+	}
+	
 	@EventHandler
 	void onEntityInteract(PlayerInteractEntityEvent event) {
 		if (event.getRightClicked() instanceof Villager) {
@@ -425,6 +466,13 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 			} else if (shopkeeper != null) {
 				// only allow one person per shopkeeper
 				debug("  Opening trade window...");
+				OpenTradeEvent evt = new OpenTradeEvent(event.getPlayer(), shopkeeper);
+				Bukkit.getPluginManager().callEvent(evt);
+				if (evt.isCancelled()) {
+					debug("  Trade cancelled by another plugin");
+					event.setCancelled(true);
+					return;
+				}
 				if (purchasing.containsValue(event.getRightClicked().getEntityId())) {
 					debug("  Villager already in use!");
 					sendMessage(event.getPlayer(), msgShopInUse);

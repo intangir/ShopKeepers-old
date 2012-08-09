@@ -23,6 +23,7 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+
 /**
  * Represents a shopkeeper that is managed by an admin. This shopkeeper will have unlimited supply
  * and will not save earnings anywhere.
@@ -32,7 +33,7 @@ public class AdminShopkeeper extends Shopkeeper {
 
 	protected List<ItemStack[]> recipes;
 	
-	AdminShopkeeper(ConfigurationSection config) {
+	public AdminShopkeeper(ConfigurationSection config) {
 		super(config);
 	}
 	
@@ -81,6 +82,11 @@ public class AdminShopkeeper extends Shopkeeper {
 			}
 			count++;
 		}
+	}
+	
+	@Override
+	public ShopkeeperType getType() {
+		return ShopkeeperType.ADMIN;
 	}
 	
 	@Override

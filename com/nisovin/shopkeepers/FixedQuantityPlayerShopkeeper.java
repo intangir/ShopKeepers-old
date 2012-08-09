@@ -15,11 +15,12 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+
 public class FixedQuantityPlayerShopkeeper extends PlayerShopkeeper {
 
 	protected HashMap<ItemType, Integer> costs;
 	
-	FixedQuantityPlayerShopkeeper(ConfigurationSection config) {
+	public FixedQuantityPlayerShopkeeper(ConfigurationSection config) {
 		super(config);
 	}
 
@@ -59,6 +60,11 @@ public class FixedQuantityPlayerShopkeeper extends PlayerShopkeeper {
 			itemSection.set("cost", costs.get(type));
 			count++;
 		}
+	}
+	
+	@Override
+	public ShopkeeperType getType() {
+		return ShopkeeperType.PLAYER_NORMAL;
 	}
 	
 	@Override

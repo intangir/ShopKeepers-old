@@ -33,7 +33,7 @@ public abstract class Shopkeeper {
 	protected Villager villager;
 	protected String uuid;
 
-	Shopkeeper(ConfigurationSection config) {
+	public Shopkeeper(ConfigurationSection config) {
 		load(config);
 	}
 	
@@ -80,6 +80,8 @@ public abstract class Shopkeeper {
 			config.set("uuid", villager.getUniqueId().toString());
 		}
 	}
+	
+	public abstract ShopkeeperType getType();
 	
 	/**
 	 * Spawns the shopkeeper into the world at its spawn location. Also sets the
@@ -152,6 +154,15 @@ public abstract class Shopkeeper {
 	 */
 	public String getWorldName() {
 		return world;
+	}
+	
+	/**
+	 * Gets the villager entity for this shopkeeper. Can return null if the shopkeeper
+	 * is not spawned in the world.
+	 * @return the villager entity
+	 */
+	public Villager getVillager() {
+		return villager;
 	}
 	
 	/**

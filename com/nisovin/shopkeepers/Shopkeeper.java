@@ -104,6 +104,7 @@ public abstract class Shopkeeper {
 		if (villager == null) {
 			villager = w.spawn(loc, Villager.class);
 		}
+		villager.setBreed(false);
 		setProfession();
 		overwriteAI();
 	}

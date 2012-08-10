@@ -12,6 +12,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
@@ -43,13 +44,16 @@ public class CustomQuantityPlayerShopkeeper extends PlayerShopkeeper {
 		if (costsSection != null) {
 			for (String key : costsSection.getKeys(false)) {
 				ConfigurationSection itemSection = costsSection.getConfigurationSection(key);
-				SaleType item = new SaleType();
+				SaleType type = new SaleType();
 				Cost cost = new Cost();
-				item.id = itemSection.getInt("id");
-				item.data = (short)itemSection.getInt("data");
+				type.id = itemSection.getInt("id");
+				type.data = (short)itemSection.getInt("data");
+				if (itemSection.contains("enchants")) {
+					type.enchants = itemSection.getString("enchants");
+				}
 				cost.amount = itemSection.getInt("amount");
 				cost.cost = itemSection.getInt("cost");
-				costs.put(item, cost);
+				costs.put(type, cost);
 			}
 		}
 	}
@@ -59,11 +63,14 @@ public class CustomQuantityPlayerShopkeeper extends PlayerShopkeeper {
 		super.save(config);
 		ConfigurationSection costsSection = config.createSection("costs");
 		int count = 0;
-		for (SaleType item : costs.keySet()) {
-			Cost cost = costs.get(item);
+		for (SaleType type : costs.keySet()) {
+			Cost cost = costs.get(type);
 			ConfigurationSection itemSection = costsSection.createSection(count + "");
-			itemSection.set("id", item.id);
-			itemSection.set("data", item.data);
+			itemSection.set("id", type.id);
+			itemSection.set("data", type.data);
+			if (type.enchants != null) {
+				itemSection.set("enchants", type.enchants);
+			}
 			itemSection.set("amount", cost.amount);
 			itemSection.set("cost", cost.cost);
 			count++;
@@ -86,7 +93,7 @@ public class CustomQuantityPlayerShopkeeper extends PlayerShopkeeper {
 				if (chestAmt >= cost.amount) {
 					ItemStack[] recipe = new ItemStack[3];
 					setRecipeCost(recipe, cost.cost);
-					recipe[2] = new ItemStack(type.id, cost.amount, type.data);
+					recipe[2] = type.getItemStack(cost.amount);
 					recipes.add(recipe);
 				}
 			}
@@ -104,10 +111,10 @@ public class CustomQuantityPlayerShopkeeper extends PlayerShopkeeper {
 		for (SaleType type : typesFromChest.keySet()) {
 			Cost cost = costs.get(type);
 			if (cost != null) {
-				inv.setItem(i, new ItemStack(type.id, cost.amount, type.data));
+				inv.setItem(i, type.getItemStack(cost.amount));
 				setEditColumnCost(inv, i, cost.cost);
 			} else {
-				inv.setItem(i, new ItemStack(type.id, 1, type.data));
+				inv.setItem(i, type.getItemStack(1));
 				setEditColumnCost(inv, i, 0);
 			}
 			i++;
@@ -259,6 +266,7 @@ public class CustomQuantityPlayerShopkeeper extends PlayerShopkeeper {
 	private class SaleType {
 		int id;
 		short data;
+		String enchants;
 		
 		public SaleType() {
 			
@@ -267,18 +275,42 @@ public class CustomQuantityPlayerShopkeeper extends PlayerShopkeeper {
 		public SaleType(ItemStack item) {
 			id = item.getTypeId();
 			data = item.getDurability();
+			Map<Enchantment, Integer> enchantments = item.getEnchantments();
+			if (enchantments != null && enchantments.size() > 0) {
+				enchants = "";
+				for (Enchantment e : enchantments.keySet()) {
+					enchants += e.getId() + ":" + enchantments.get(e) + " ";
+				}
+				enchants = enchants.trim();
+			}
+		}
+		
+		ItemStack getItemStack(int amount) {
+			ItemStack item = new ItemStack(id, amount, data);
+			if (enchants != null) {
+				String[] dataList = enchants.split(" ");
+				for (String s : dataList) {
+					String[] data = s.split(":");
+					item.addUnsafeEnchantment(Enchantment.getById(Integer.parseInt(data[0])), Integer.parseInt(data[1]));
+				}
+			}
+			return item;
 		}
 		
 		@Override
 		public int hashCode() {
-			return (id + " " + data).hashCode();
+			return (id + " " + data + (enchants != null ? " " + enchants : "")).hashCode();
 		}
 		
 		@Override
 		public boolean equals(Object o) {
 			if (!(o instanceof SaleType)) return false;
 			SaleType i = (SaleType)o;
-			return i.id == this.id && i.data == this.data;
+			boolean test = (i.id == this.id && i.data == this.data);
+			if (!test) return false;
+			if (i.enchants == null && this.enchants == null) return true;
+			if (i.enchants == null || this.enchants == null) return false;
+			return i.enchants.equals(this.enchants);
 		}
 	}
 	

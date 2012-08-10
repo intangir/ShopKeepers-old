@@ -3,6 +3,7 @@ package com.nisovin.shopkeepers.shoptypes;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -10,6 +11,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
@@ -44,6 +46,9 @@ public class FixedQuantityPlayerShopkeeper extends PlayerShopkeeper {
 				type.id = itemSection.getInt("id");
 				type.data = (short)itemSection.getInt("data");
 				type.amount = itemSection.getInt("amount");
+				if (itemSection.contains("enchants")) {
+					type.enchants = itemSection.getString("enchants");
+				}
 				int cost = itemSection.getInt("cost");
 				costs.put(type, cost);
 			}
@@ -60,6 +65,9 @@ public class FixedQuantityPlayerShopkeeper extends PlayerShopkeeper {
 			itemSection.set("id", type.id);
 			itemSection.set("data", type.data);
 			itemSection.set("amount", type.amount);
+			if (type.enchants != null) {
+				itemSection.set("enchants", type.enchants);
+			}
 			itemSection.set("cost", costs.get(type));
 			count++;
 		}
@@ -209,6 +217,7 @@ public class FixedQuantityPlayerShopkeeper extends PlayerShopkeeper {
 		int id;
 		short data;
 		int amount;
+		String enchants;
 		
 		ItemType() {
 			
@@ -218,22 +227,42 @@ public class FixedQuantityPlayerShopkeeper extends PlayerShopkeeper {
 			id = item.getTypeId();
 			data = item.getDurability();
 			amount = item.getAmount();
+			Map<Enchantment, Integer> enchantments = item.getEnchantments();
+			if (enchantments != null && enchantments.size() > 0) {
+				enchants = "";
+				for (Enchantment e : enchantments.keySet()) {
+					enchants += e.getId() + ":" + enchantments.get(e) + " ";
+				}
+				enchants = enchants.trim();
+			}
 		}
 		
 		ItemStack getItemStack() {
-			return new ItemStack(id, amount, data);
+			ItemStack item = new ItemStack(id, amount, data);
+			if (enchants != null) {
+				String[] dataList = enchants.split(" ");
+				for (String s : dataList) {
+					String[] data = s.split(":");
+					item.addUnsafeEnchantment(Enchantment.getById(Integer.parseInt(data[0])), Integer.parseInt(data[1]));
+				}
+			}
+			return item;
 		}
 		
 		@Override
 		public int hashCode() {
-			return (id + " " + data + " " + amount).hashCode();
+			return (id + " " + data + " " + amount + (enchants != null ? " " + enchants : "")).hashCode();
 		}
 		
 		@Override
 		public boolean equals(Object o) {
 			if (o instanceof ItemType) {
 				ItemType i = (ItemType)o;
-				return i.id == this.id && i.data == this.data && i.amount == this.amount;
+				boolean test = (i.id == this.id && i.data == this.data && i.amount == this.amount);
+				if (!test) return false;
+				if (i.enchants == null && this.enchants == null) return true;
+				if (i.enchants == null || this.enchants == null) return false;
+				return i.enchants.equals(this.enchants);
 			}
 			return false;
 		}

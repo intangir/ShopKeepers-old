@@ -10,6 +10,7 @@ import net.minecraft.server.MerchantRecipeList;
 import net.minecraft.server.PathfinderGoalLookAtPlayer;
 import net.minecraft.server.PathfinderGoalLookAtTradingPlayer;
 import net.minecraft.server.PathfinderGoalSelector;
+import net.minecraft.server.PathfinderGoalTradeWithPlayer;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -268,7 +269,8 @@ public abstract class Shopkeeper {
 			@SuppressWarnings("rawtypes")
 			List list = (List)listField.get(goals);
 			list.clear();
-			
+
+			goals.a(1, new PathfinderGoalTradeWithPlayer(ev));
 			goals.a(1, new PathfinderGoalLookAtTradingPlayer(ev));
 			goals.a(2, new PathfinderGoalLookAtPlayer(ev, EntityHuman.class, 12.0F, 1.0F));
 		} catch (Exception e) {

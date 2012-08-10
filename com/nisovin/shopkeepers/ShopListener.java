@@ -9,7 +9,6 @@ import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.craftbukkit.entity.CraftVillager;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
 import org.bukkit.event.EventHandler;
@@ -29,7 +28,6 @@ import org.bukkit.event.world.WorldUnloadEvent;
 import org.bukkit.inventory.ItemStack;
 
 import com.nisovin.shopkeepers.events.OpenTradeEvent;
-import com.nisovin.shopkeepers.shoptypes.AdminShopkeeper;
 import com.nisovin.shopkeepers.shoptypes.PlayerShopkeeper;
 
 class ShopListener implements Listener {
@@ -78,14 +76,6 @@ class ShopListener implements Listener {
 				// set the trade recipe list (also prevent shopkeepers adding their own recipes by refreshing them with our list)
 				shopkeeper.updateRecipes();
 				plugin.purchasing.put(event.getPlayer().getName(), villager.getEntityId());
-				// allow multiple trades with admin shop
-				if (shopkeeper instanceof AdminShopkeeper) {
-					Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
-						public void run() {
-							((CraftVillager)villager).getHandle().a_(null);
-						}
-					}, 1);
-				}
 				ShopkeepersPlugin.debug("  Trade window opened");
 			} else if (Settings.disableOtherVillagers && shopkeeper == null) {
 				// don't allow trading with other villagers

@@ -68,50 +68,6 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 		
 		Settings.loadConfiguration(config);
 		
-		/*Settings.disableOtherVillagers = config.getBoolean("disable-other-villagers", Settings.disableOtherVillagers);
-		Settings.saveInstantly = config.getBoolean("save-instantly", Settings.saveInstantly);
-		
-		Settings.createPlayerShopWithCommand = config.getBoolean("create-player-shop-with-command", Settings.createPlayerShopWithCommand);
-		Settings.createPlayerShopWithEgg = config.getBoolean("create-player-shop-with-egg", Settings.createPlayerShopWithEgg);
-		Settings.deletingPlayerShopReturnsEgg = config.getBoolean("deleting-player-shop-returns-egg", Settings.deletingPlayerShopReturnsEgg);
-		Settings.allowCustomQuantities = config.getBoolean("allow-custom-quantities", Settings.allowCustomQuantities);
-		Settings.allowPlayerBookShop = config.getBoolean("allow-player-book-shop", Settings.allowPlayerBookShop);
-		Settings.protectChests = config.getBoolean("protect-chests", Settings.protectChests);
-		Settings.maxShopsPerPlayer = config.getInt("max-shops-per-player", Settings.maxShopsPerPlayer);
-		Settings.maxChestDistance = config.getInt("max-chest-distance", Settings.maxChestDistance);
-		
-		Settings.editorTitle = config.getString("editor-title", Settings.editorTitle);
-		Settings.saveItem = config.getInt("save-item", Settings.saveItem);
-		Settings.deleteItem = config.getInt("delete-item", Settings.deleteItem);
-		
-		Settings.currencyItem = config.getInt("currency-item", Settings.currencyItem);
-		Settings.currencyItemData = (short)config.getInt("currency-item-data", Settings.currencyItemData);
-		Settings.zeroItem = config.getInt("zero-item", Settings.zeroItem);
-		
-		Settings.highCurrencyItem = config.getInt("high-currency-item", Settings.highCurrencyItem);
-		Settings.highCurrencyItemData = (short)config.getInt("high-currency-item-data", Settings.highCurrencyItemData);
-		Settings.highCurrencyValue = config.getInt("high-currency-value", Settings.highCurrencyValue);
-		Settings.highCurrencyMinCost = config.getInt("high-currency-min-cost", Settings.highCurrencyMinCost);
-		Settings.highZeroItem = config.getInt("high-zero-item", Settings.highZeroItem);
-		if (Settings.highCurrencyValue <= 0) Settings.highCurrencyItem = 0;
-		
-		Settings.msgSelectedNormalShop = config.getString("msg-selected-normal-shop", Settings.msgSelectedNormalShop);
-		Settings.msgSelectedBookShop = config.getString("msg-selected-book-shop", Settings.msgSelectedBookShop);
-		Settings.msgSelectedBuyShop = config.getString("msg-selected-buy-shop", Settings.msgSelectedBuyShop);
-		Settings.msgSelectedChest = config.getString("msg-selected-chest", Settings.msgSelectedChest);
-		Settings.msgMustSelectChest = config.getString("msg-must-select-chest", Settings.msgMustSelectChest);
-		Settings.msgChestTooFar = config.getString("msg-chest-too-far", Settings.msgChestTooFar);
-		
-		Settings.msgPlayerShopCreated = config.getString("msg-player-shop-created", Settings.msgPlayerShopCreated);
-		Settings.msgBookShopCreated = config.getString("msg-book-shop-created", Settings.msgBookShopCreated);
-		Settings.msgBuyShopCreated = config.getString("msg-buy-shop-created", Settings.msgBuyShopCreated);
-		Settings.msgAdminShopCreated = config.getString("msg-admin-shop-created", Settings.msgAdminShopCreated);
-		Settings.msgShopCreateFail = config.getString("msg-shop-create-fail", Settings.msgShopCreateFail);
-		Settings.msgTooManyShops = config.getString("msg-too-many-shops", Settings.msgTooManyShops);
-		Settings.msgShopInUse = config.getString("msg-shop-in-use", Settings.msgShopInUse);
-		
-		Settings.recipeListVar = config.getString("recipe-list-var", Settings.recipeListVar);*/
-				
 		// load shopkeeper saved data
 		load();
 		

@@ -8,6 +8,7 @@ allow-custom-quantities: true
 allow-player-book-shop: true
 protect-chests: true
 max-shops-per-player: 0
+max-chest-distance: 15
 
 editor-title: "Shopkeeper Editor"
 save-item: 133

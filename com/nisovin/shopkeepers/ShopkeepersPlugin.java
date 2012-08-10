@@ -80,6 +80,7 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 	private boolean allowPlayerBookShop = true;
 	private boolean protectChests = true;
 	private int maxShopsPerPlayer = 0;
+	private int maxChestDistance = 15;
 			
 	private String msgSelectedNormalShop = "&aNormal shopkeeper selected (sells items to players).";
 	private String msgSelectedBookShop = "&aBook shopkeeper selected (sell books).";
@@ -122,6 +123,7 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 		allowPlayerBookShop = config.getBoolean("allow-player-book-shop", allowPlayerBookShop);
 		protectChests = config.getBoolean("protect-chests", protectChests);
 		maxShopsPerPlayer = config.getInt("max-shops-per-player", maxShopsPerPlayer);
+		maxChestDistance = config.getInt("max-chest-distance", maxChestDistance);
 		
 		Settings.editorTitle = config.getString("editor-title", Settings.editorTitle);
 		Settings.saveItem = config.getInt("save-item", Settings.saveItem);
@@ -614,7 +616,7 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 					}
 				} else if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
 					Block block = event.getClickedBlock();
-					if (block.getType() == Material.CHEST) {
+					if (block.getType() == Material.CHEST && (!selectedChest.containsKey(playerName) || !selectedChest.get(playerName).equals(block))) {
 						// select chest
 						selectedChest.put(playerName, event.getClickedBlock());
 						sendMessage(player, msgSelectedChest);
@@ -622,7 +624,7 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 						Block chest = selectedChest.get(playerName);
 						if (chest == null) {
 							sendMessage(player, msgMustSelectChest);
-						} else if (chest.getLocation().distance(block.getLocation()) > 15) {
+						} else if ((int)chest.getLocation().distance(block.getLocation()) > maxChestDistance) {
 							sendMessage(player, msgChestTooFar);
 						} else {
 							// create player shopkeeper

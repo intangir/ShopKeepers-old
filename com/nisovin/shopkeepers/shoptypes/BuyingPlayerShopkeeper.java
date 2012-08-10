@@ -234,14 +234,13 @@ public class BuyingPlayerShopkeeper extends PlayerShopkeeper {
 		// remove currency from chest
 		Inventory inv = ((Chest)chest.getState()).getInventory();
 		ItemStack[] contents = inv.getContents();
-		boolean removed = removeFromInventory(new ItemStack(Settings.currencyItem, cost.cost, Settings.currencyData), contents);
+		boolean removed = removeCurrencyFromChest(cost.cost, contents);
 		if (!removed) {
 			event.setCancelled(true);
 			return;
 		}
 		
 		// add items to chest
-		System.out.println(item);
 		boolean added = addToInventory(new ItemStack(type.id, cost.amount, type.data), contents);
 		if (!added) {
 			event.setCancelled(true);
@@ -279,10 +278,73 @@ public class BuyingPlayerShopkeeper extends PlayerShopkeeper {
 			for (ItemStack item : contents) {
 				if (item != null && item.getTypeId() == Settings.currencyItem && item.getDurability() == Settings.currencyData) {
 					total += item.getAmount();
+				} else if (item != null && item.getTypeId() == Settings.highCurrencyItem && item.getDurability() == Settings.highCurrencyData) {
+					total += item.getAmount() * Settings.highCurrencyValue;
 				}
 			}
 		}
 		return total;
+	}
+	
+	private boolean removeCurrencyFromChest(int amount, ItemStack[] contents) {
+		int remaining = amount;
+		
+		// first pass - remove currency
+		int emptySlot = -1;
+		for (int i = 0; i < contents.length; i++) {
+			ItemStack item = contents[i];
+			if (item != null) {
+				if (Settings.highCurrencyItem > 0 && remaining >= Settings.highCurrencyValue && item.getTypeId() == Settings.highCurrencyItem && item.getDurability() == Settings.highCurrencyData) {
+					int needed = remaining / Settings.highCurrencyValue;
+					int amt = item.getAmount();
+					if (amt > needed) {
+						item.setAmount(amt - (needed * Settings.highCurrencyValue));
+						remaining = remaining - (needed * Settings.highCurrencyValue);
+					} else {
+						contents[i] = null;
+						remaining = remaining - (amt * Settings.highCurrencyValue);						
+					}
+				} else if (item.getTypeId() == Settings.currencyItem && item.getDurability() == Settings.currencyData) {
+					int amt = item.getAmount();
+					if (amt > remaining) {
+						item.setAmount(amt - remaining);
+						return true;
+					} else if (amt == remaining) {
+						contents[i] = null;
+						return true;
+					} else {
+						contents[i] = null;
+						remaining -= amt;
+					}
+				}
+			} else if (emptySlot < 0) {
+				emptySlot = i;
+			}
+			if (remaining <= 0) {
+				return true;
+			}
+		}
+		
+		// second pass - try to make change
+		if (remaining > 0 && remaining <= Settings.highCurrencyValue && Settings.highCurrencyItem > 0 && emptySlot >= 0) {
+			for (int i = 0; i < contents.length; i++) {
+				ItemStack item = contents[i];
+				if (item != null && item.getTypeId() == Settings.highCurrencyItem && item.getDurability() == Settings.highCurrencyData) {
+					if (item.getAmount() == 1) {
+						contents[i] = null;
+					} else {
+						item.setAmount(item.getAmount() - 1);
+					}
+					int stackSize = Settings.highCurrencyValue - remaining;
+					if (stackSize > 0) {
+						contents[emptySlot] = new ItemStack(Settings.currencyItem, stackSize, Settings.currencyData);
+					}
+					return true;
+				}
+			}
+		}
+		
+		return false;
 	}
 	
 	private class SaleType {

@@ -23,6 +23,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.craftbukkit.entity.CraftVillager;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
 import org.bukkit.entity.Villager.Profession;
@@ -53,7 +54,6 @@ import com.nisovin.shopkeepers.shoptypes.CustomQuantityPlayerShopkeeper;
 import com.nisovin.shopkeepers.shoptypes.FixedQuantityPlayerShopkeeper;
 import com.nisovin.shopkeepers.shoptypes.PlayerShopkeeper;
 import com.nisovin.shopkeepers.shoptypes.WrittenBookPlayerShopkeeper;
-
 
 public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 
@@ -436,6 +436,7 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 	@EventHandler
 	void onEntityInteract(PlayerInteractEntityEvent event) {
 		if (event.getRightClicked() instanceof Villager) {
+			final Villager villager = (Villager)event.getRightClicked();
 			debug("Player " + event.getPlayer().getName() + " is interacting with villager at " + event.getRightClicked().getLocation());
 			Shopkeeper shopkeeper = activeShopkeepers.get(event.getRightClicked().getEntityId());
 			if (event.isCancelled()) {
@@ -447,7 +448,7 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 				if (isEditing) {
 					debug("  Editor window opened");
 					event.setCancelled(true);
-					editing.put(event.getPlayer().getName(), event.getRightClicked().getEntityId());
+					editing.put(event.getPlayer().getName(), villager.getEntityId());
 				} else {
 					debug("  Editor window NOT opened");
 				}
@@ -461,7 +462,7 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 					event.setCancelled(true);
 					return;
 				}
-				if (purchasing.containsValue(event.getRightClicked().getEntityId())) {
+				if (purchasing.containsValue(villager.getEntityId())) {
 					debug("  Villager already in use!");
 					sendMessage(event.getPlayer(), msgShopInUse);
 					event.setCancelled(true);
@@ -469,7 +470,15 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 				}
 				// set the trade recipe list (also prevent shopkeepers adding their own recipes by refreshing them with our list)
 				shopkeeper.updateRecipes();
-				purchasing.put(event.getPlayer().getName(), event.getRightClicked().getEntityId());
+				purchasing.put(event.getPlayer().getName(), villager.getEntityId());
+				// allow multiple trades with admin shop
+				if (shopkeeper instanceof AdminShopkeeper) {
+					Bukkit.getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
+						public void run() {
+							((CraftVillager)villager).getHandle().a_(null);
+						}
+					}, 1);
+				}
 				debug("  Trade window opened");
 			} else if (disableOtherVillagers && shopkeeper == null) {
 				// don't allow trading with other villagers

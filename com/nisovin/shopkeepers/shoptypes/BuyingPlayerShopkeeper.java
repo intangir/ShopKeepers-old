@@ -86,7 +86,7 @@ public class BuyingPlayerShopkeeper extends PlayerShopkeeper {
 				if (chestTotal >= cost.cost) {
 					ItemStack[] recipe = new ItemStack[3];
 					recipe[0] = new ItemStack(type.id, cost.amount, type.data);
-					recipe[2] = new ItemStack(Settings.currencyItem, cost.cost, Settings.currencyData);
+					recipe[2] = new ItemStack(Settings.currencyItem, cost.cost, Settings.currencyItemData);
 					recipes.add(recipe);
 				}
 			}
@@ -107,7 +107,7 @@ public class BuyingPlayerShopkeeper extends PlayerShopkeeper {
 				if (cost.cost == 0) {
 					inv.setItem(i, new ItemStack(Settings.zeroItem));
 				} else {
-					inv.setItem(i, new ItemStack(Settings.currencyItem, cost.cost, Settings.currencyData));
+					inv.setItem(i, new ItemStack(Settings.currencyItem, cost.cost, Settings.currencyItemData));
 				}
 				int amt = cost.amount;
 				if (amt <= 0) amt = 1;
@@ -152,7 +152,7 @@ public class BuyingPlayerShopkeeper extends PlayerShopkeeper {
 					}
 				} else if (item.getTypeId() == Settings.zeroItem) {
 					item.setTypeId(Settings.currencyItem);
-					item.setDurability(Settings.currencyData);
+					item.setDurability(Settings.currencyItemData);
 					item.setAmount(1);
 				}
 			}
@@ -276,9 +276,9 @@ public class BuyingPlayerShopkeeper extends PlayerShopkeeper {
 			Inventory inv = ((Chest)chest.getState()).getInventory();
 			ItemStack[] contents = inv.getContents();
 			for (ItemStack item : contents) {
-				if (item != null && item.getTypeId() == Settings.currencyItem && item.getDurability() == Settings.currencyData) {
+				if (item != null && item.getTypeId() == Settings.currencyItem && item.getDurability() == Settings.currencyItemData) {
 					total += item.getAmount();
-				} else if (item != null && item.getTypeId() == Settings.highCurrencyItem && item.getDurability() == Settings.highCurrencyData) {
+				} else if (item != null && item.getTypeId() == Settings.highCurrencyItem && item.getDurability() == Settings.highCurrencyItemData) {
 					total += item.getAmount() * Settings.highCurrencyValue;
 				}
 			}
@@ -294,7 +294,7 @@ public class BuyingPlayerShopkeeper extends PlayerShopkeeper {
 		for (int i = 0; i < contents.length; i++) {
 			ItemStack item = contents[i];
 			if (item != null) {
-				if (Settings.highCurrencyItem > 0 && remaining >= Settings.highCurrencyValue && item.getTypeId() == Settings.highCurrencyItem && item.getDurability() == Settings.highCurrencyData) {
+				if (Settings.highCurrencyItem > 0 && remaining >= Settings.highCurrencyValue && item.getTypeId() == Settings.highCurrencyItem && item.getDurability() == Settings.highCurrencyItemData) {
 					int needed = remaining / Settings.highCurrencyValue;
 					int amt = item.getAmount();
 					if (amt > needed) {
@@ -304,7 +304,7 @@ public class BuyingPlayerShopkeeper extends PlayerShopkeeper {
 						contents[i] = null;
 						remaining = remaining - (amt * Settings.highCurrencyValue);						
 					}
-				} else if (item.getTypeId() == Settings.currencyItem && item.getDurability() == Settings.currencyData) {
+				} else if (item.getTypeId() == Settings.currencyItem && item.getDurability() == Settings.currencyItemData) {
 					int amt = item.getAmount();
 					if (amt > remaining) {
 						item.setAmount(amt - remaining);
@@ -329,7 +329,7 @@ public class BuyingPlayerShopkeeper extends PlayerShopkeeper {
 		if (remaining > 0 && remaining <= Settings.highCurrencyValue && Settings.highCurrencyItem > 0 && emptySlot >= 0) {
 			for (int i = 0; i < contents.length; i++) {
 				ItemStack item = contents[i];
-				if (item != null && item.getTypeId() == Settings.highCurrencyItem && item.getDurability() == Settings.highCurrencyData) {
+				if (item != null && item.getTypeId() == Settings.highCurrencyItem && item.getDurability() == Settings.highCurrencyItemData) {
 					if (item.getAmount() == 1) {
 						contents[i] = null;
 					} else {
@@ -337,7 +337,7 @@ public class BuyingPlayerShopkeeper extends PlayerShopkeeper {
 					}
 					int stackSize = Settings.highCurrencyValue - remaining;
 					if (stackSize > 0) {
-						contents[emptySlot] = new ItemStack(Settings.currencyItem, stackSize, Settings.currencyData);
+						contents[emptySlot] = new ItemStack(Settings.currencyItem, stackSize, Settings.currencyItemData);
 					}
 					return true;
 				}

@@ -214,7 +214,7 @@ public class CustomQuantityPlayerShopkeeper extends PlayerShopkeeper {
 		
 		// add earnings to chest
 		if (Settings.highCurrencyItem <= 0 || cost.cost <= Settings.highCurrencyMinCost) {
-			boolean added = addToInventory(new ItemStack(Settings.currencyItem, cost.cost, Settings.currencyData), contents);
+			boolean added = addToInventory(new ItemStack(Settings.currencyItem, cost.cost, Settings.currencyItemData), contents);
 			if (!added) {
 				event.setCancelled(true);
 				return;
@@ -224,14 +224,14 @@ public class CustomQuantityPlayerShopkeeper extends PlayerShopkeeper {
 			int lowCost = cost.cost % Settings.highCurrencyValue;
 			boolean added = false;
 			if (highCost > 0) {
-				added = addToInventory(new ItemStack(Settings.highCurrencyItem, highCost, Settings.highCurrencyData), contents);
+				added = addToInventory(new ItemStack(Settings.highCurrencyItem, highCost, Settings.highCurrencyItemData), contents);
 				if (!added) {
 					event.setCancelled(true);
 					return;
 				}
 			}
 			if (lowCost > 0) {
-				added = addToInventory(new ItemStack(Settings.currencyItem, lowCost, Settings.currencyData), contents);
+				added = addToInventory(new ItemStack(Settings.currencyItem, lowCost, Settings.currencyItemData), contents);
 				if (!added) {
 					event.setCancelled(true);
 					return;

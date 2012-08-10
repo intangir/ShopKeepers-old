@@ -137,7 +137,7 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 					}
 				} else if (item.getTypeId() == Settings.zeroItem) {
 					item.setTypeId(Settings.currencyItem);
-					item.setDurability(Settings.currencyData);
+					item.setDurability(Settings.currencyItemData);
 					item.setAmount(1);
 				}
 			}
@@ -166,7 +166,7 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 					}
 				} else if (item.getTypeId() == Settings.highZeroItem) {
 					item.setTypeId(Settings.highCurrencyItem);
-					item.setDurability(Settings.highCurrencyData);
+					item.setDurability(Settings.highCurrencyItemData);
 					item.setAmount(1);
 				}
 			}
@@ -186,13 +186,13 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 			int highCost = cost / Settings.highCurrencyValue;
 			int lowCost = cost % Settings.highCurrencyValue;
 			if (highCost > 0) {
-				recipe[0] = new ItemStack(Settings.highCurrencyItem, highCost, Settings.highCurrencyData);
+				recipe[0] = new ItemStack(Settings.highCurrencyItem, highCost, Settings.highCurrencyItemData);
 			}
 			if (lowCost > 0) {
-				recipe[1] = new ItemStack(Settings.currencyItem, lowCost, Settings.currencyData);
+				recipe[1] = new ItemStack(Settings.currencyItem, lowCost, Settings.currencyItemData);
 			}
 		} else {
-			recipe[0] = new ItemStack(Settings.currencyItem, cost, Settings.currencyData);
+			recipe[0] = new ItemStack(Settings.currencyItem, cost, Settings.currencyItemData);
 		}
 	}
 	
@@ -202,17 +202,17 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 				int highCost = cost / Settings.highCurrencyValue;
 				int lowCost = cost % Settings.highCurrencyValue;
 				if (highCost > 0) {
-					inv.setItem(column + 9, new ItemStack(Settings.highCurrencyItem, highCost, Settings.highCurrencyData));
+					inv.setItem(column + 9, new ItemStack(Settings.highCurrencyItem, highCost, Settings.highCurrencyItemData));
 				} else {
 					inv.setItem(column + 9, new ItemStack(Settings.highZeroItem));
 				}
 				if (lowCost > 0) {
-					inv.setItem(column + 18, new ItemStack(Settings.currencyItem, lowCost, Settings.currencyData));
+					inv.setItem(column + 18, new ItemStack(Settings.currencyItem, lowCost, Settings.currencyItemData));
 				} else {
 					inv.setItem(column + 18, new ItemStack(Settings.zeroItem));
 				}
 			} else {
-				inv.setItem(column + 18, new ItemStack(Settings.currencyItem, cost, Settings.currencyData));
+				inv.setItem(column + 18, new ItemStack(Settings.currencyItem, cost, Settings.currencyItemData));
 				if (Settings.highCurrencyItem > 0) {
 					inv.setItem(column + 9, new ItemStack(Settings.highZeroItem));
 				}

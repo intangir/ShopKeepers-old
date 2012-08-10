@@ -161,7 +161,7 @@ public class FixedQuantityPlayerShopkeeper extends PlayerShopkeeper {
 			if (item != null && item.getTypeId() == type.id && item.getDurability() == type.data && item.getAmount() == type.amount) {
 				contents[i] = null;
 				if (Settings.highCurrencyItem <= 0 || cost <= Settings.highCurrencyMinCost) {
-					boolean added = addToInventory(new ItemStack(Settings.currencyItem, cost, Settings.currencyData), contents);
+					boolean added = addToInventory(new ItemStack(Settings.currencyItem, cost, Settings.currencyItemData), contents);
 					if (!added) {
 						event.setCancelled(true);
 						return;
@@ -171,14 +171,14 @@ public class FixedQuantityPlayerShopkeeper extends PlayerShopkeeper {
 					int lowCost = cost % Settings.highCurrencyValue;
 					boolean added = false;
 					if (highCost > 0) {
-						added = addToInventory(new ItemStack(Settings.highCurrencyItem, highCost, Settings.highCurrencyData), contents);
+						added = addToInventory(new ItemStack(Settings.highCurrencyItem, highCost, Settings.highCurrencyItemData), contents);
 						if (!added) {
 							event.setCancelled(true);
 							return;
 						}
 					}
 					if (lowCost > 0) {
-						added = addToInventory(new ItemStack(Settings.currencyItem, lowCost, Settings.currencyData), contents);
+						added = addToInventory(new ItemStack(Settings.currencyItem, lowCost, Settings.currencyItemData), contents);
 						if (!added) {
 							event.setCancelled(true);
 							return;

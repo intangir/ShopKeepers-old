@@ -274,7 +274,7 @@ class ShopListener implements Listener {
 		plugin.loadShopkeepersInChunk(event.getChunk());
 	}
 
-	@EventHandler
+	@EventHandler(priority=EventPriority.LOWEST)
 	void onChunkUnload(ChunkUnloadEvent event) {
 		List<Shopkeeper> shopkeepers = plugin.allShopkeepersByChunk.get(event.getWorld().getName() + "," + event.getChunk().getX() + "," + event.getChunk().getZ());
 		if (shopkeepers != null) {
@@ -288,14 +288,14 @@ class ShopListener implements Listener {
 		}
 	}
 	
-	@EventHandler
+	@EventHandler(priority=EventPriority.LOWEST)
 	void onWorldLoad(WorldLoadEvent event) {
 		for (Chunk chunk : event.getWorld().getLoadedChunks()) {
 			plugin.loadShopkeepersInChunk(chunk);
 		}
 	}
 	
-	@EventHandler
+	@EventHandler(priority=EventPriority.LOWEST)
 	void onWorldUnload(WorldUnloadEvent event) {
 		String worldName = event.getWorld().getName();
 		Iterator<Shopkeeper> iter = plugin.activeShopkeepers.values().iterator();

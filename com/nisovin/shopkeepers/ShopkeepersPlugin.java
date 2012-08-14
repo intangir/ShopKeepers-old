@@ -80,6 +80,9 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 		
 		// register events
 		getServer().getPluginManager().registerEvents(new ShopListener(this), this);
+		if (Settings.blockVillagerSpawns) {
+			getServer().getPluginManager().registerEvents(new BlockSpawnListener(), this);
+		}
 		if (Settings.protectChests) {
 			getServer().getPluginManager().registerEvents(new ChestProtectListener(this), this);
 		}

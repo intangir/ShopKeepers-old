@@ -252,15 +252,20 @@ public class AdminShopkeeper extends Shopkeeper {
 				tagPages.add(tagPage);
 			}
 			tag.set("pages", tagPages);
-			if (config.contains("extra")) {
-				ConfigurationSection extraDataSection = config.getConfigurationSection("extra");
-				for (String key : extraDataSection.getKeys(false)) {
-					tag.setString(key, extraDataSection.getString(key));
-				}
-			}
-			item = new CraftItemStack(item);
 			((CraftItemStack)item).getHandle().tag = tag;
 		}
+		if (config.contains("extra")) {
+			NBTTagCompound tag = ((CraftItemStack)item).getHandle().tag;
+			if (tag == null) {
+				tag = new NBTTagCompound();
+				((CraftItemStack)item).getHandle().tag = tag;
+			}
+			ConfigurationSection extraDataSection = config.getConfigurationSection("extra");
+			for (String key : extraDataSection.getKeys(false)) {
+				tag.setString(key, extraDataSection.getString(key));
+			}
+		}
+		item = new CraftItemStack(item);
 		return item;
 	}
 	
@@ -281,20 +286,22 @@ public class AdminShopkeeper extends Shopkeeper {
 			}
 			config.set("enchants", list);
 		}
-		if (item.getType() == Material.WRITTEN_BOOK && item instanceof CraftItemStack) {
+		if (item instanceof CraftItemStack) {
 			NBTTagCompound tag = ((CraftItemStack)item).getHandle().tag;
-			if (tag != null && tag.hasKey("title") && tag.hasKey("author") && tag.hasKey("pages")) {
-				config.set("title", tag.getString("title"));
-				config.set("author", tag.getString("author"));
-				List<String> pages = new ArrayList<String>();
-				NBTTagList tagPages = (NBTTagList)tag.get("pages");
-				for (int i = 0; i < tagPages.size(); i++) {
-					NBTTagString tagPage = (NBTTagString)tagPages.get(i);
-					if (tagPage.data != null) {
-						pages.add(tagPage.data);
+			if (tag != null) {
+				if (item.getType() == Material.WRITTEN_BOOK && tag.hasKey("title") && tag.hasKey("author") && tag.hasKey("pages")) {
+					config.set("title", tag.getString("title"));
+					config.set("author", tag.getString("author"));
+					List<String> pages = new ArrayList<String>();
+					NBTTagList tagPages = (NBTTagList)tag.get("pages");
+					for (int i = 0; i < tagPages.size(); i++) {
+						NBTTagString tagPage = (NBTTagString)tagPages.get(i);
+						if (tagPage.data != null) {
+							pages.add(tagPage.data);
+						}
 					}
+					config.set("pages", pages);
 				}
-				config.set("pages", pages);
 				Map<String, String> extraData = new HashMap<String, String>();
 				for (Object o : tag.c()) {
 					if (o instanceof NBTTagString) {

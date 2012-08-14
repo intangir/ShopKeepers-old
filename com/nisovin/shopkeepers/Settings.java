@@ -8,6 +8,7 @@ import org.bukkit.configuration.Configuration;
 public class Settings {
 	
 	public static boolean disableOtherVillagers = true;
+	public static boolean blockVillagerSpawns = false;
 	public static boolean saveInstantly = true;
 	
 	public static boolean createPlayerShopWithCommand = true;

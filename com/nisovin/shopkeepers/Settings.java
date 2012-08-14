@@ -69,6 +69,8 @@ public class Settings {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		
+		if (maxChestDistance > 50) maxChestDistance = 50;
 	}
 	
 }

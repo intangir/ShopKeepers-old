@@ -233,7 +233,7 @@ public class AdminShopkeeper extends Shopkeeper {
 	 * @return
 	 */
 	private ItemStack loadItemStack(ConfigurationSection config) {
-		ItemStack item = new ItemStack(config.getInt("id"), config.getInt("amt"), (short)config.getInt("data"));
+		CraftItemStack item = new CraftItemStack(config.getInt("id"), config.getInt("amt"), (short)config.getInt("data"));
 		if (config.contains("enchants")) {
 			List<String> list = config.getStringList("enchants");
 			for (String s : list) {
@@ -252,20 +252,19 @@ public class AdminShopkeeper extends Shopkeeper {
 				tagPages.add(tagPage);
 			}
 			tag.set("pages", tagPages);
-			((CraftItemStack)item).getHandle().tag = tag;
+			item.getHandle().tag = tag;
 		}
 		if (config.contains("extra")) {
 			NBTTagCompound tag = ((CraftItemStack)item).getHandle().tag;
 			if (tag == null) {
 				tag = new NBTTagCompound();
-				((CraftItemStack)item).getHandle().tag = tag;
+				item.getHandle().tag = tag;
 			}
 			ConfigurationSection extraDataSection = config.getConfigurationSection("extra");
 			for (String key : extraDataSection.getKeys(false)) {
 				tag.setString(key, extraDataSection.getString(key));
 			}
 		}
-		item = new CraftItemStack(item);
 		return item;
 	}
 	

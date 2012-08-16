@@ -169,7 +169,7 @@ class ShopListener implements Listener {
 		}
 	}
 	
-	@EventHandler
+	@EventHandler(priority=EventPriority.LOW)
 	void onPlayerInteract(PlayerInteractEvent event) {
 		Player player = event.getPlayer();
 		

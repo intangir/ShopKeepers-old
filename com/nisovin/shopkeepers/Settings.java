@@ -36,7 +36,7 @@ public class Settings {
 	public static int highCurrencyValue = 9;
 	public static int highCurrencyMinCost = 20;
 	public static int highZeroItem = Material.SLIME_BALL.getId();
-			
+	
 	public static String msgSelectedNormalShop = "&aNormal shopkeeper selected (sells items to players).";
 	public static String msgSelectedBookShop = "&aBook shopkeeper selected (sell books).";
 	public static String msgSelectedBuyShop = "&aBuying shopkeeper selected (buys items from players).";
@@ -74,6 +74,20 @@ public class Settings {
 		}
 		
 		if (maxChestDistance > 50) maxChestDistance = 50;
+	}
+	
+	public static void loadLanguageConfiguration(Configuration config) {
+		try {
+			Field[] fields = Settings.class.getDeclaredFields();
+			for (Field field : fields) {
+				if (field.getType() == String.class && field.getName().startsWith("msg")) {
+					String configKey = field.getName().replaceAll("([A-Z][a-z]+)", "-$1").toLowerCase();
+					field.set(null, config.getString(configKey, (String)field.get(null)));
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 }

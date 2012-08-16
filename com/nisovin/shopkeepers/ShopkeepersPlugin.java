@@ -63,10 +63,24 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 		}
 		reloadConfig();
 		Configuration config = getConfig();
-
-		debug = config.getBoolean("debug", debug);
-		
 		Settings.loadConfiguration(config);
+		debug = config.getBoolean("debug", debug);
+
+		// get lang config
+		String lang = config.getString("language", "en");
+		File langFile = new File(getDataFolder(), "language-" + config.getString("language", "en") + ".yml");
+		if (!langFile.exists()) {
+			saveResource("language" + lang + ".yml", false);
+		}
+		if (langFile.exists()) {
+			try {
+				YamlConfiguration langConfig = new YamlConfiguration();
+				langConfig.load(file);
+				Settings.loadLanguageConfiguration(langConfig);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
 		
 		// load shopkeeper saved data
 		load();

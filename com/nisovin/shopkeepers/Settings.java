@@ -11,6 +11,9 @@ public class Settings {
 	public static boolean blockVillagerSpawns = false;
 	public static boolean saveInstantly = true;
 	
+	public static boolean enableWorldGuardRestrictions = false;
+	public static boolean enableTownyRestrictions = false;
+	
 	public static boolean createPlayerShopWithCommand = true;
 	public static boolean createPlayerShopWithEgg = true;
 	public static boolean deletingPlayerShopReturnsEgg = false;

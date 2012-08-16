@@ -2,6 +2,9 @@ disable-other-villagers: true
 block-villager-spawns: false
 save-instantly: true
 
+enable-world-guard-restrictions: false
+enable-towny-restrictions: false
+
 create-player-shop-with-command: true
 create-player-shop-with-egg: true
 deleting-player-shop-returns-egg: false
@@ -31,6 +34,9 @@ msg-selected-buy-shop: "&aBuying shopkeeper selected (buys items from players)."
 msg-selected-chest: "&aChest selected! Right click a block to place your shopkeeper."
 msg-must-select-chest: "&aYou must right-click a chest before placing your shopkeeper."
 msg-chest-too-far: "&aThe shopkeeper's chest is too far away!"
+msg-shop-create-fail: "&aYou cannot create a shopkeeper there."
+msg-too-many-shops: "&aYou have too many shops."
+msg-shop-in-use: "&aSomeone else is already purchasing from this shopkeeper."
 
 msg-player-shop-created: |
     &aShopkeeper created!
@@ -47,8 +53,5 @@ msg-buy-shop-created: |
 msg-admin-shop-created: |
     &aShopkeeper created!
     &aRight-click the villager while sneaking to modify trades.
-msg-shop-create-fail: "&aYou cannot create a shopkeeper there."
-msg-too-many-shops: "&aYou have too many shops."
-msg-shop-in-use: "&aSomeone else is already purchasing from this shopkeeper."
 
 debug: false

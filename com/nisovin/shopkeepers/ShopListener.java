@@ -98,10 +98,10 @@ class ShopListener implements Listener {
 				if (event.getInventory().getTitle().equals(Settings.editorTitle)) {
 					shopkeeper.onEditorClose(event);
 					plugin.closeTradingForShopkeeper(entityId);
+					plugin.save();
 				}
 			}
-		}
-		if (plugin.purchasing.containsKey(name)) {
+		} else if (plugin.purchasing.containsKey(name)) {
 			ShopkeepersPlugin.debug("Player " + name + " closed trade window");
 			plugin.purchasing.remove(name);
 		}
@@ -222,6 +222,7 @@ class ShopListener implements Listener {
 					}
 				} else if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
 					Block block = event.getClickedBlock();
+										
 					if (block.getType() == Material.CHEST && (!plugin.selectedChest.containsKey(playerName) || !plugin.selectedChest.get(playerName).equals(block))) {
 						// select chest
 						plugin.selectedChest.put(playerName, event.getClickedBlock());
@@ -233,11 +234,30 @@ class ShopListener implements Listener {
 						} else if ((int)chest.getLocation().distance(block.getLocation()) > Settings.maxChestDistance) {
 							plugin.sendMessage(player, Settings.msgChestTooFar);
 						} else {
-							// create player shopkeeper
+							
+							// check worldguard
+							if (Settings.enableWorldGuardRestrictions) {
+								if (!WorldGuardHandler.canBuild(player, block)) {
+									plugin.sendMessage(player, Settings.msgShopCreateFail);
+									return;
+								}
+							}
+							
+							// check towny
+							if (Settings.enableTownyRestrictions) {
+								if (!TownyHandler.isCommercialArea(block)) {
+									plugin.sendMessage(player, Settings.msgShopCreateFail);
+									return;
+								}
+							}
+							
+							// get shop type
 							int option = 0;
 							if (plugin.selectedShopType.containsKey(playerName)) {
 								option = plugin.selectedShopType.get(playerName);
 							}
+							
+							// create player shopkeeper
 							Shopkeeper shopkeeper = plugin.createNewPlayerShopkeeper(player, chest, block.getLocation().add(0, 1.5, 0), 0, option);
 							if (shopkeeper != null) {
 								// send message
@@ -258,6 +278,7 @@ class ShopListener implements Listener {
 									player.setItemInHand(null);
 								}
 							}
+							
 							// clear selection vars
 							plugin.selectedShopType.remove(playerName);
 							plugin.selectedChest.remove(playerName);

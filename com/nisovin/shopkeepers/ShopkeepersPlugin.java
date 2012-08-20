@@ -23,7 +23,6 @@ import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Villager.Profession;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
@@ -179,23 +178,7 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 		} else if (sender instanceof Player) {
 			Player player = (Player)sender;
 			if (!player.hasPermission("shopkeeper.admin") && !player.hasPermission("shopkeeper.player")) return true;
-			
-			// get the profession, default to farmer if an invalid one is specified
-			int prof = 0;
-			if (args.length > 0) {
-				if (args[0].matches("[0-9]+")) {
-					prof = Integer.parseInt(args[0]);
-					if (prof > 5) {
-						prof = 0;
-					}
-				} else {
-					Profession p = Profession.valueOf(args[0].toUpperCase());
-					if (p != null) {
-						prof = p.getId();
-					}
-				}
-			}
-			
+						
 			// get the spawn location for the shopkeeper
 			Block block = player.getTargetBlock(null, 10);
 			if (block != null && block.getType() != Material.AIR) {
@@ -211,11 +194,11 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 						return true;
 					}
 					// create the player shopkeeper
-					createNewPlayerShopkeeper(player, block, block.getLocation().add(0, 1.5, 0), prof, 0);
+					createNewPlayerShopkeeper(player, block, block.getLocation().add(0, 1.5, 0), 0, 0);
 					sendMessage(player, Settings.msgPlayerShopCreated);
 				} else if (player.hasPermission("shopkeeper.admin")) {
 					// create the admin shopkeeper
-					createNewAdminShopkeeper(block.getLocation().add(0, 1.5, 0), prof);
+					createNewAdminShopkeeper(block.getLocation().add(0, 1.5, 0), 0);
 					sendMessage(player, Settings.msgAdminShopCreated);
 				}
 			} else {

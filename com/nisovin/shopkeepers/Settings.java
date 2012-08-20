@@ -74,6 +74,7 @@ public class Settings {
 		}
 		
 		if (maxChestDistance > 50) maxChestDistance = 50;
+		if (highCurrencyValue <= 0) highCurrencyItem = 0;
 	}
 	
 	public static void loadLanguageConfiguration(Configuration config) {

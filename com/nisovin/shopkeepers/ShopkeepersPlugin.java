@@ -74,7 +74,7 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 		if (langFile.exists()) {
 			try {
 				YamlConfiguration langConfig = new YamlConfiguration();
-				langConfig.load(file);
+				langConfig.load(langFile);
 				Settings.loadLanguageConfiguration(langConfig);
 			} catch (Exception e) {
 				e.printStackTrace();

@@ -233,24 +233,7 @@ class ShopListener implements Listener {
 							plugin.sendMessage(player, Settings.msgMustSelectChest);
 						} else if ((int)chest.getLocation().distance(block.getLocation()) > Settings.maxChestDistance) {
 							plugin.sendMessage(player, Settings.msgChestTooFar);
-						} else {
-							
-							// check worldguard
-							if (Settings.enableWorldGuardRestrictions) {
-								if (!WorldGuardHandler.canBuild(player, block)) {
-									plugin.sendMessage(player, Settings.msgShopCreateFail);
-									return;
-								}
-							}
-							
-							// check towny
-							if (Settings.enableTownyRestrictions) {
-								if (!TownyHandler.isCommercialArea(block)) {
-									plugin.sendMessage(player, Settings.msgShopCreateFail);
-									return;
-								}
-							}
-							
+						} else {							
 							// get shop type
 							int option = 0;
 							if (plugin.selectedShopType.containsKey(playerName)) {

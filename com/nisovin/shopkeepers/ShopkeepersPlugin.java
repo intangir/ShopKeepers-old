@@ -260,6 +260,22 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 			return null;
 		}
 		
+		// check worldguard
+		if (Settings.enableWorldGuardRestrictions) {
+			if (!WorldGuardHandler.canBuild(player, location)) {
+				plugin.sendMessage(player, Settings.msgShopCreateFail);
+				return null;
+			}
+		}
+		
+		// check towny
+		if (Settings.enableTownyRestrictions) {
+			if (!TownyHandler.isCommercialArea(location)) {
+				plugin.sendMessage(player, Settings.msgShopCreateFail);
+				return null;
+			}
+		}
+		
 		int maxShops = Settings.maxShopsPerPlayer;
 		
 		// call event

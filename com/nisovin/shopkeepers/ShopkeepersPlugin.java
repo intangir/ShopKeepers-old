@@ -67,9 +67,9 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 
 		// get lang config
 		String lang = config.getString("language", "en");
-		File langFile = new File(getDataFolder(), "language-" + config.getString("language", "en") + ".yml");
-		if (!langFile.exists()) {
-			saveResource("language" + lang + ".yml", false);
+		File langFile = new File(getDataFolder(), "language-" + lang + ".yml");
+		if (!langFile.exists() && this.getResource("language-" + lang + ".yml") != null) {
+			saveResource("language-" + lang + ".yml", false);
 		}
 		if (langFile.exists()) {
 			try {

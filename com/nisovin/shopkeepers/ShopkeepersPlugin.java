@@ -22,6 +22,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
@@ -348,6 +349,15 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 	 */
 	public List<Shopkeeper> getShopkeepersInChunk(String world, int x, int z) {
 		return allShopkeepersByChunk.get(world + "," + x + "," + z);
+	}
+	
+	/**
+	 * Checks if a given entity is a Shopkeeper.
+	 * @param entity the entity to check
+	 * @return whether the entity is a Shopkeeper
+	 */
+	public boolean isShopkeeper(Entity entity) {
+		return activeShopkeepers.containsKey(entity.getEntityId());
 	}
 	
 	void addShopkeeper(Shopkeeper shopkeeper) {

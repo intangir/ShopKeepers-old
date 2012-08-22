@@ -20,7 +20,6 @@ import org.bukkit.inventory.ItemStack;
 import com.nisovin.shopkeepers.Settings;
 import com.nisovin.shopkeepers.ShopkeeperType;
 
-
 public class FixedQuantityPlayerShopkeeper extends PlayerShopkeeper {
 
 	protected HashMap<ItemType, Integer> costs;
@@ -192,7 +191,7 @@ public class FixedQuantityPlayerShopkeeper extends PlayerShopkeeper {
 
 		// item not found
 		event.setCancelled(true);
-		event.getWhoClicked().closeInventory();
+		closeInventory(event.getWhoClicked());
 	}
 	
 	private List<ItemType> getTypesFromChest() {

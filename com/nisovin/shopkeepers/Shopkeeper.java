@@ -18,6 +18,7 @@ import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.craftbukkit.entity.CraftVillager;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -218,6 +219,10 @@ public abstract class Shopkeeper {
 	
 	protected void setProfession() {
 		((CraftVillager)villager).getHandle().setProfession(profession);
+	}
+	
+	protected void closeInventory(HumanEntity player) {
+		ShopkeepersPlugin.plugin.closeInventory(player);
 	}
 	
 	protected short getProfessionWoolColor() {

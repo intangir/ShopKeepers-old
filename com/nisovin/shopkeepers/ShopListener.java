@@ -9,13 +9,17 @@ import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
+import org.bukkit.event.entity.EntityTargetEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
@@ -108,14 +112,6 @@ class ShopListener implements Listener {
 	}
 	
 	@EventHandler
-	void onEntityDamage(EntityDamageEvent event) {
-		// don't allow damaging shopkeepers!
-		if (plugin.activeShopkeepers.containsKey(event.getEntity().getEntityId())) {
-			event.setCancelled(true);
-		}
-	}
-	
-	@EventHandler
 	void onInventoryClick(InventoryClickEvent event) {
 		// shopkeeper editor click
 		if (event.getInventory().getTitle().equals(Settings.editorTitle)) {
@@ -128,8 +124,6 @@ class ShopListener implements Listener {
 					EditorClickResult result = shopkeeper.onEditorClick(event);
 					if (result == EditorClickResult.DELETE_SHOPKEEPER) {
 						// close inventories
-						event.getWhoClicked().closeInventory();
-						plugin.editing.remove(event.getWhoClicked().getName());
 						plugin.closeTradingForShopkeeper(entityId);
 						
 						// return egg
@@ -143,8 +137,6 @@ class ShopListener implements Listener {
 						plugin.save();
 					} else if (result == EditorClickResult.DONE_EDITING) {
 						// end the editing session
-						event.getWhoClicked().closeInventory();
-						plugin.editing.remove(event.getWhoClicked().getName());
 						plugin.closeTradingForShopkeeper(entityId);
 						plugin.save();
 					} else if (result == EditorClickResult.SAVE_AND_CONTINUE) {
@@ -152,11 +144,11 @@ class ShopListener implements Listener {
 					}
 				} else {
 					event.setCancelled(true);
-					event.getWhoClicked().closeInventory();
+					plugin.closeInventory(event.getWhoClicked());
 				}
 			} else {
 				event.setCancelled(true);
-				event.getWhoClicked().closeInventory();
+				plugin.closeInventory(event.getWhoClicked());
 			}
 		}
 		// purchase click
@@ -270,6 +262,27 @@ class ShopListener implements Listener {
 				}
 				
 			}
+		}
+	}
+	
+	@EventHandler
+	void onEntityDamage(EntityDamageEvent event) {
+		// don't allow damaging shopkeepers!
+		if (plugin.activeShopkeepers.containsKey(event.getEntity().getEntityId())) {
+			event.setCancelled(true);
+			if (event instanceof EntityDamageByEntityEvent) {
+				EntityDamageByEntityEvent evt = (EntityDamageByEntityEvent)event;
+				if (evt.getDamager().getType() == EntityType.ZOMBIE) {
+					evt.getDamager().remove();
+				}
+			}
+		}
+	}
+	
+	@EventHandler
+	void onTarget(EntityTargetEvent event) {
+		if (event.getTarget().getType() == EntityType.VILLAGER) {
+			event.setCancelled(true);
 		}
 	}
 	

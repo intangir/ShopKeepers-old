@@ -23,6 +23,7 @@ import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
@@ -358,8 +359,8 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 	 */
 	public boolean isShopkeeper(Entity entity) {
 		return activeShopkeepers.containsKey(entity.getEntityId());
-	}
-	
+	}	
+
 	void addShopkeeper(Shopkeeper shopkeeper) {
 		// add to chunk list
 		List<Shopkeeper> list = allShopkeepersByChunk.get(shopkeeper.getChunk());
@@ -372,29 +373,41 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 		save();
 	}
 
-	void closeTradingForShopkeeper(int entityId) {
-		Iterator<String> editors = editing.keySet().iterator();
-		while (editors.hasNext()) {
-			String name = editors.next();
-			if (editing.get(name).equals(entityId)) {
-				Player player = Bukkit.getPlayerExact(name);
-				if (player != null) {
-					player.closeInventory();
+	void closeTradingForShopkeeper(final int entityId) {
+		Bukkit.getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
+			public void run() {
+				Iterator<String> editors = editing.keySet().iterator();
+				while (editors.hasNext()) {
+					String name = editors.next();
+					if (editing.get(name).equals(entityId)) {
+						Player player = Bukkit.getPlayerExact(name);
+						if (player != null) {
+							player.closeInventory();
+						}
+						editors.remove();
+					}
 				}
-				editors.remove();
-			}
-		}
-		Iterator<String> purchasers = purchasing.keySet().iterator();
-		while (purchasers.hasNext()) {
-			String name = purchasers.next();
-			if (purchasing.get(name).equals(entityId)) {
-				Player player = Bukkit.getPlayerExact(name);
-				if (player != null) {
-					player.closeInventory();
+				Iterator<String> purchasers = purchasing.keySet().iterator();
+				while (purchasers.hasNext()) {
+					String name = purchasers.next();
+					if (purchasing.get(name).equals(entityId)) {
+						Player player = Bukkit.getPlayerExact(name);
+						if (player != null) {
+							player.closeInventory();
+						}
+						purchasers.remove();
+					}
 				}
-				purchasers.remove();
 			}
-		}
+		}, 1);
+	}
+	
+	void closeInventory(final HumanEntity player) {
+		Bukkit.getScheduler().scheduleSyncDelayedTask(ShopkeepersPlugin.plugin, new Runnable() {
+			public void run() {
+				player.closeInventory();
+			}
+		}, 1);
 	}
 	
 	boolean isChestProtected(Player player, Block block) {

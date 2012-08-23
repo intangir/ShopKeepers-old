@@ -1,10 +1,13 @@
 package com.nisovin.shopkeepers.shoptypes;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
+import net.minecraft.server.NBTBase;
 import net.minecraft.server.NBTTagCompound;
 import net.minecraft.server.NBTTagList;
 import net.minecraft.server.NBTTagString;
@@ -234,6 +237,16 @@ public class AdminShopkeeper extends Shopkeeper {
 	 */
 	private ItemStack loadItemStack(ConfigurationSection config) {
 		CraftItemStack item = new CraftItemStack(config.getInt("id"), config.getInt("amt"), (short)config.getInt("data"));
+		if (config.contains("nbtdata")) {
+			Object nbtData = config.get("nbtdata");
+			ByteArrayInputStream stream = new ByteArrayInputStream((byte[]) nbtData);
+			NBTBase tag = NBTBase.b(new DataInputStream(stream));
+			if (tag instanceof NBTTagCompound) {
+				item.getHandle().tag = (NBTTagCompound)tag;
+			}
+			return item;
+		}
+		// rest of code left for backwards compatibility
 		if (config.contains("enchants")) {
 			List<String> list = config.getStringList("enchants");
 			for (String s : list) {
@@ -277,18 +290,22 @@ public class AdminShopkeeper extends Shopkeeper {
 		config.set("id", item.getTypeId());
 		config.set("data", item.getDurability());
 		config.set("amt", item.getAmount());
-		Map<Enchantment, Integer> enchants = item.getEnchantments();
+		/*Map<Enchantment, Integer> enchants = item.getEnchantments();
 		if (enchants.size() > 0) {
 			List<String> list = new ArrayList<String>();
 			for (Enchantment enchant : enchants.keySet()) {
 				list.add(enchant.getId() + " " + enchants.get(enchant));
 			}
 			config.set("enchants", list);
-		}
+		}*/
 		if (item instanceof CraftItemStack) {
 			NBTTagCompound tag = ((CraftItemStack)item).getHandle().tag;
 			if (tag != null) {
-				if (item.getType() == Material.WRITTEN_BOOK && tag.hasKey("title") && tag.hasKey("author") && tag.hasKey("pages")) {
+				ByteArrayOutputStream stream = new ByteArrayOutputStream();
+				NBTBase.a(tag, new DataOutputStream(stream));
+				String binaryString = stream.toString();
+				config.set("nbtdata", binaryString);
+				/*if (item.getType() == Material.WRITTEN_BOOK && tag.hasKey("title") && tag.hasKey("author") && tag.hasKey("pages")) {
 					config.set("title", tag.getString("title"));
 					config.set("author", tag.getString("author"));
 					List<String> pages = new ArrayList<String>();
@@ -316,7 +333,7 @@ public class AdminShopkeeper extends Shopkeeper {
 					for (String key : extraData.keySet()) {
 						extraDataSection.set(key, extraData.get(key));
 					}
-				}
+				}*/
 			}
 		}
 	}

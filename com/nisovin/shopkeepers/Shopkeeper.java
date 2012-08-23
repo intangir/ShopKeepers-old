@@ -134,7 +134,10 @@ public abstract class Shopkeeper {
 				spawn();
 			} else {
 				World w = Bukkit.getWorld(world);
-				villager.teleport(new Location(w, x + .5, y, z + .5, villager.getLocation().getYaw(), villager.getLocation().getPitch()));
+				Location loc = new Location(w, x + .5, y, z + .5, villager.getLocation().getYaw(), villager.getLocation().getPitch());
+				if (villager.getLocation().distanceSquared(loc) > .25) {
+					villager.teleport(loc);
+				}
 			}
 		}
 	}

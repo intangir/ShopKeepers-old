@@ -122,7 +122,7 @@ public abstract class Shopkeeper {
 	 * @return whether the shopkeeper is active
 	 */
 	public boolean isActive() {
-		return villager != null;
+		return villager != null && !villager.isDead();
 	}
 	
 	/**
@@ -130,8 +130,12 @@ public abstract class Shopkeeper {
 	 */
 	public void teleport() {
 		if (villager != null) {
-			World w = Bukkit.getWorld(world);
-			villager.teleport(new Location(w, x + .5, y, z + .5, villager.getLocation().getYaw(), villager.getLocation().getPitch()));
+			if (villager.isDead()) {
+				spawn();
+			} else {
+				World w = Bukkit.getWorld(world);
+				villager.teleport(new Location(w, x + .5, y, z + .5, villager.getLocation().getYaw(), villager.getLocation().getPitch()));
+			}
 		}
 	}
 	

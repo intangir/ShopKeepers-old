@@ -18,7 +18,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityTargetEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
@@ -281,14 +280,21 @@ class ShopListener implements Listener {
 	
 	@EventHandler
 	void onTarget(EntityTargetEvent event) {
-		if (event.getTarget().getType() == EntityType.VILLAGER) {
+		if (event.getTarget() != null && event.getTarget().getType() == EntityType.VILLAGER) {
 			event.setCancelled(true);
 		}
 	}
 	
-	@EventHandler(priority=EventPriority.LOWEST)
+	@EventHandler
 	void onChunkLoad(ChunkLoadEvent event) {
-		plugin.loadShopkeepersInChunk(event.getChunk());
+		final Chunk chunk = event.getChunk();
+		Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+			public void run() {
+				if (chunk.isLoaded()) {
+					plugin.loadShopkeepersInChunk(chunk);
+				}
+			}
+		}, 5);
 	}
 
 	@EventHandler(priority=EventPriority.LOWEST)

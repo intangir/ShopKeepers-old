@@ -111,6 +111,23 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 			}
 		}, 200, 200);
 		
+		// start verifier
+		/*Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
+			public void run() {
+				for (String chunkStr : allShopkeepersByChunk.keySet()) {
+					if (isChunkLoaded(chunkStr)) {
+						List<Shopkeeper> shopkeepers = allShopkeepersByChunk.get(chunkStr);
+						for (Shopkeeper shopkeeper : shopkeepers) {
+							if (!shopkeeper.isActive()) {
+								shopkeeper.spawn();
+								activeShopkeepers.put(shopkeeper.getEntityId(), shopkeeper);
+							}
+						}
+					}
+				}
+			}
+		}, 600, 1200);*/
+		
 		// start saver
 		if (!Settings.saveInstantly) {
 			Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
@@ -122,6 +139,7 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 				}
 			}, 6000, 6000);
 		}
+		
 	}
 	
 	@Override
@@ -443,6 +461,17 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 			save();
 		}
 	}
+	
+	/*private boolean isChunkLoaded(String chunkStr) {
+		String[] chunkData = chunkStr.split(",");
+		World w = getServer().getWorld(chunkData[0]);
+		if (w != null) {
+			int x = Integer.parseInt(chunkData[1]);
+			int z = Integer.parseInt(chunkData[2]);
+			return w.isChunkLoaded(x, z);
+		}
+		return false;
+	}*/
 	
 	private void load() {
 		File file = new File(getDataFolder(), "save.yml");

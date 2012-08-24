@@ -46,7 +46,7 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 	Map<Integer, Shopkeeper> activeShopkeepers = new HashMap<Integer, Shopkeeper>();
 	Map<String, Integer> editing = new HashMap<String, Integer>();
 	Map<String, Integer> purchasing = new HashMap<String, Integer>();
-	Map<String, Integer> selectedShopType = new HashMap<String, Integer>();
+	Map<String, ShopkeeperType> selectedShopType = new HashMap<String, ShopkeeperType>();
 	Map<String, Block> selectedChest = new HashMap<String, Block>();
 	
 	private boolean dirty = false;
@@ -214,7 +214,7 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 						return true;
 					}
 					// create the player shopkeeper
-					createNewPlayerShopkeeper(player, block, block.getLocation().add(0, 1.5, 0), 0, 0);
+					createNewPlayerShopkeeper(player, block, block.getLocation().add(0, 1.5, 0), 0, ShopkeeperType.next(player, null));
 					sendMessage(player, Settings.msgPlayerShopCreated);
 				} else if (player.hasPermission("shopkeeper.admin")) {
 					// create the admin shopkeeper
@@ -262,20 +262,12 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 	 * @param type the player shop type (0=normal, 1=book, 2=buy)
 	 * @return the shopkeeper created
 	 */
-	public Shopkeeper createNewPlayerShopkeeper(Player player, Block chest, Location location, int profession, int type) {
+	public Shopkeeper createNewPlayerShopkeeper(Player player, Block chest, Location location, int profession, ShopkeeperType shopType) {
 		// make sure profession is valid
 		if (profession < 0 || profession > 5) {
 			profession = 0;
 		}
 		
-		ShopkeeperType shopType = null;
-		if (type == 0) {
-			shopType = ShopkeeperType.PLAYER_NORMAL;
-		} else if (type == 1) {
-			shopType = ShopkeeperType.PLAYER_BOOK;
-		} else if (type == 2) {
-			shopType = ShopkeeperType.PLAYER_BUY;
-		}
 		if (shopType == null) {
 			return null;
 		}
@@ -338,6 +330,8 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 			shopkeeper = new WrittenBookPlayerShopkeeper(player, chest, location, profession);
 		} else if (shopType == ShopkeeperType.PLAYER_BUY) {
 			shopkeeper = new BuyingPlayerShopkeeper(player, chest, location, profession);
+		} else if (shopType == ShopkeeperType.PLAYER_TRADE) {
+			shopkeeper = new TradingPlayerShopkeeper(player, chest, location, profession);
 		}
 
 		// spawn and save the shopkeeper
@@ -491,11 +485,11 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 			Shopkeeper shopkeeper = null;
 			String type = section.getString("type", "");
 			if (type.equals("book")) {
-				if (Settings.allowPlayerBookShop) {
-					shopkeeper = new WrittenBookPlayerShopkeeper(section);
-				}
+				shopkeeper = new WrittenBookPlayerShopkeeper(section);
 			} else if (type.equals("buy")) {
 				shopkeeper = new BuyingPlayerShopkeeper(section);
+			} else if (type.equals("trade")) {
+				shopkeeper = new TradingPlayerShopkeeper(section);
 			} else if (type.equals("player") || section.contains("owner")) {
 				if (Settings.allowCustomQuantities) {
 					shopkeeper = new CustomQuantityPlayerShopkeeper(section);

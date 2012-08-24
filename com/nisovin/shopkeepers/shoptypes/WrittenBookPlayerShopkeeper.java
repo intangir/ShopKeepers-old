@@ -19,6 +19,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import com.nisovin.shopkeepers.EditorClickResult;
 import com.nisovin.shopkeepers.Settings;
 import com.nisovin.shopkeepers.ShopkeeperType;
 
@@ -109,6 +110,12 @@ public class WrittenBookPlayerShopkeeper extends PlayerShopkeeper {
 		player.openInventory(inv);
 		
 		return true;
+	}
+	
+	@Override
+	public EditorClickResult onEditorClick(InventoryClickEvent event) {
+		event.setCancelled(true);
+		return super.onEditorClick(event);
 	}
 
 	@Override

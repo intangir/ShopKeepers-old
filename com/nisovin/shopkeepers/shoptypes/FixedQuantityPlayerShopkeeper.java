@@ -17,12 +17,13 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import com.nisovin.shopkeepers.EditorClickResult;
 import com.nisovin.shopkeepers.Settings;
 import com.nisovin.shopkeepers.ShopkeeperType;
 
 public class FixedQuantityPlayerShopkeeper extends PlayerShopkeeper {
 
-	protected HashMap<ItemType, Integer> costs;
+	protected HashMap<ItemTypeAndQuantity, Integer> costs;
 	
 	public FixedQuantityPlayerShopkeeper(ConfigurationSection config) {
 		super(config);
@@ -30,18 +31,18 @@ public class FixedQuantityPlayerShopkeeper extends PlayerShopkeeper {
 
 	public FixedQuantityPlayerShopkeeper(Player owner, Block chest, Location location, int profession) {
 		super(owner, chest, location, profession);
-		this.costs = new HashMap<ItemType, Integer>();
+		this.costs = new HashMap<ItemTypeAndQuantity, Integer>();
 	}
 	
 	@Override
 	public void load(ConfigurationSection config) {
 		super.load(config);
-		costs = new HashMap<ItemType, Integer>();
+		costs = new HashMap<ItemTypeAndQuantity, Integer>();
 		ConfigurationSection costsSection = config.getConfigurationSection("costs");
 		if (costsSection != null) {
 			for (String key : costsSection.getKeys(false)) {
 				ConfigurationSection itemSection = costsSection.getConfigurationSection(key);
-				ItemType type = new ItemType();
+				ItemTypeAndQuantity type = new ItemTypeAndQuantity();
 				type.id = itemSection.getInt("id");
 				type.data = (short)itemSection.getInt("data");
 				type.amount = itemSection.getInt("amount");
@@ -59,7 +60,7 @@ public class FixedQuantityPlayerShopkeeper extends PlayerShopkeeper {
 		super.save(config);
 		ConfigurationSection costsSection = config.createSection("costs");
 		int count = 0;
-		for (ItemType type : costs.keySet()) {
+		for (ItemTypeAndQuantity type : costs.keySet()) {
 			ConfigurationSection itemSection = costsSection.createSection(count + "");
 			itemSection.set("id", type.id);
 			itemSection.set("data", type.data);
@@ -80,8 +81,8 @@ public class FixedQuantityPlayerShopkeeper extends PlayerShopkeeper {
 	@Override
 	public List<ItemStack[]> getRecipes() {
 		List<ItemStack[]> recipes = new ArrayList<ItemStack[]>();
-		List<ItemType> types = getTypesFromChest();
-		for (ItemType type : types) {
+		List<ItemTypeAndQuantity> types = getTypesFromChest();
+		for (ItemTypeAndQuantity type : types) {
 			if (costs.containsKey(type)) {
 				ItemStack[] recipe = new ItemStack[3];
 				int cost = costs.get(type);
@@ -97,9 +98,9 @@ public class FixedQuantityPlayerShopkeeper extends PlayerShopkeeper {
 	public boolean onPlayerEdit(Player player) {
 		Inventory inv = Bukkit.createInventory(player, 27, Settings.editorTitle);
 		// show types
-		List<ItemType> types = getTypesFromChest();
+		List<ItemTypeAndQuantity> types = getTypesFromChest();
 		for (int i = 0; i < types.size() && i < 8; i++) {
-			ItemType type = types.get(i);
+			ItemTypeAndQuantity type = types.get(i);
 			inv.setItem(i, type.getItemStack());
 			int cost = 0;
 			if (costs.containsKey(type)) {
@@ -115,15 +116,21 @@ public class FixedQuantityPlayerShopkeeper extends PlayerShopkeeper {
 	}
 	
 	@Override
+	public EditorClickResult onEditorClick(InventoryClickEvent event) {
+		event.setCancelled(true);
+		return super.onEditorClick(event);
+	}
+	
+	@Override
 	protected void saveEditor(Inventory inv) {
 		for (int i = 0; i < 8; i++) {
 			ItemStack item = inv.getItem(i);
 			if (item != null && item.getType() != Material.AIR) {
 				int cost = getCostFromColumn(inv, i);
 				if (cost > 0) {
-					costs.put(new ItemType(item), cost);
+					costs.put(new ItemTypeAndQuantity(item), cost);
 				} else {
-					costs.remove(new ItemType(item));
+					costs.remove(new ItemTypeAndQuantity(item));
 				}
 			}
 		}
@@ -138,7 +145,7 @@ public class FixedQuantityPlayerShopkeeper extends PlayerShopkeeper {
 		}
 		
 		// get type and cost
-		ItemType type = new ItemType(event.getCurrentItem());
+		ItemTypeAndQuantity type = new ItemTypeAndQuantity(event.getCurrentItem());
 		if (!costs.containsKey(type)) {
 			event.setCancelled(true);
 			return;
@@ -194,15 +201,15 @@ public class FixedQuantityPlayerShopkeeper extends PlayerShopkeeper {
 		closeInventory(event.getWhoClicked());
 	}
 	
-	private List<ItemType> getTypesFromChest() {
-		List<ItemType> types = new ArrayList<ItemType>();
+	private List<ItemTypeAndQuantity> getTypesFromChest() {
+		List<ItemTypeAndQuantity> types = new ArrayList<ItemTypeAndQuantity>();
 		Block chest = Bukkit.getWorld(world).getBlockAt(chestx, chesty, chestz);
 		if (chest.getType() == Material.CHEST) {
 			Inventory inv = ((Chest)chest.getState()).getInventory();
 			ItemStack[] contents = inv.getContents();
 			for (ItemStack item : contents) {
 				if (item != null && item.getType() != Material.AIR && item.getTypeId() != Settings.currencyItem && item.getTypeId() != Settings.highCurrencyItem && item.getType() != Material.WRITTEN_BOOK) {
-					ItemType type = new ItemType(item);
+					ItemTypeAndQuantity type = new ItemTypeAndQuantity(item);
 					if (!types.contains(type)) {
 						types.add(type);
 					}
@@ -212,17 +219,17 @@ public class FixedQuantityPlayerShopkeeper extends PlayerShopkeeper {
 		return types;
 	}
 	
-	private class ItemType {
+	private class ItemTypeAndQuantity {
 		int id;
 		short data;
 		int amount;
 		String enchants;
 		
-		ItemType() {
+		ItemTypeAndQuantity() {
 			
 		}
 		
-		ItemType(ItemStack item) {
+		ItemTypeAndQuantity(ItemStack item) {
 			id = item.getTypeId();
 			data = item.getDurability();
 			amount = item.getAmount();
@@ -255,8 +262,8 @@ public class FixedQuantityPlayerShopkeeper extends PlayerShopkeeper {
 		
 		@Override
 		public boolean equals(Object o) {
-			if (o instanceof ItemType) {
-				ItemType i = (ItemType)o;
+			if (o instanceof ItemTypeAndQuantity) {
+				ItemTypeAndQuantity i = (ItemTypeAndQuantity)o;
 				boolean test = (i.id == this.id && i.data == this.data && i.amount == this.amount);
 				if (!test) return false;
 				if (i.enchants == null && this.enchants == null) return true;

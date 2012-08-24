@@ -193,23 +193,17 @@ class ShopListener implements Listener {
 				event.setCancelled(true);
 				if (event.getAction() == Action.RIGHT_CLICK_AIR) {
 					// cycle shop options
-					int option = 0;
-					if (plugin.selectedShopType.containsKey(playerName)) {
-						option = plugin.selectedShopType.get(playerName) + 1;
-						if (option > 2) {
-							option = 0;
-						}
-					}
-					if (option == 1 && !Settings.allowPlayerBookShop) {
-						option = 2;
-					}
-					plugin.selectedShopType.put(playerName, option);
-					if (option == 0) {
+					ShopkeeperType shopType = plugin.selectedShopType.get(playerName);
+					shopType = ShopkeeperType.next(player, shopType);
+					plugin.selectedShopType.put(playerName, shopType);
+					if (shopType == ShopkeeperType.PLAYER_NORMAL) {
 						plugin.sendMessage(player, Settings.msgSelectedNormalShop);
-					} else if (option == 1) {
+					} else if (shopType == ShopkeeperType.PLAYER_BOOK) {
 						plugin.sendMessage(player, Settings.msgSelectedBookShop);
-					} else if (option == 2) {
+					} else if (shopType == ShopkeeperType.PLAYER_BUY) {
 						plugin.sendMessage(player, Settings.msgSelectedBuyShop);
+					} else if (shopType == ShopkeeperType.PLAYER_TRADE) {
+						plugin.sendMessage(player, Settings.msgSelectedTradeShop);
 					}
 				} else if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
 					Block block = event.getClickedBlock();
@@ -226,30 +220,32 @@ class ShopListener implements Listener {
 							plugin.sendMessage(player, Settings.msgChestTooFar);
 						} else {							
 							// get shop type
-							int option = 0;
-							if (plugin.selectedShopType.containsKey(playerName)) {
-								option = plugin.selectedShopType.get(playerName);
-							}
+							ShopkeeperType shopType = plugin.selectedShopType.get(playerName);
+							if (shopType == null) shopType = ShopkeeperType.next(player, null);
 							
-							// create player shopkeeper
-							Shopkeeper shopkeeper = plugin.createNewPlayerShopkeeper(player, chest, block.getLocation().add(0, 1.5, 0), 0, option);
-							if (shopkeeper != null) {
-								// send message
-								if (option == 0) {
-									plugin.sendMessage(player, Settings.msgPlayerShopCreated);
-								} else if (option == 1) {
-									plugin.sendMessage(player, Settings.msgBookShopCreated);
-								} else if (option == 2) {
-									plugin.sendMessage(player, Settings.msgBuyShopCreated);
-								} else {
-									return;
-								}
-								// remove egg
-								inHand.setAmount(inHand.getAmount() - 1);
-								if (inHand.getAmount() > 0) {
-									player.setItemInHand(inHand);
-								} else {
-									player.setItemInHand(null);
+							if (shopType != null) {
+								// create player shopkeeper
+								Shopkeeper shopkeeper = plugin.createNewPlayerShopkeeper(player, chest, block.getLocation().add(0, 1.5, 0), 0, shopType);
+								if (shopkeeper != null) {
+									// send message
+									if (shopType == ShopkeeperType.PLAYER_NORMAL) {
+										plugin.sendMessage(player, Settings.msgPlayerShopCreated);
+									} else if (shopType == ShopkeeperType.PLAYER_BOOK) {
+										plugin.sendMessage(player, Settings.msgBookShopCreated);
+									} else if (shopType == ShopkeeperType.PLAYER_BUY) {
+										plugin.sendMessage(player, Settings.msgBuyShopCreated);
+									} else if (shopType == ShopkeeperType.PLAYER_TRADE) {
+										plugin.sendMessage(player, Settings.msgTradeShopCreated);
+									} else {
+										return;
+									}
+									// remove egg
+									inHand.setAmount(inHand.getAmount() - 1);
+									if (inHand.getAmount() > 0) {
+										player.setItemInHand(inHand);
+									} else {
+										player.setItemInHand(null);
+									}
 								}
 							}
 							
@@ -294,7 +290,7 @@ class ShopListener implements Listener {
 					plugin.loadShopkeepersInChunk(chunk);
 				}
 			}
-		}, 5);
+		}, 10);
 	}
 
 	@EventHandler(priority=EventPriority.LOWEST)

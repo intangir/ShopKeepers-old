@@ -9,7 +9,6 @@ create-player-shop-with-command: true
 create-player-shop-with-egg: true
 deleting-player-shop-returns-egg: false
 allow-custom-quantities: true
-allow-player-book-shop: true
 protect-chests: true
 max-shops-per-player: 0
 max-chest-distance: 15
@@ -33,6 +32,7 @@ language: en
 msg-selected-normal-shop: "&aNormal shopkeeper selected (sells items to players)."
 msg-selected-book-shop: "&aBook shopkeeper selected (sell books)."
 msg-selected-buy-shop: "&aBuying shopkeeper selected (buys items from players)."
+msg-selected-trade-shop: "&aTrading shopkeeper selected (trades items with players)."
 msg-selected-chest: "&aChest selected! Right click a block to place your shopkeeper."
 msg-must-select-chest: "&aYou must right-click a chest before placing your shopkeeper."
 msg-chest-too-far: "&aThe shopkeeper's chest is too far away!"
@@ -51,6 +51,10 @@ msg-book-shop-created: |
 msg-buy-shop-created: |
     &aShopkeeper created!
     &aAdd one of each item you want to sell to your chest, then
+    &aright-click the villager while sneaking to modify costs.
+msg-trade-shop-created: |
+    &aShopkeeper created!
+    &aAdd items you want to sell to your chest, then
     &aright-click the villager while sneaking to modify costs.
 msg-admin-shop-created: |
     &aShopkeeper created!

@@ -21,6 +21,23 @@ permissions:
     shopkeeper.player:
         description: Create and modify a player shopkeeper
         default: true
+        children:
+            shopkeeper.player.normal: true
+            shopkeeper.player.book: true
+            shopkeeper.player.buy: true
+            shopkeeper.player.trade: true
+    shopkeeper.player.normal:
+        description: Create and modify a normal player shopkeeper
+        default: false
+    shopkeeper.player.book:
+        description: Create and modify a book player shopkeeper
+        default: false
+    shopkeeper.player.buy:
+        description: Create and modify a buying player shopkeeper
+        default: false
+    shopkeeper.player.trade:
+        description: Create and modify a trading player shopkeeper
+        default: false
     shopkeeper.bypass:
         description: Bypass player shop restrictions
         default: op

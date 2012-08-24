@@ -18,7 +18,6 @@ public class Settings {
 	public static boolean createPlayerShopWithEgg = true;
 	public static boolean deletingPlayerShopReturnsEgg = false;
 	public static boolean allowCustomQuantities = true;
-	public static boolean allowPlayerBookShop = true;
 	public static boolean protectChests = true;
 	public static int maxShopsPerPlayer = 0;
 	public static int maxChestDistance = 15;
@@ -40,6 +39,7 @@ public class Settings {
 	public static String msgSelectedNormalShop = "&aNormal shopkeeper selected (sells items to players).";
 	public static String msgSelectedBookShop = "&aBook shopkeeper selected (sell books).";
 	public static String msgSelectedBuyShop = "&aBuying shopkeeper selected (buys items from players).";
+	public static String msgSelectedTradeShop = "&aTrading shopkeeper selected (trade items with players).";
 	public static String msgSelectedChest = "&aChest selected! Right click a block to place your shopkeeper.";
 	public static String msgMustSelectChest = "&aYou must right-click a chest before placing your shopkeeper.";
 	public static String msgChestTooFar = "&aThe shopkeeper's chest is too far away!";
@@ -47,6 +47,7 @@ public class Settings {
 	public static String msgPlayerShopCreated = "&aShopkeeper created!\n&aAdd items you want to sell to your chest, then\n&aright-click the villager while sneaking to modify costs.";
 	public static String msgBookShopCreated = "&aShopkeeper created!\n&aAdd written books and blank books to your chest, then\n&aright-click the villager while sneaking to modify costs.";
 	public static String msgBuyShopCreated = "&aShopkeeper created!\n&aAdd one of each item you want to sell to your chest, then\n&aright-click the villager while sneaking to modify costs.";
+	public static String msgTradeShopCreated = "&aShopkeeper created!\n&aAdd items you want to sell to your chest, then\n&aright-click the villager while sneaking to modify costs.";
 	public static String msgAdminShopCreated = "&aShopkeeper created!\n&aRight-click the villager while sneaking to modify trades.";
 	public static String msgShopCreateFail = "&aYou cannot create a shopkeeper there.";
 	public static String msgTooManyShops = "&aYou have too many shops.";

@@ -96,13 +96,19 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 	
 	@Override
 	public EditorClickResult onEditorClick(InventoryClickEvent event) {
-		event.setCancelled(true);
+		// prevent shift clicks on player inventory items
+		if (event.getRawSlot() > 27 && event.isShiftClick()) {
+			event.setCancelled(true);
+			return EditorClickResult.NOTHING;
+		}
 		if (event.getRawSlot() == 8) {
 			// save
+			event.setCancelled(true);
 			saveEditor(event.getInventory());
 			return EditorClickResult.DONE_EDITING;
 		} else if (event.getRawSlot() == 17) {
 			// change profession
+			event.setCancelled(true);
 			profession += 1;
 			if (profession > 5) profession = 0;
 			setProfession();
@@ -110,10 +116,12 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 			return EditorClickResult.SAVE_AND_CONTINUE;
 		} else if (event.getRawSlot() == 26) {
 			// delete
+			event.setCancelled(true);
 			remove();
 			return EditorClickResult.DELETE_SHOPKEEPER;
 		} else if (event.getRawSlot() >= 18 && event.getRawSlot() <= 25) {
 			// change low cost
+			event.setCancelled(true);
 			ItemStack item = event.getCurrentItem();
 			if (item != null) {
 				if (item.getTypeId() == Settings.currencyItem) {
@@ -143,6 +151,7 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 			}
 		} else if (event.getRawSlot() >= 9 && event.getRawSlot() <= 16) {
 			// change high cost
+			event.setCancelled(true);
 			ItemStack item = event.getCurrentItem();
 			if (item != null && Settings.highCurrencyItem > 0) {
 				if (item.getTypeId() == Settings.highCurrencyItem) {

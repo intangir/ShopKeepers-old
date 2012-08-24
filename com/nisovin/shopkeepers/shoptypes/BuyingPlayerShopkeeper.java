@@ -127,6 +127,7 @@ public class BuyingPlayerShopkeeper extends PlayerShopkeeper {
 
 	@Override
 	public EditorClickResult onEditorClick(InventoryClickEvent event) {
+		event.setCancelled(true);
 		if (event.getRawSlot() >= 0 && event.getRawSlot() <= 7) {
 			// modifying cost
 			ItemStack item = event.getCurrentItem();
@@ -184,7 +185,6 @@ public class BuyingPlayerShopkeeper extends PlayerShopkeeper {
 		} else {
 			return super.onEditorClick(event);
 		}
-		event.setCancelled(true);
 		return EditorClickResult.NOTHING;
 	}
 	

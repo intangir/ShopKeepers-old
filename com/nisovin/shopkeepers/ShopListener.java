@@ -155,9 +155,31 @@ class ShopListener implements Listener {
 			int entityId = plugin.purchasing.get(event.getWhoClicked().getName());
 			Shopkeeper shopkeeper = plugin.activeShopkeepers.get(entityId);
 			if (shopkeeper != null) {
+				// verify purchase
+				ItemStack item1 = event.getInventory().getItem(0);
+				ItemStack item2 = event.getInventory().getItem(1);
+				boolean ok = false;
+				List<ItemStack[]> recipes = shopkeeper.getRecipes();
+				for (ItemStack[] recipe : recipes) {
+					if (itemEquals(item1, recipe[0]) && itemEquals(item2, recipe[1])) {
+						ok = true;
+						break;
+					}
+				}
+				if (!ok) {
+					event.setCancelled(true);
+					return;
+				}
+				
 				shopkeeper.onPurchaseClick(event);
 			}
 		}
+	}
+	
+	private boolean itemEquals(ItemStack item1, ItemStack item2) {
+		if ((item1 == null || item1.getTypeId() == 0) && (item2 == null || item2.getTypeId() == 0)) return true;
+		if (item1 == null || item2 == null) return false;
+		return item1.getTypeId() == item2.getTypeId() && item1.getDurability() == item2.getDurability();
 	}
 	
 	@EventHandler(priority=EventPriority.LOW)

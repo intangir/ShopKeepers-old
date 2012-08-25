@@ -28,7 +28,6 @@ public class TradingPlayerShopkeeper extends PlayerShopkeeper {
 	
 	public TradingPlayerShopkeeper(ConfigurationSection config) {
 		super(config);
-		this.costs = new HashMap<ItemType, Cost>();
 	}
 
 	public TradingPlayerShopkeeper(Player owner, Block chest, Location location, int profession) {
@@ -38,7 +37,7 @@ public class TradingPlayerShopkeeper extends PlayerShopkeeper {
 	
 	@Override
 	public void load(ConfigurationSection config) {
-		super.load(config);		
+		super.load(config);
 		costs = new HashMap<ItemType, Cost>();
 		ConfigurationSection costsSection = config.getConfigurationSection("costs");
 		if (costsSection != null) {

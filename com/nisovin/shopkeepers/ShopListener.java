@@ -208,7 +208,7 @@ class ShopListener implements Listener {
 		}
 		
 		// check for player shop spawn
-		if (Settings.createPlayerShopWithEgg && player.hasPermission("shopkeeper.player") && player.getGameMode() != GameMode.CREATIVE) {
+		if (Settings.createPlayerShopWithEgg && player.getGameMode() != GameMode.CREATIVE) {
 			String playerName = player.getName();
 			ItemStack inHand = player.getItemInHand();
 			if (inHand != null && inHand.getType() == Material.MONSTER_EGG && inHand.getDurability() == 120) {
@@ -217,15 +217,17 @@ class ShopListener implements Listener {
 					// cycle shop options
 					ShopkeeperType shopType = plugin.selectedShopType.get(playerName);
 					shopType = ShopkeeperType.next(player, shopType);
-					plugin.selectedShopType.put(playerName, shopType);
-					if (shopType == ShopkeeperType.PLAYER_NORMAL) {
-						plugin.sendMessage(player, Settings.msgSelectedNormalShop);
-					} else if (shopType == ShopkeeperType.PLAYER_BOOK) {
-						plugin.sendMessage(player, Settings.msgSelectedBookShop);
-					} else if (shopType == ShopkeeperType.PLAYER_BUY) {
-						plugin.sendMessage(player, Settings.msgSelectedBuyShop);
-					} else if (shopType == ShopkeeperType.PLAYER_TRADE) {
-						plugin.sendMessage(player, Settings.msgSelectedTradeShop);
+					if (shopType != null) {
+						plugin.selectedShopType.put(playerName, shopType);
+						if (shopType == ShopkeeperType.PLAYER_NORMAL) {
+							plugin.sendMessage(player, Settings.msgSelectedNormalShop);
+						} else if (shopType == ShopkeeperType.PLAYER_BOOK) {
+							plugin.sendMessage(player, Settings.msgSelectedBookShop);
+						} else if (shopType == ShopkeeperType.PLAYER_BUY) {
+							plugin.sendMessage(player, Settings.msgSelectedBuyShop);
+						} else if (shopType == ShopkeeperType.PLAYER_TRADE) {
+							plugin.sendMessage(player, Settings.msgSelectedTradeShop);
+						}
 					}
 				} else if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
 					Block block = event.getClickedBlock();
@@ -305,17 +307,18 @@ class ShopListener implements Listener {
 	
 	@EventHandler
 	void onChunkLoad(ChunkLoadEvent event) {
-		final Chunk chunk = event.getChunk();
+		plugin.loadShopkeepersInChunk(event.getChunk());
+		/*final Chunk chunk = event.getChunk();
 		Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
 			public void run() {
 				if (chunk.isLoaded()) {
 					plugin.loadShopkeepersInChunk(chunk);
 				}
 			}
-		}, 10);
+		}, 1);*/
 	}
 
-	@EventHandler(priority=EventPriority.LOWEST)
+	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
 	void onChunkUnload(ChunkUnloadEvent event) {
 		List<Shopkeeper> shopkeepers = plugin.allShopkeepersByChunk.get(event.getWorld().getName() + "," + event.getChunk().getX() + "," + event.getChunk().getZ());
 		if (shopkeepers != null) {
@@ -323,8 +326,8 @@ class ShopListener implements Listener {
 			for (Shopkeeper shopkeeper : shopkeepers) {
 				if (shopkeeper.isActive()) {
 					plugin.activeShopkeepers.remove(shopkeeper.getEntityId());
-					shopkeeper.remove();
 				}
+				shopkeeper.remove();
 			}
 		}
 	}

@@ -129,15 +129,13 @@ public abstract class Shopkeeper {
 	 * Teleports this shopkeeper to its spawn location.
 	 */
 	public void teleport() {
-		if (villager != null) {
-			if (villager.isDead()) {
-				spawn();
-			} else {
-				World w = Bukkit.getWorld(world);
-				Location loc = new Location(w, x + .5, y, z + .5, villager.getLocation().getYaw(), villager.getLocation().getPitch());
-				if (villager.getLocation().distanceSquared(loc) > .25) {
-					villager.teleport(loc);
-				}
+		if (villager == null || villager.isDead()) {
+			spawn();
+		} else {
+			World w = Bukkit.getWorld(world);
+			Location loc = new Location(w, x + .5, y, z + .5, villager.getLocation().getYaw(), villager.getLocation().getPitch());
+			if (villager.getLocation().distanceSquared(loc) > .25) {
+				villager.teleport(loc);
 			}
 		}
 	}
@@ -147,7 +145,9 @@ public abstract class Shopkeeper {
 	 */
 	public void remove() {
 		if (villager != null) {
+			removeRecipes();
 			villager.remove();
+			villager.setHealth(0);
 			villager = null;
 		}
 	}
@@ -260,6 +260,23 @@ public abstract class Shopkeeper {
 			for (ItemStack[] recipe : getRecipes()) {
 				recipeList.add(ShopRecipe.factory(recipe[0], recipe[1], recipe[2]));
 			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private void removeRecipes() {
+		try {
+			EntityVillager ev = ((CraftVillager)villager).getHandle();
+			
+			Field recipeListField = EntityVillager.class.getDeclaredField(Settings.recipeListVar);
+			recipeListField.setAccessible(true);
+			MerchantRecipeList recipeList = (MerchantRecipeList)recipeListField.get(ev);
+			if (recipeList == null) {
+				recipeList = new MerchantRecipeList();
+				recipeListField.set(ev, recipeList);
+			}
+			recipeList.clear();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}		

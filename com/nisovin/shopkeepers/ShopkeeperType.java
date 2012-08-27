@@ -39,6 +39,8 @@ public enum ShopkeeperType {
 	 */
 	PLAYER_TRADE(4, "player.trade");
 	
+	private static final int MAX_ID = 4;
+	
 	private final int id;
 	private final String permission;
 	
@@ -48,9 +50,7 @@ public enum ShopkeeperType {
 	}
 	
 	private static final Map<Integer, ShopkeeperType> typeMap = new HashMap<Integer, ShopkeeperType>();
-	
-	private static final int MAX_ID = 4;
-	
+		
 	static {
 		for (ShopkeeperType type : values()) {
 			typeMap.put(type.id, type);
@@ -72,7 +72,7 @@ public enum ShopkeeperType {
 			if (nextId > MAX_ID) nextId = 1;
 			next = typeMap.get(nextId);
 			
-			if (player.hasPermission("shopkeepers." + next.permission)) {
+			if (player.hasPermission("shopkeeper." + next.permission)) {
 				return next;
 			}
 		}

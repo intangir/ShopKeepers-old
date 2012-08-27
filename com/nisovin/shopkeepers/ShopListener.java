@@ -12,6 +12,7 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
+import org.bukkit.event.Event.Result;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -182,7 +183,7 @@ class ShopListener implements Listener {
 		return item1.getTypeId() == item2.getTypeId() && item1.getDurability() == item2.getDurability();
 	}
 	
-	@EventHandler(priority=EventPriority.LOW)
+	@EventHandler(priority=EventPriority.HIGHEST)
 	void onPlayerInteract(PlayerInteractEvent event) {
 		Player player = event.getPlayer();
 		
@@ -212,7 +213,6 @@ class ShopListener implements Listener {
 			String playerName = player.getName();
 			ItemStack inHand = player.getItemInHand();
 			if (inHand != null && inHand.getType() == Material.MONSTER_EGG && inHand.getDurability() == 120) {
-				event.setCancelled(true);
 				if (event.getAction() == Action.RIGHT_CLICK_AIR) {
 					// cycle shop options
 					ShopkeeperType shopType = plugin.selectedShopType.get(playerName);
@@ -233,9 +233,11 @@ class ShopListener implements Listener {
 					Block block = event.getClickedBlock();
 										
 					if (block.getType() == Material.CHEST && (!plugin.selectedChest.containsKey(playerName) || !plugin.selectedChest.get(playerName).equals(block))) {
-						// select chest
-						plugin.selectedChest.put(playerName, event.getClickedBlock());
-						plugin.sendMessage(player, Settings.msgSelectedChest);
+						if (event.useInteractedBlock() != Result.DENY) {
+							// select chest
+							plugin.selectedChest.put(playerName, event.getClickedBlock());
+							plugin.sendMessage(player, Settings.msgSelectedChest);
+						}
 					} else {
 						Block chest = plugin.selectedChest.get(playerName);
 						if (chest == null) {
@@ -279,7 +281,7 @@ class ShopListener implements Listener {
 						}
 					}
 				}
-				
+				event.setCancelled(true);
 			}
 		}
 	}

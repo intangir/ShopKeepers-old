@@ -49,6 +49,14 @@ public enum ShopkeeperType {
 		this.permission = permission;
 	}
 	
+	public String getPermission() {
+		return permission;
+	}
+	
+	public int getId() {
+		return id;
+	}
+	
 	private static final Map<Integer, ShopkeeperType> typeMap = new HashMap<Integer, ShopkeeperType>();
 		
 	static {

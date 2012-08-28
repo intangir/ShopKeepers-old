@@ -53,10 +53,10 @@ class ShopListener implements Listener {
 			} else if (shopkeeper != null && event.getPlayer().isSneaking()) {
 				// modifying a shopkeeper
 				ShopkeepersPlugin.debug("  Opening editor window...");
+				event.setCancelled(true);
 				boolean isEditing = shopkeeper.onEdit(event.getPlayer());
 				if (isEditing) {
 					ShopkeepersPlugin.debug("  Editor window opened");
-					event.setCancelled(true);
 					plugin.editing.put(event.getPlayer().getName(), villager.getEntityId());
 				} else {
 					ShopkeepersPlugin.debug("  Editor window NOT opened");
@@ -237,6 +237,8 @@ class ShopListener implements Listener {
 							// select chest
 							plugin.selectedChest.put(playerName, event.getClickedBlock());
 							plugin.sendMessage(player, Settings.msgSelectedChest);
+						} else {
+							ShopkeepersPlugin.debug("Right-click on chest prevented");
 						}
 					} else {
 						Block chest = plugin.selectedChest.get(playerName);
@@ -309,15 +311,15 @@ class ShopListener implements Listener {
 	
 	@EventHandler
 	void onChunkLoad(ChunkLoadEvent event) {
-		//plugin.loadShopkeepersInChunk(event.getChunk());
-		final Chunk chunk = event.getChunk();
+		plugin.loadShopkeepersInChunk(event.getChunk());
+		/*final Chunk chunk = event.getChunk();
 		Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
 			public void run() {
 				if (chunk.isLoaded()) {
 					plugin.loadShopkeepersInChunk(chunk);
 				}
 			}
-		}, 2);
+		}, 2);*/
 	}
 
 	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)

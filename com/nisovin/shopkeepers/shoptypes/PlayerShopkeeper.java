@@ -78,7 +78,7 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 
 	@Override
 	public boolean onEdit(Player player) {
-		if ((player.getName().equalsIgnoreCase(owner) && player.hasPermission("shopkeeper.player")) || player.hasPermission("shopkeeper.bypass")) {
+		if ((player.getName().equalsIgnoreCase(owner) && player.hasPermission("shopkeeper." + getType().getPermission())) || player.hasPermission("shopkeeper.bypass")) {
 			return onPlayerEdit(player);
 		} else {
 			return false;

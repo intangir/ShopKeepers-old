@@ -57,6 +57,10 @@ public enum ShopkeeperType {
 		return id;
 	}
 	
+	public boolean hasPermission(Player player) {
+		return player.hasPermission("shopkeeper." + permission);
+	}
+	
 	private static final Map<Integer, ShopkeeperType> typeMap = new HashMap<Integer, ShopkeeperType>();
 		
 	static {

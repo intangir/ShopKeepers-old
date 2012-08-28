@@ -256,17 +256,7 @@ class ShopListener implements Listener {
 								Shopkeeper shopkeeper = plugin.createNewPlayerShopkeeper(player, chest, block.getLocation().add(0, 1.5, 0), 0, shopType);
 								if (shopkeeper != null) {
 									// send message
-									if (shopType == ShopkeeperType.PLAYER_NORMAL) {
-										plugin.sendMessage(player, Settings.msgPlayerShopCreated);
-									} else if (shopType == ShopkeeperType.PLAYER_BOOK) {
-										plugin.sendMessage(player, Settings.msgBookShopCreated);
-									} else if (shopType == ShopkeeperType.PLAYER_BUY) {
-										plugin.sendMessage(player, Settings.msgBuyShopCreated);
-									} else if (shopType == ShopkeeperType.PLAYER_TRADE) {
-										plugin.sendMessage(player, Settings.msgTradeShopCreated);
-									} else {
-										return;
-									}
+									plugin.sendCreatedMessage(player, shopType);
 									// remove egg
 									inHand.setAmount(inHand.getAmount() - 1);
 									if (inHand.getAmount() > 0) {

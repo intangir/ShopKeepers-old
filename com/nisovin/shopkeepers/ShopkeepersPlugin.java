@@ -204,12 +204,11 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 			return true;
 		} else if (sender instanceof Player) {
 			Player player = (Player)sender;
-			if (!player.hasPermission("shopkeeper.admin") && !player.hasPermission("shopkeeper.player")) return true;
 						
 			// get the spawn location for the shopkeeper
 			Block block = player.getTargetBlock(null, 10);
 			if (block != null && block.getType() != Material.AIR) {
-				if (Settings.createPlayerShopWithCommand && block.getType() == Material.CHEST && player.hasPermission("shopkeeper.player")) {
+				if (Settings.createPlayerShopWithCommand && block.getType() == Material.CHEST) {
 					// check if already a chest
 					if (isChestProtected(null, block)) {
 						return true;
@@ -221,8 +220,27 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 						return true;
 					}
 					// create the player shopkeeper
-					createNewPlayerShopkeeper(player, block, block.getLocation().add(0, 1.5, 0), 0, ShopkeeperType.next(player, null));
-					sendMessage(player, Settings.msgPlayerShopCreated);
+					ShopkeeperType shopType = null;
+					if (args == null || args.length == 0) {
+						shopType = ShopkeeperType.next(player, null);
+					} else {
+						if ((args[0].toLowerCase().startsWith("norm") || args[0].toLowerCase().startsWith("sell"))) {
+							shopType = ShopkeeperType.PLAYER_NORMAL;
+						} else if (args[0].toLowerCase().startsWith("book")) {
+							shopType = ShopkeeperType.PLAYER_BOOK;
+						} else if (args[0].toLowerCase().startsWith("buy")) {
+							shopType = ShopkeeperType.PLAYER_BUY;
+						} else if (args[0].toLowerCase().startsWith("trad")) {
+							shopType = ShopkeeperType.PLAYER_TRADE;
+						}
+						if (!shopType.hasPermission(player)) {
+							shopType = null;
+						}
+					}
+					if (shopType != null) {
+						createNewPlayerShopkeeper(player, block, block.getLocation().add(0, 1.5, 0), 0, shopType);
+						sendCreatedMessage(player, shopType);
+					}
 				} else if (player.hasPermission("shopkeeper.admin")) {
 					// create the admin shopkeeper
 					createNewAdminShopkeeper(block.getLocation().add(0, 1.5, 0), 0);
@@ -392,6 +410,23 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 		save();
 	}
 
+	boolean sendCreatedMessage(Player player, ShopkeeperType shopType) {
+		if (shopType == ShopkeeperType.PLAYER_NORMAL) {
+			plugin.sendMessage(player, Settings.msgPlayerShopCreated);
+			return true;
+		} else if (shopType == ShopkeeperType.PLAYER_BOOK) {
+			plugin.sendMessage(player, Settings.msgBookShopCreated);
+			return true;
+		} else if (shopType == ShopkeeperType.PLAYER_BUY) {
+			plugin.sendMessage(player, Settings.msgBuyShopCreated);
+			return true;
+		} else if (shopType == ShopkeeperType.PLAYER_TRADE) {
+			plugin.sendMessage(player, Settings.msgTradeShopCreated);
+			return true;
+		}
+		return false;
+	}
+	
 	void closeTradingForShopkeeper(final int entityId) {
 		Bukkit.getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
 			public void run() {
@@ -547,10 +582,14 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 		}
 	}
 	
-	static void debug(String message) {
+	public static void debug(String message) {
 		if (plugin.debug) {
 			plugin.getLogger().info(message);
 		}
+	}
+	
+	public static void warning(String message) {
+		plugin.getLogger().warning(message);
 	}
 
 }

@@ -13,6 +13,7 @@ import org.bukkit.inventory.ItemStack;
 import com.nisovin.shopkeepers.EditorClickResult;
 import com.nisovin.shopkeepers.Settings;
 import com.nisovin.shopkeepers.Shopkeeper;
+import com.nisovin.shopkeepers.ShopkeepersPlugin;
 
 
 /**
@@ -196,9 +197,16 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 			int lowCost = cost % Settings.highCurrencyValue;
 			if (highCost > 0) {
 				recipe[0] = new ItemStack(Settings.highCurrencyItem, highCost, Settings.highCurrencyItemData);
+				if (highCost > recipe[0].getMaxStackSize()) {
+					lowCost += (highCost - recipe[0].getMaxStackSize()) * Settings.highCurrencyValue;
+					recipe[0].setAmount(recipe[0].getMaxStackSize());
+				}
 			}
 			if (lowCost > 0) {
 				recipe[1] = new ItemStack(Settings.currencyItem, lowCost, Settings.currencyItemData);
+				if (lowCost > recipe[1].getMaxStackSize()) {
+					ShopkeepersPlugin.warning("Shopkeeper at " + world + "," + x + "," + y + "," + z + " owned by " + owner + " has an invalid cost!");
+				}
 			}
 		} else {
 			recipe[0] = new ItemStack(Settings.currencyItem, cost, Settings.currencyItemData);
@@ -211,7 +219,12 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 				int highCost = cost / Settings.highCurrencyValue;
 				int lowCost = cost % Settings.highCurrencyValue;
 				if (highCost > 0) {
-					inv.setItem(column + 9, new ItemStack(Settings.highCurrencyItem, highCost, Settings.highCurrencyItemData));
+					ItemStack item = new ItemStack(Settings.highCurrencyItem, highCost, Settings.highCurrencyItemData);
+					if (highCost > item.getMaxStackSize()) {
+						lowCost += (highCost - item.getMaxStackSize()) * Settings.highCurrencyValue;
+						item.setAmount(item.getMaxStackSize());
+					}
+					inv.setItem(column + 9, item);
 				} else {
 					inv.setItem(column + 9, new ItemStack(Settings.highZeroItem));
 				}

@@ -1,5 +1,6 @@
 disable-other-villagers: true
 block-villager-spawns: false
+enable-spawn-verifier: false
 save-instantly: true
 
 enable-world-guard-restrictions: false

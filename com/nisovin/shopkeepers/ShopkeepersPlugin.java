@@ -112,21 +112,28 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 		}, 200, 200);
 		
 		// start verifier
-		/*Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
-			public void run() {
-				for (String chunkStr : allShopkeepersByChunk.keySet()) {
-					if (isChunkLoaded(chunkStr)) {
-						List<Shopkeeper> shopkeepers = allShopkeepersByChunk.get(chunkStr);
-						for (Shopkeeper shopkeeper : shopkeepers) {
-							if (!shopkeeper.isActive()) {
-								shopkeeper.spawn();
-								activeShopkeepers.put(shopkeeper.getEntityId(), shopkeeper);
+		if (Settings.enableSpawnVerifier) {
+			Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
+				public void run() {
+					int count = 0;
+					for (String chunkStr : allShopkeepersByChunk.keySet()) {
+						if (isChunkLoaded(chunkStr)) {
+							List<Shopkeeper> shopkeepers = allShopkeepersByChunk.get(chunkStr);
+							for (Shopkeeper shopkeeper : shopkeepers) {
+								if (!shopkeeper.isActive()) {
+									shopkeeper.spawn();
+									activeShopkeepers.put(shopkeeper.getEntityId(), shopkeeper);
+									count++;
+								}
 							}
 						}
 					}
+					if (count > 0) {
+						debug("Spawn verifier: " + count + " shopkeepers respawned");
+					}
 				}
-			}
-		}, 600, 1200);*/
+			}, 600, 1200);
+		}
 		
 		// start saver
 		if (!Settings.saveInstantly) {
@@ -456,7 +463,7 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 		}
 	}
 	
-	/*private boolean isChunkLoaded(String chunkStr) {
+	private boolean isChunkLoaded(String chunkStr) {
 		String[] chunkData = chunkStr.split(",");
 		World w = getServer().getWorld(chunkData[0]);
 		if (w != null) {
@@ -465,7 +472,7 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 			return w.isChunkLoaded(x, z);
 		}
 		return false;
-	}*/
+	}
 	
 	private void load() {
 		File file = new File(getDataFolder(), "save.yml");

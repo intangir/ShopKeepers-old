@@ -9,6 +9,7 @@ import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
@@ -299,7 +300,8 @@ class ShopListener implements Listener {
 	
 	@EventHandler
 	void onTarget(EntityTargetEvent event) {
-		if (event.getTarget() != null && event.getTarget().getType() == EntityType.VILLAGER) {
+		Entity target = event.getTarget();
+		if (target != null && target.getType() == EntityType.VILLAGER && plugin.activeShopkeepers.containsKey(target.getEntityId())) {
 			event.setCancelled(true);
 		}
 	}

@@ -182,13 +182,12 @@ class ShopListener implements Listener {
 		if (item1 == null || item2 == null) return false;
 		return item1.getTypeId() == item2.getTypeId() && item1.getDurability() == item2.getDurability();
 	}
-	
-	@EventHandler(priority=EventPriority.HIGHEST)
-	void onPlayerInteract(PlayerInteractEvent event) {
-		Player player = event.getPlayer();
-		
+
+	@EventHandler(priority=EventPriority.LOW)
+	void onPlayerInteract1(PlayerInteractEvent event) {		
 		// prevent opening shop chests
 		if (event.hasBlock() && event.getClickedBlock().getType() == Material.CHEST) {
+			Player player = event.getPlayer();
 			Block block = event.getClickedBlock();
 			
 			// check for protected chest
@@ -207,6 +206,12 @@ class ShopListener implements Listener {
 				}
 			}
 		}
+		
+	}
+	
+	@EventHandler(priority=EventPriority.HIGHEST)
+	void onPlayerInteract2(PlayerInteractEvent event) {
+		Player player = event.getPlayer();
 		
 		// check for player shop spawn
 		if (Settings.createPlayerShopWithEgg && player.getGameMode() != GameMode.CREATIVE) {
@@ -238,7 +243,7 @@ class ShopListener implements Listener {
 							plugin.selectedChest.put(playerName, event.getClickedBlock());
 							plugin.sendMessage(player, Settings.msgSelectedChest);
 						} else {
-							ShopkeepersPlugin.debug("Right-click on chest prevented");
+							ShopkeepersPlugin.debug("Right-click on chest prevented, player " + player.getName() + " at " + block.getLocation().toString());
 						}
 					} else {
 						Block chest = plugin.selectedChest.get(playerName);
@@ -246,7 +251,7 @@ class ShopListener implements Listener {
 							plugin.sendMessage(player, Settings.msgMustSelectChest);
 						} else if ((int)chest.getLocation().distance(block.getLocation()) > Settings.maxChestDistance) {
 							plugin.sendMessage(player, Settings.msgChestTooFar);
-						} else {							
+						} else {
 							// get shop type
 							ShopkeeperType shopType = plugin.selectedShopType.get(playerName);
 							if (shopType == null) shopType = ShopkeeperType.next(player, null);

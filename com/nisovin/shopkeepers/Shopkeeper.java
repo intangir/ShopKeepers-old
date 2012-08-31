@@ -80,6 +80,8 @@ public abstract class Shopkeeper {
 		config.set("prof", profession);
 		if (villager != null) {
 			config.set("uuid", villager.getUniqueId().toString());
+		} else if (uuid != null && !uuid.isEmpty()) {
+			config.set("uuid", uuid);
 		}
 	}
 	

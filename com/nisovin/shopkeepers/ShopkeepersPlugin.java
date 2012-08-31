@@ -105,7 +105,7 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 		// start teleporter
 		Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
 			public void run() {
-				for (Shopkeeper shopkeeper : activeShopkeepers.values()) {
+				for (Shopkeeper shopkeeper : new ArrayList<Shopkeeper>(activeShopkeepers.values())) { // TODO: fix this
 					shopkeeper.teleport();
 				}
 			}

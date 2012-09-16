@@ -269,7 +269,7 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 	protected boolean removeFromInventory(ItemStack item, ItemStack[] contents) {
 		item = item.clone();
 		for (int i = 0; i < contents.length; i++) {
-			if (contents[i] != null && contents[i].getTypeId() == item.getTypeId() && contents[i].getDurability() == contents[i].getDurability()) {
+			if (contents[i] != null && contents[i].getTypeId() == item.getTypeId() && contents[i].getDurability() == item.getDurability()) {
 				if (contents[i].getAmount() > item.getAmount()) {
 					contents[i].setAmount(contents[i].getAmount() - item.getAmount());
 					return true;

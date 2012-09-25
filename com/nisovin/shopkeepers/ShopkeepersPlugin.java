@@ -46,6 +46,7 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 	Map<Integer, Shopkeeper> activeShopkeepers = new HashMap<Integer, Shopkeeper>();
 	Map<String, Integer> editing = new HashMap<String, Integer>();
 	Map<String, Integer> purchasing = new HashMap<String, Integer>();
+	Map<String, List<String>> recentlyPlacedChests = new HashMap<String, List<String>>();
 	Map<String, ShopkeeperType> selectedShopType = new HashMap<String, ShopkeeperType>();
 	Map<String, Block> selectedChest = new HashMap<String, Block>();
 	
@@ -213,6 +214,12 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 					if (isChestProtected(null, block)) {
 						return true;
 					}
+					// check for recently placed
+					List<String> list = plugin.recentlyPlacedChests.get(player.getName());
+					if (list == null || !list.contains(block.getWorld().getName() + "," + block.getX() + "," + block.getY() + "," + block.getZ())) {
+						sendMessage(player, Settings.msgChestNotPlaced);
+						return true;
+					}
 					// check for permission
 					PlayerInteractEvent event = new PlayerInteractEvent(player, Action.RIGHT_CLICK_BLOCK, new ItemStack(Material.AIR), block, BlockFace.UP);
 					Bukkit.getPluginManager().callEvent(event);
@@ -238,13 +245,17 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 						}
 					}
 					if (shopType != null) {
-						createNewPlayerShopkeeper(player, block, block.getLocation().add(0, 1.5, 0), 0, shopType);
-						sendCreatedMessage(player, shopType);
+						Shopkeeper shopkeeper = createNewPlayerShopkeeper(player, block, block.getLocation().add(0, 1.5, 0), 0, shopType);
+						if (shopkeeper != null) {
+							sendCreatedMessage(player, shopType);
+						}
 					}
 				} else if (player.hasPermission("shopkeeper.admin")) {
 					// create the admin shopkeeper
-					createNewAdminShopkeeper(block.getLocation().add(0, 1.5, 0), 0);
-					sendMessage(player, Settings.msgAdminShopCreated);
+					Shopkeeper shopkeeper = createNewAdminShopkeeper(block.getLocation().add(0, 1.5, 0), 0);
+					if (shopkeeper != null) {
+						sendMessage(player, Settings.msgAdminShopCreated);
+					}
 				}
 			} else {
 				sendMessage(player, Settings.msgShopCreateFail);

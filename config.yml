@@ -37,6 +37,7 @@ msg-selected-trade-shop: "&aTrading shopkeeper selected (trades items with playe
 msg-selected-chest: "&aChest selected! Right click a block to place your shopkeeper."
 msg-must-select-chest: "&aYou must right-click a chest before placing your shopkeeper."
 msg-chest-too-far: "&aThe shopkeeper's chest is too far away!"
+msg-chest-not-placed: "&aYou must select a chest you have recently placed."
 msg-shop-create-fail: "&aYou cannot create a shopkeeper there."
 msg-too-many-shops: "&aYou have too many shops."
 msg-shop-in-use: "&aSomeone else is already purchasing from this shopkeeper."

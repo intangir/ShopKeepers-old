@@ -249,7 +249,7 @@ public class AdminShopkeeper extends Shopkeeper {
 					item.getHandle().tag = (NBTTagCompound)tag;
 				}
 			} catch (Exception e) {
-				ShopkeepersPlugin.warning("Error loading item NBT data");
+				ShopkeepersPlugin.debug("Error loading item NBT data");
 			}
 		}
 		// rest of code left for backwards compatibility and for just-in-case

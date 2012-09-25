@@ -44,6 +44,7 @@ public class Settings {
 	public static String msgSelectedChest = "&aChest selected! Right click a block to place your shopkeeper.";
 	public static String msgMustSelectChest = "&aYou must right-click a chest before placing your shopkeeper.";
 	public static String msgChestTooFar = "&aThe shopkeeper's chest is too far away!";
+	public static String msgChestNotPlaced = "&aYou must select a chest you have recently placed.";
 	
 	public static String msgPlayerShopCreated = "&aShopkeeper created!\n&aAdd items you want to sell to your chest, then\n&aright-click the villager while sneaking to modify costs.";
 	public static String msgBookShopCreated = "&aShopkeeper created!\n&aAdd written books and blank books to your chest, then\n&aright-click the villager while sneaking to modify costs.";

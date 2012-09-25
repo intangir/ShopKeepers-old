@@ -1,6 +1,7 @@
 package com.nisovin.shopkeepers;
 
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.bukkit.Bukkit;
@@ -18,6 +19,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityTargetEvent;
@@ -41,6 +43,22 @@ class ShopListener implements Listener {
 	
 	public ShopListener(ShopkeepersPlugin plugin) {
 		this.plugin = plugin;
+	}
+	
+	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
+	void onBlockPlace(BlockPlaceEvent event) {
+		if (event.getBlock().getType() == Material.CHEST) {
+			Block b = event.getBlock();
+			List<String> list = plugin.recentlyPlacedChests.get(event.getPlayer().getName());
+			if (list == null) {
+				list = new LinkedList<String>();
+				plugin.recentlyPlacedChests.put(event.getPlayer().getName(), list);
+			}
+			list.add(b.getWorld().getName() + "," + b.getX() + "," + b.getY() + "," + b.getZ());
+			if (list.size() > 5) {
+				list.remove(0);
+			}
+		}
 	}
 	
 	@EventHandler
@@ -240,9 +258,16 @@ class ShopListener implements Listener {
 										
 					if (block.getType() == Material.CHEST && (!plugin.selectedChest.containsKey(playerName) || !plugin.selectedChest.get(playerName).equals(block))) {
 						if (event.useInteractedBlock() != Result.DENY) {
-							// select chest
-							plugin.selectedChest.put(playerName, event.getClickedBlock());
-							plugin.sendMessage(player, Settings.msgSelectedChest);
+							// check if it's recently placed
+							List<String> list = plugin.recentlyPlacedChests.get(playerName);
+							if (list == null || !list.contains(block.getWorld().getName() + "," + block.getX() + "," + block.getY() + "," + block.getZ())) {
+								// chest not recently placed
+								plugin.sendMessage(player, Settings.msgChestNotPlaced);
+							} else {
+								// select chest
+								plugin.selectedChest.put(playerName, event.getClickedBlock());
+								plugin.sendMessage(player, Settings.msgSelectedChest);
+							}
 						} else {
 							ShopkeepersPlugin.debug("Right-click on chest prevented, player " + player.getName() + " at " + block.getLocation().toString());
 						}
@@ -308,15 +333,15 @@ class ShopListener implements Listener {
 	
 	@EventHandler
 	void onChunkLoad(ChunkLoadEvent event) {
-		plugin.loadShopkeepersInChunk(event.getChunk());
-		/*final Chunk chunk = event.getChunk();
+		final Chunk chunk = event.getChunk();
+		plugin.loadShopkeepersInChunk(chunk);
 		Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
 			public void run() {
 				if (chunk.isLoaded()) {
 					plugin.loadShopkeepersInChunk(chunk);
 				}
 			}
-		}, 2);*/
+		}, 2);
 	}
 
 	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
@@ -363,6 +388,7 @@ class ShopListener implements Listener {
 		plugin.purchasing.remove(name);
 		plugin.selectedShopType.remove(name);
 		plugin.selectedChest.remove(name);
+		plugin.recentlyPlacedChests.remove(name);
 	}
 	
 }

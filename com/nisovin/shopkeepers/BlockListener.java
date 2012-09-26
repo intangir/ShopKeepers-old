@@ -7,14 +7,12 @@ import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Villager;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Event.Result;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.SignChangeEvent;
-import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 
@@ -29,90 +27,43 @@ public class BlockListener implements Listener {
 		this.plugin = plugin;
 	}
 	
-	//@EventHandler
-	void onEntityInteract(PlayerInteractEntityEvent event) {
-		if (event.getRightClicked() instanceof Villager) {
-			Villager villager = (Villager)event.getRightClicked();
-			ShopkeepersPlugin.debug("Player " + event.getPlayer().getName() + " is interacting with villager at " + villager.getLocation());
-			Shopkeeper shopkeeper = plugin.activeShopkeepers.get("entity" + villager.getEntityId());
-			if (event.isCancelled()) {
-				ShopkeepersPlugin.debug("  Cancelled by another plugin");
-			} else if (shopkeeper != null && event.getPlayer().isSneaking()) {
-				// modifying a shopkeeper
-				ShopkeepersPlugin.debug("  Opening editor window...");
-				event.setCancelled(true);
-				boolean isEditing = shopkeeper.onEdit(event.getPlayer());
-				if (isEditing) {
-					ShopkeepersPlugin.debug("  Editor window opened");
-					plugin.editing.put(event.getPlayer().getName(), shopkeeper.getId());
-				} else {
-					ShopkeepersPlugin.debug("  Editor window NOT opened");
-				}
-			} else if (shopkeeper != null) {
-				// only allow one person per shopkeeper
-				ShopkeepersPlugin.debug("  Opening trade window...");
-				OpenTradeEvent evt = new OpenTradeEvent(event.getPlayer(), shopkeeper);
-				Bukkit.getPluginManager().callEvent(evt);
-				if (evt.isCancelled()) {
-					ShopkeepersPlugin.debug("  Trade cancelled by another plugin");
-					event.setCancelled(true);
-					return;
-				}
-				/*if (plugin.purchasing.containsValue(villager.getEntityId())) {
-					ShopkeepersPlugin.debug("  Villager already in use!");
-					plugin.sendMessage(event.getPlayer(), Settings.msgShopInUse);
-					event.setCancelled(true);
-					return;
-				}*/
-				// set the trade recipe list (also prevent shopkeepers adding their own recipes by refreshing them with our list)
-				//shopkeeper.updateRecipes();
-				event.setCancelled(true);
-				plugin.openTradeWindow(shopkeeper, event.getPlayer());
-				plugin.purchasing.put(event.getPlayer().getName(), shopkeeper.getId());
-				ShopkeepersPlugin.debug("  Trade window opened");
-			} else if (Settings.disableOtherVillagers && shopkeeper == null) {
-				// don't allow trading with other villagers
-				ShopkeepersPlugin.debug("  Non-shopkeeper, trade prevented");
-				event.setCancelled(true);
-			} else if (shopkeeper == null) {
-				ShopkeepersPlugin.debug("  Non-shopkeeper");
-			}
-		}
-	}
-	
 	@EventHandler(priority=EventPriority.HIGHEST)
 	void onPlayerInteract(PlayerInteractEvent event) {
 		Player player = event.getPlayer();
+		Block block = event.getClickedBlock();
 		
 		// check for sign shop
-		if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-			Block block = event.getClickedBlock();
-			System.out.println("right click block " + "block" + block.getWorld().getName() + "," + block.getX() + "," + block.getY() + "," + block.getZ());
+		if (event.getAction() == Action.RIGHT_CLICK_BLOCK && (block.getType() == Material.SIGN_POST || block.getType() == Material.WALL_SIGN)) {
 			Shopkeeper shopkeeper = plugin.activeShopkeepers.get("block" + block.getWorld().getName() + "," + block.getX() + "," + block.getY() + "," + block.getZ());
-			if (shopkeeper != null && event.getPlayer().isSneaking()) {
-				// modifying a shopkeeper
-				ShopkeepersPlugin.debug("  Opening editor window...");
-				event.setCancelled(true);
-				boolean isEditing = shopkeeper.onEdit(event.getPlayer());
-				if (isEditing) {
-					ShopkeepersPlugin.debug("  Editor window opened");
-					plugin.editing.put(event.getPlayer().getName(), shopkeeper.getId());
-				} else {
-					ShopkeepersPlugin.debug("  Editor window NOT opened");
-				}
-			} else if (shopkeeper != null) {
-				ShopkeepersPlugin.debug("  Opening trade window...");
-				OpenTradeEvent evt = new OpenTradeEvent(event.getPlayer(), shopkeeper);
-				Bukkit.getPluginManager().callEvent(evt);
-				if (evt.isCancelled()) {
-					ShopkeepersPlugin.debug("  Trade cancelled by another plugin");
+			if (shopkeeper != null) {
+				ShopkeepersPlugin.debug("Player " + player.getName() + " is interacting with sign shopkeeper at " + block.getWorld().getName() + "," + block.getX() + "," + block.getY() + "," + block.getZ());
+				if (event.useInteractedBlock() == Result.DENY) {
+					ShopkeepersPlugin.debug("  Cancelled by another plugin");
+				} else if (event.getPlayer().isSneaking()) {
+					// modifying a shopkeeper
+					ShopkeepersPlugin.debug("  Opening editor window...");
 					event.setCancelled(true);
+					boolean isEditing = shopkeeper.onEdit(event.getPlayer());
+					if (isEditing) {
+						ShopkeepersPlugin.debug("  Editor window opened");
+						plugin.editing.put(event.getPlayer().getName(), shopkeeper.getId());
+					} else {
+						ShopkeepersPlugin.debug("  Editor window NOT opened");
+					}
+				} else {
+					ShopkeepersPlugin.debug("  Opening trade window...");
+					OpenTradeEvent evt = new OpenTradeEvent(event.getPlayer(), shopkeeper);
+					Bukkit.getPluginManager().callEvent(evt);
+					if (evt.isCancelled()) {
+						ShopkeepersPlugin.debug("  Trade cancelled by another plugin");
+						event.setCancelled(true);
+						return;
+					}
+					plugin.openTradeWindow(shopkeeper, event.getPlayer());
+					plugin.purchasing.put(event.getPlayer().getName(), shopkeeper.getId());
+					ShopkeepersPlugin.debug("  Trade window opened");
 					return;
 				}
-				plugin.openTradeWindow(shopkeeper, event.getPlayer());
-				plugin.purchasing.put(event.getPlayer().getName(), shopkeeper.getId());
-				ShopkeepersPlugin.debug("  Trade window opened");
-				return;
 			}
 		}
 		
@@ -137,9 +88,7 @@ public class BlockListener implements Listener {
 							plugin.sendMessage(player, Settings.msgSelectedTradeShop);
 						}
 					}
-				} else if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-					Block block = event.getClickedBlock();
-										
+				} else if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {										
 					if (block.getType() == Material.CHEST && (!plugin.selectedChest.containsKey(playerName) || !plugin.selectedChest.get(playerName).equals(block))) {
 						if (event.useInteractedBlock() != Result.DENY) {
 							// check if it's recently placed

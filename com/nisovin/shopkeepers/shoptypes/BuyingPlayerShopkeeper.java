@@ -299,7 +299,7 @@ public class BuyingPlayerShopkeeper extends PlayerShopkeeper {
 					int needed = remaining / Settings.highCurrencyValue;
 					int amt = item.getAmount();
 					if (amt > needed) {
-						item.setAmount(amt - (needed * Settings.highCurrencyValue));
+						item.setAmount(amt - needed);
 						remaining = remaining - (needed * Settings.highCurrencyValue);
 					} else {
 						contents[i] = null;

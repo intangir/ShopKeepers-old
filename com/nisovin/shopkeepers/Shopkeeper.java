@@ -1,39 +1,24 @@
 package com.nisovin.shopkeepers;
 
-import java.lang.reflect.Field;
 import java.util.List;
 
-import net.minecraft.server.EntityHuman;
-import net.minecraft.server.EntityLiving;
-import net.minecraft.server.EntityVillager;
-import net.minecraft.server.MerchantRecipeList;
-import net.minecraft.server.PathfinderGoalLookAtPlayer;
-import net.minecraft.server.PathfinderGoalLookAtTradingPlayer;
-import net.minecraft.server.PathfinderGoalSelector;
-import net.minecraft.server.PathfinderGoalTradeWithPlayer;
-
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.craftbukkit.entity.CraftVillager;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Villager;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.ItemStack;
 
+import com.nisovin.shopkeepers.shopobjects.ShopObject;
+
 public abstract class Shopkeeper {
 
+	protected ShopObject shopObject;
 	protected String world;
 	protected int x;
 	protected int y;
 	protected int z;
-	protected int profession;
-	protected Villager villager;
-	protected String uuid;
 
 	public Shopkeeper(ConfigurationSection config) {
 		load(config);
@@ -45,12 +30,13 @@ public abstract class Shopkeeper {
 	 * @param location the location to spawn at
 	 * @param prof the id of the profession
 	 */
-	public Shopkeeper(Location location, int prof) {
+	public Shopkeeper(Location location, ShopObject obj) {
 		world = location.getWorld().getName();
 		x = location.getBlockX();
 		y = location.getBlockY();
 		z = location.getBlockZ();
-		profession = prof;
+		shopObject = obj;
+		shopObject.setShopkeeper(this);
 	}
 	
 	/**
@@ -62,10 +48,9 @@ public abstract class Shopkeeper {
 		x = config.getInt("x");
 		y = config.getInt("y");
 		z = config.getInt("z");
-		profession = config.getInt("prof");
-		if (config.contains("uuid")) {
-			uuid = config.getString("uuid");
-		}
+		shopObject = ShopObject.getShopObject(config);
+		shopObject.setShopkeeper(this);
+		shopObject.load(config);
 	}
 	
 	/**
@@ -77,12 +62,7 @@ public abstract class Shopkeeper {
 		config.set("x", x);
 		config.set("y", y);
 		config.set("z", z);
-		config.set("prof", profession);
-		if (villager != null) {
-			config.set("uuid", villager.getUniqueId().toString());
-		} else if (uuid != null && !uuid.isEmpty()) {
-			config.set("uuid", uuid);
-		}
+		shopObject.save(config);
 	}
 	
 	/**
@@ -91,34 +71,20 @@ public abstract class Shopkeeper {
 	 */
 	public abstract ShopkeeperType getType();
 	
+	public ShopObject getShopObject() {
+		return shopObject;
+	}
+	
+	public boolean needsSpawned() {
+		return shopObject.needsSpawned();
+	}
+	
 	/**
 	 * Spawns the shopkeeper into the world at its spawn location. Also sets the
 	 * trade recipes and overwrites the villager AI.
 	 */
 	public void spawn() {
-		// prepare location
-		World w = Bukkit.getWorld(world);
-		Location loc = new Location(w, x + .5, y + .5, z + .5);
-		// find old villager
-		if (uuid != null && !uuid.isEmpty()) {
-			Entity[] entities = loc.getChunk().getEntities();
-			for (Entity e : entities) {
-				if (e instanceof Villager && e.getUniqueId().toString().equalsIgnoreCase(uuid) && !e.isDead()) {
-					villager = (Villager)e;
-					teleport();
-					break;
-				}
-			}
-		}
-		// spawn villager
-		if (villager == null) {
-			villager = w.spawn(loc, Villager.class);
-		}
-		if (villager != null) {
-			villager.setBreed(false);
-			setProfession();
-			overwriteAI();
-		}
+		shopObject.spawn(world, x, y, z);
 	}
 	
 	/**
@@ -126,34 +92,25 @@ public abstract class Shopkeeper {
 	 * @return whether the shopkeeper is active
 	 */
 	public boolean isActive() {
-		return villager != null && !villager.isDead();
+		return shopObject.isActive();
 	}
 	
 	/**
 	 * Teleports this shopkeeper to its spawn location.
 	 */
 	public void teleport() {
-		if (villager == null || villager.isDead()) {
-			spawn();
-		} else {
-			World w = Bukkit.getWorld(world);
-			Location loc = new Location(w, x + .5, y, z + .5, villager.getLocation().getYaw(), villager.getLocation().getPitch());
-			if (villager.getLocation().distanceSquared(loc) > .25) {
-				villager.teleport(loc);
-			}
-		}
+		shopObject.check(world, x, y, z);
 	}
 	
 	/**
 	 * Removes this shopkeeper from the world.
 	 */
 	public void remove() {
-		if (villager != null) {
-			removeRecipes();
-			villager.remove();
-			villager.setHealth(0);
-			villager = null;
-		}
+		shopObject.despawn();
+	}
+	
+	protected void delete() {
+		shopObject.delete();
 	}
 	
 	/**
@@ -173,24 +130,33 @@ public abstract class Shopkeeper {
 		return world;
 	}
 	
+	public int getX() {
+		return x;
+	}
+	
+	public int getY() {
+		return y;
+	}
+	
+	public int getZ() {
+		return z;
+	}
+	
 	/**
 	 * Gets the villager entity for this shopkeeper. Can return null if the shopkeeper
 	 * is not spawned in the world.
 	 * @return the villager entity
 	 */
-	public Villager getVillager() {
-		return villager;
-	}
+	//public Villager getVillager() {
+	//	return villager;
+	//}
 	
 	/**
-	 * Gets the shopkeeper's entity ID.
-	 * @return the entity id, or 0 if the shopkeeper is not in the world
+	 * Gets the shopkeeper's ID.
+	 * @return the id, or 0 if the shopkeeper is not in the world
 	 */
-	public int getEntityId() {
-		if (villager != null) {
-			return villager.getEntityId();
-		}
-		return 0;
+	public String getId() {
+		return shopObject.getId();
 	}
 
 	/**
@@ -228,27 +194,11 @@ public abstract class Shopkeeper {
 	 */
 	public abstract void onPurchaseClick(InventoryClickEvent event);
 	
-	protected void setProfession() {
-		((CraftVillager)villager).getHandle().setProfession(profession);
-	}
-	
 	protected void closeInventory(HumanEntity player) {
 		ShopkeepersPlugin.plugin.closeInventory(player);
 	}
 	
-	protected short getProfessionWoolColor() {
-		switch (profession) {
-		case 0: return 12;
-		case 1: return 0;
-		case 2: return 2;
-		case 3: return 7;
-		case 4: return 8;
-		case 5: return 5;
-		default: return 14;
-		}
-	}
-	
-	@SuppressWarnings("unchecked")
+	/*@SuppressWarnings("unchecked")
 	protected void updateRecipes() {
 		try {
 			EntityVillager ev = ((CraftVillager)villager).getHandle();
@@ -286,28 +236,5 @@ public abstract class Shopkeeper {
 		}		
 	}
 	
-	/**
-	 * Overwrites the AI of the villager to not wander, but to just look at customers.
-	 */
-	private void overwriteAI() {
-		try {
-			EntityVillager ev = ((CraftVillager)villager).getHandle();
-			
-			Field goalsField = EntityLiving.class.getDeclaredField("goalSelector");
-			goalsField.setAccessible(true);
-			PathfinderGoalSelector goals = (PathfinderGoalSelector) goalsField.get(ev);
-			
-			Field listField = PathfinderGoalSelector.class.getDeclaredField("a");
-			listField.setAccessible(true);
-			@SuppressWarnings("rawtypes")
-			List list = (List)listField.get(goals);
-			list.clear();
-
-			goals.a(1, new PathfinderGoalTradeWithPlayer(ev));
-			goals.a(1, new PathfinderGoalLookAtTradingPlayer(ev));
-			goals.a(2, new PathfinderGoalLookAtPlayer(ev, EntityHuman.class, 12.0F, 1.0F));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}		
-	}
+	}*/
 }

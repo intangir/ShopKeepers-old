@@ -1,7 +1,6 @@
 package com.nisovin.shopkeepers.shoptypes;
 
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -14,6 +13,7 @@ import com.nisovin.shopkeepers.EditorClickResult;
 import com.nisovin.shopkeepers.Settings;
 import com.nisovin.shopkeepers.Shopkeeper;
 import com.nisovin.shopkeepers.ShopkeepersPlugin;
+import com.nisovin.shopkeepers.shopobjects.ShopObject;
 
 
 /**
@@ -32,8 +32,8 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 		super(config);
 	}
 	
-	public PlayerShopkeeper(Player owner, Block chest, Location location, int profession) {
-		super(location, profession);
+	public PlayerShopkeeper(Player owner, Block chest, Location location, ShopObject shopObject) {
+		super(location, shopObject);
 		this.owner = owner.getName().toLowerCase();
 		this.chestx = chest.getX();
 		this.chesty = chest.getY();
@@ -110,15 +110,13 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 		} else if (event.getRawSlot() == 17) {
 			// change profession
 			event.setCancelled(true);
-			profession += 1;
-			if (profession > 5) profession = 0;
-			setProfession();
-			event.getInventory().setItem(17, new ItemStack(Material.WOOL, 1, getProfessionWoolColor()));
+			shopObject.cycleType();
+			event.getInventory().setItem(17, shopObject.getTypeItem());
 			return EditorClickResult.SAVE_AND_CONTINUE;
 		} else if (event.getRawSlot() == 26) {
 			// delete
 			event.setCancelled(true);
-			remove();
+			delete();
 			return EditorClickResult.DELETE_SHOPKEEPER;
 		} else if (event.getRawSlot() >= 18 && event.getRawSlot() <= 25) {
 			// change low cost
@@ -249,7 +247,7 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 	
 	protected void setActionButtons(Inventory inv) {
 		inv.setItem(8, new ItemStack(Settings.saveItem));
-		inv.setItem(17, new ItemStack(Material.WOOL, 1, getProfessionWoolColor()));
+		inv.setItem(17, shopObject.getTypeItem());
 		inv.setItem(26, new ItemStack(Settings.deleteItem));
 	}
 	

@@ -2,12 +2,16 @@ package com.nisovin.shopkeepers;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import net.minecraft.server.EntityVillager;
+import net.minecraft.server.MerchantRecipeList;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -22,6 +26,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
@@ -31,9 +36,14 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.nisovin.shopkeepers.events.*;
+import com.nisovin.shopkeepers.pluginhandlers.TownyHandler;
+import com.nisovin.shopkeepers.pluginhandlers.WorldGuardHandler;
+import com.nisovin.shopkeepers.shopobjects.ShopObject;
+import com.nisovin.shopkeepers.shopobjects.VillagerShop;
 import com.nisovin.shopkeepers.shoptypes.*;
 
 public class ShopkeepersPlugin extends JavaPlugin implements Listener {
@@ -43,9 +53,9 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 	private boolean debug = false;
 	
 	Map<String, List<Shopkeeper>> allShopkeepersByChunk = new HashMap<String, List<Shopkeeper>>();
-	Map<Integer, Shopkeeper> activeShopkeepers = new HashMap<Integer, Shopkeeper>();
-	Map<String, Integer> editing = new HashMap<String, Integer>();
-	Map<String, Integer> purchasing = new HashMap<String, Integer>();
+	Map<String, Shopkeeper> activeShopkeepers = new HashMap<String, Shopkeeper>();
+	Map<String, String> editing = new HashMap<String, String>();
+	Map<String, String> purchasing = new HashMap<String, String>();
 	Map<String, List<String>> recentlyPlacedChests = new HashMap<String, List<String>>();
 	Map<String, ShopkeeperType> selectedShopType = new HashMap<String, ShopkeeperType>();
 	Map<String, Block> selectedChest = new HashMap<String, Block>();
@@ -95,12 +105,19 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 		}
 		
 		// register events
-		getServer().getPluginManager().registerEvents(new ShopListener(this), this);
+		PluginManager pm = getServer().getPluginManager();
+		pm.registerEvents(new ShopListener(this), this);
+		if (Settings.enableVillagerShops) {
+			pm.registerEvents(new VillagerListener(this), this);
+		}
+		if (Settings.enableSignShops) {
+			pm.registerEvents(new BlockListener(this), this);
+		}
 		if (Settings.blockVillagerSpawns) {
-			getServer().getPluginManager().registerEvents(new BlockSpawnListener(), this);
+			pm.registerEvents(new BlockSpawnListener(), this);
 		}
 		if (Settings.protectChests) {
-			getServer().getPluginManager().registerEvents(new ChestProtectListener(this), this);
+			pm.registerEvents(new ChestProtectListener(this), this);
 		}
 		
 		// start teleporter
@@ -123,7 +140,7 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 							for (Shopkeeper shopkeeper : shopkeepers) {
 								if (!shopkeeper.isActive()) {
 									shopkeeper.spawn();
-									activeShopkeepers.put(shopkeeper.getEntityId(), shopkeeper);
+									activeShopkeepers.put(shopkeeper.getId(), shopkeeper);
 									count++;
 								}
 							}
@@ -245,7 +262,7 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 						}
 					}
 					if (shopType != null) {
-						Shopkeeper shopkeeper = createNewPlayerShopkeeper(player, block, block.getLocation().add(0, 1.5, 0), 0, shopType);
+						Shopkeeper shopkeeper = createNewPlayerShopkeeper(player, block, block.getLocation().add(0, 1.5, 0), shopType, new VillagerShop());
 						if (shopkeeper != null) {
 							sendCreatedMessage(player, shopType);
 						}
@@ -281,9 +298,9 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 			profession = 0;
 		}
 		// create the shopkeeper (and spawn it)
-		Shopkeeper shopkeeper = new AdminShopkeeper(location, profession);
+		Shopkeeper shopkeeper = new AdminShopkeeper(location, new VillagerShop());
 		shopkeeper.spawn();
-		activeShopkeepers.put(shopkeeper.getEntityId(), shopkeeper);
+		activeShopkeepers.put(shopkeeper.getId(), shopkeeper);
 		addShopkeeper(shopkeeper);
 		
 		return shopkeeper;
@@ -298,13 +315,8 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 	 * @param type the player shop type (0=normal, 1=book, 2=buy)
 	 * @return the shopkeeper created
 	 */
-	public Shopkeeper createNewPlayerShopkeeper(Player player, Block chest, Location location, int profession, ShopkeeperType shopType) {
-		// make sure profession is valid
-		if (profession < 0 || profession > 5) {
-			profession = 0;
-		}
-		
-		if (shopType == null) {
+	public Shopkeeper createNewPlayerShopkeeper(Player player, Block chest, Location location, ShopkeeperType shopType, ShopObject shopObject) {
+		if (shopType == null || shopObject == null) {
 			return null;
 		}
 		
@@ -327,13 +339,12 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 		int maxShops = Settings.maxShopsPerPlayer;
 		
 		// call event
-		CreatePlayerShopkeeperEvent event = new CreatePlayerShopkeeperEvent(player, chest, location, profession, shopType, maxShops);
+		CreatePlayerShopkeeperEvent event = new CreatePlayerShopkeeperEvent(player, chest, location, shopType, maxShops);
 		Bukkit.getPluginManager().callEvent(event);
 		if (event.isCancelled()) {
 			return null;
 		} else {
 			location = event.getSpawnLocation();
-			profession = event.getProfessionId();
 			shopType = event.getType();
 			maxShops = event.getMaxShopsForPlayer();
 		}
@@ -358,22 +369,23 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 		Shopkeeper shopkeeper = null;
 		if (shopType == ShopkeeperType.PLAYER_NORMAL) {
 			if (Settings.allowCustomQuantities) {
-				shopkeeper = new CustomQuantityPlayerShopkeeper(player, chest, location, profession);
+				shopkeeper = new CustomQuantityPlayerShopkeeper(player, chest, location, shopObject);
 			} else {
-				shopkeeper = new FixedQuantityPlayerShopkeeper(player, chest, location, profession);
+				shopkeeper = new FixedQuantityPlayerShopkeeper(player, chest, location, shopObject);
 			}
 		} else if (shopType == ShopkeeperType.PLAYER_BOOK) {
-			shopkeeper = new WrittenBookPlayerShopkeeper(player, chest, location, profession);
+			shopkeeper = new WrittenBookPlayerShopkeeper(player, chest, location, shopObject);
 		} else if (shopType == ShopkeeperType.PLAYER_BUY) {
-			shopkeeper = new BuyingPlayerShopkeeper(player, chest, location, profession);
+			shopkeeper = new BuyingPlayerShopkeeper(player, chest, location, shopObject);
 		} else if (shopType == ShopkeeperType.PLAYER_TRADE) {
-			shopkeeper = new TradingPlayerShopkeeper(player, chest, location, profession);
+			shopkeeper = new TradingPlayerShopkeeper(player, chest, location, shopObject);
 		}
 
 		// spawn and save the shopkeeper
 		if (shopkeeper != null) {
 			shopkeeper.spawn();
-			activeShopkeepers.put(shopkeeper.getEntityId(), shopkeeper);
+			System.out.println("new id: " + shopkeeper.getId());
+			activeShopkeepers.put(shopkeeper.getId(), shopkeeper);
 			addShopkeeper(shopkeeper);
 		}
 		
@@ -438,13 +450,13 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 		return false;
 	}
 	
-	void closeTradingForShopkeeper(final int entityId) {
+	void closeTradingForShopkeeper(final String id) {
 		Bukkit.getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
 			public void run() {
 				Iterator<String> editors = editing.keySet().iterator();
 				while (editors.hasNext()) {
 					String name = editors.next();
-					if (editing.get(name).equals(entityId)) {
+					if (editing.get(name).equals(id)) {
 						Player player = Bukkit.getPlayerExact(name);
 						if (player != null) {
 							player.closeInventory();
@@ -455,7 +467,7 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 				Iterator<String> purchasers = purchasing.keySet().iterator();
 				while (purchasers.hasNext()) {
 					String name = purchasers.next();
-					if (purchasing.get(name).equals(entityId)) {
+					if (purchasing.get(name).equals(id)) {
 						Player player = Bukkit.getPlayerExact(name);
 						if (player != null) {
 							player.closeInventory();
@@ -473,6 +485,31 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 				player.closeInventory();
 			}
 		}, 1);
+	}
+	
+	@SuppressWarnings("unchecked")
+	boolean openTradeWindow(Shopkeeper shopkeeper, Player player) {
+		try {
+			EntityVillager villager = new EntityVillager(((CraftPlayer)player).getHandle().world, 0);
+			
+			Field recipeListField = EntityVillager.class.getDeclaredField(Settings.recipeListVar);
+			recipeListField.setAccessible(true);
+			MerchantRecipeList recipeList = (MerchantRecipeList)recipeListField.get(villager);
+			if (recipeList == null) {
+				recipeList = new MerchantRecipeList();
+				recipeListField.set(villager, recipeList);
+			}
+			recipeList.clear();
+			for (ItemStack[] recipe : shopkeeper.getRecipes()) {
+				recipeList.add(ShopRecipe.factory(recipe[0], recipe[1], recipe[2]));
+			}
+			
+			villager.c(((CraftPlayer)player).getHandle());
+			
+			return true;
+		} catch (Exception e) {
+			return false;
+		}
 	}
 	
 	boolean isChestProtected(Player player, Block block) {
@@ -500,9 +537,9 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 		if (shopkeepers != null) {
 			debug("Loading " + shopkeepers.size() + " shopkeepers in chunk " + chunk.getX() + "," + chunk.getZ());
 			for (Shopkeeper shopkeeper : shopkeepers) {
-				if (!shopkeeper.isActive()) {
+				if (!shopkeeper.isActive() && shopkeeper.needsSpawned()) {
 					shopkeeper.spawn();
-					activeShopkeepers.put(shopkeeper.getEntityId(), shopkeeper);
+					activeShopkeepers.put(shopkeeper.getId(), shopkeeper);
 				}
 			}
 			save();
@@ -553,12 +590,20 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 				shopkeeper = new AdminShopkeeper(section);
 			}
 			if (shopkeeper != null) {
+				
+				// add to shopkeepers by chunk
 				List<Shopkeeper> list = allShopkeepersByChunk.get(shopkeeper.getChunk());
 				if (list == null) {
 					list = new ArrayList<Shopkeeper>();
 					allShopkeepersByChunk.put(shopkeeper.getChunk(), list);
 				}
 				list.add(shopkeeper);
+				
+				// add to active shopkeepers if spawning not needed
+				if (!shopkeeper.needsSpawned()) {
+					System.out.println("loaded id: " + shopkeeper.getId());
+					activeShopkeepers.put(shopkeeper.getId(), shopkeeper);
+				}
 			}
 		}
 	}

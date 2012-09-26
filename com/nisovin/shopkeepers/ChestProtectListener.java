@@ -32,7 +32,7 @@ class ChestProtectListener implements Listener {
 						if (plugin.isChestProtected(player, block.getRelative(face))) {
 							event.setCancelled(true);
 							return;
-						}				
+						}
 					}
 				}
 			}

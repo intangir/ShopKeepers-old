@@ -27,11 +27,11 @@ public class CreatePlayerShopkeeperEvent extends Event implements Cancellable {
 	
 	private boolean cancelled;
 
-	public CreatePlayerShopkeeperEvent(Player player, Block chest, Location location, int profession, ShopkeeperType type, int maxShops) {
+	public CreatePlayerShopkeeperEvent(Player player, Block chest, Location location, ShopkeeperType type, int maxShops) {
 		this.player = player;
 		this.chest = chest;
 		this.location = location;
-		this.profession = profession;
+		this.profession = 0;
 		this.type = type;
 		this.maxShops = maxShops;
 	}
@@ -64,6 +64,7 @@ public class CreatePlayerShopkeeperEvent extends Event implements Cancellable {
 	 * Gets the profession id of the villager shopkeeper.
 	 * @return the profession id
 	 */
+	@Deprecated
 	public int getProfessionId() {
 		return profession;
 	}
@@ -96,10 +97,8 @@ public class CreatePlayerShopkeeperEvent extends Event implements Cancellable {
 	 * Sets the profession id of the shopkeeper villager. This should be a number between 0 and 5.
 	 * @param profession the profession id
 	 */
+	@Deprecated
 	public void setProfessionId(int profession) {
-		if (profession >= 0 && profession <= 5) {
-			this.profession = profession;
-		}
 	}
 	
 	/**

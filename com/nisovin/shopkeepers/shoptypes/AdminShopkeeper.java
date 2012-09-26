@@ -33,6 +33,7 @@ import com.nisovin.shopkeepers.Settings;
 import com.nisovin.shopkeepers.Shopkeeper;
 import com.nisovin.shopkeepers.ShopkeeperType;
 import com.nisovin.shopkeepers.ShopkeepersPlugin;
+import com.nisovin.shopkeepers.shopobjects.ShopObject;
 
 
 /**
@@ -54,8 +55,8 @@ public class AdminShopkeeper extends Shopkeeper {
 	 * @param location the location to spawn at
 	 * @param prof the id of the profession
 	 */
-	public AdminShopkeeper(Location location, int prof) {
-		super(location, prof);
+	public AdminShopkeeper(Location location, ShopObject shopObject) {
+		super(location, shopObject);
 		recipes = new ArrayList<ItemStack[]>();
 	}
 	
@@ -114,7 +115,7 @@ public class AdminShopkeeper extends Shopkeeper {
 			}
 			// add the special buttons
 			inv.setItem(8, new ItemStack(Settings.saveItem));
-			inv.setItem(17, new ItemStack(Material.WOOL, 1, getProfessionWoolColor()));
+			inv.setItem(17, shopObject.getTypeItem());
 			inv.setItem(26, new ItemStack(Settings.deleteItem));
 			// show editing inventory
 			player.openInventory(inv);
@@ -135,15 +136,13 @@ public class AdminShopkeeper extends Shopkeeper {
 			return EditorClickResult.DONE_EDITING;
 		} else if (event.getRawSlot() == 17) {
 			// it's the cycle button - cycle to next profession
-			profession += 1;
-			if (profession > 5) profession = 0;
-			setProfession();
-			event.getInventory().setItem(17, new ItemStack(Material.WOOL, 1, getProfessionWoolColor()));
+			shopObject.cycleType();
+			event.getInventory().setItem(17, shopObject.getTypeItem());
 			event.setCancelled(true);
 			return EditorClickResult.SAVE_AND_CONTINUE;
 		} else if (event.getRawSlot() == 26) {
 			// it's the delete button - remove the shopkeeper
-			remove();
+			delete();
 			event.setCancelled(true);
 			return EditorClickResult.DELETE_SHOPKEEPER;
 		} else {

@@ -20,6 +20,7 @@ import org.bukkit.inventory.ItemStack;
 import com.nisovin.shopkeepers.EditorClickResult;
 import com.nisovin.shopkeepers.Settings;
 import com.nisovin.shopkeepers.ShopkeeperType;
+import com.nisovin.shopkeepers.shopobjects.ShopObject;
 
 public class FixedQuantityPlayerShopkeeper extends PlayerShopkeeper {
 
@@ -29,8 +30,8 @@ public class FixedQuantityPlayerShopkeeper extends PlayerShopkeeper {
 		super(config);
 	}
 
-	public FixedQuantityPlayerShopkeeper(Player owner, Block chest, Location location, int profession) {
-		super(owner, chest, location, profession);
+	public FixedQuantityPlayerShopkeeper(Player owner, Block chest, Location location, ShopObject shopObject) {
+		super(owner, chest, location, shopObject);
 		this.costs = new HashMap<ItemTypeAndQuantity, Integer>();
 	}
 	

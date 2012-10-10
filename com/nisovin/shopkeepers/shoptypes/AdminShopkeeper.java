@@ -252,6 +252,29 @@ public class AdminShopkeeper extends Shopkeeper {
 			}
 		}
 		// rest of code left for backwards compatibility and for just-in-case
+		if (config.contains("name") || config.contains("lore")) {
+			NBTTagCompound tag = ((CraftItemStack)item).getHandle().tag;
+			if (tag == null) {
+				tag = new NBTTagCompound();
+				item.getHandle().tag = tag;
+			}
+			NBTTagCompound display = tag.getCompound("display");
+			if (display == null) {
+				display = new NBTTagCompound();
+				tag.setCompound("display", display);
+			}
+			if (config.contains("name")) {
+				display.setString("Name", config.getString("name"));
+			}
+			if (config.contains("lore")) {
+				List<String> lore = config.getStringList("lore");
+				NBTTagList list = new NBTTagList();
+				for (String l : lore) {
+					list.add(new NBTTagString(l));
+				}
+				display.set("Lore", list);
+			}
+		}
 		if (config.contains("enchants")) {
 			List<String> list = config.getStringList("enchants");
 			for (String s : list) {
@@ -260,7 +283,11 @@ public class AdminShopkeeper extends Shopkeeper {
 			}
 		}
 		if (item.getType() == Material.WRITTEN_BOOK && config.contains("title") && config.contains("author") && config.contains("pages")) {
-			NBTTagCompound tag = new NBTTagCompound();
+			NBTTagCompound tag = ((CraftItemStack)item).getHandle().tag;
+			if (tag == null) {
+				tag = new NBTTagCompound();
+				item.getHandle().tag = tag;
+			}
 			tag.setString("title", config.getString("title"));
 			tag.setString("author", config.getString("author"));
 			List<String> pages = config.getStringList("pages");
@@ -270,7 +297,6 @@ public class AdminShopkeeper extends Shopkeeper {
 				tagPages.add(tagPage);
 			}
 			tag.set("pages", tagPages);
-			item.getHandle().tag = tag;
 		}
 		if (config.contains("extra")) {
 			NBTTagCompound tag = ((CraftItemStack)item).getHandle().tag;
@@ -302,6 +328,20 @@ public class AdminShopkeeper extends Shopkeeper {
 				NBTBase.a(tag, new DataOutputStream(stream));
 				config.set("nbtdata", stream.toByteArray());
 				// rest of code left for backwards compatibility and for just-in-case
+				if (tag.hasKey("display")) {
+					NBTTagCompound display = tag.getCompound("display");
+					if (display.hasKey("Name")) {
+						config.set("name", display.getString("Name"));
+					}
+					if (display.hasKey("Lore")) {
+						NBTTagList list = display.getList("Lore");
+						String[] lore = new String[list.size()];
+						for (int i = 0; i < list.size(); i++) {
+							lore[i] = ((NBTTagString)list.get(i)).data;
+						}
+						config.set("lore", lore);
+					}
+				}
 				Map<Enchantment, Integer> enchants = item.getEnchantments();
 				if (enchants.size() > 0) {
 					List<String> list = new ArrayList<String>();

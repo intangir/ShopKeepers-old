@@ -138,7 +138,7 @@ public class WrittenBookPlayerShopkeeper extends PlayerShopkeeper {
 	}
 
 	@Override
-	public void onPurchaseClick(InventoryClickEvent event) {
+	public void onPlayerPurchaseClick(InventoryClickEvent event) {
 		ItemStack book = event.getCurrentItem();
 		String title = getTitleOfBook(book);
 		if (title == null) {

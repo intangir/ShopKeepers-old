@@ -1,5 +1,11 @@
 package com.nisovin.shopkeepers;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -130,7 +136,24 @@ class ShopListener implements Listener {
 					return;
 				}
 				
+				// send purchase click to shopkeeper
 				shopkeeper.onPurchaseClick(event);
+				
+				// log purchase
+				if (Settings.enablePurchaseLogging && !event.isCancelled()) {
+					try {
+						ItemStack item = event.getCurrentItem();
+						String owner = (shopkeeper instanceof PlayerShopkeeper ? ((PlayerShopkeeper)shopkeeper).getOwner() : "[Admin]");
+						File file = new File(plugin.getDataFolder(), "purchases-" + new SimpleDateFormat("yyyy-MM-dd").format(new Date()) + ".csv");
+						boolean isNew = !file.exists();
+						BufferedWriter writer = new BufferedWriter(new FileWriter(file, true));
+						if (isNew) writer.append("TIME,PLAYER,SHOP TYPE,SHOP POS,OWNER,ITEM TYPE,DATA,QUANTITY\n");
+						writer.append("\"" + new SimpleDateFormat("HH:mm:ss").format(new Date()) + "\",\"" + event.getWhoClicked().getName() + "\",\"" + shopkeeper.getType().name() + "\",\"" + shopkeeper.getPositionString() + "\",\"" + owner + "\",\"" + item.getType().name() + "\",\"" + item.getDurability() + "\",\"" + item.getAmount() + "\"\n");
+						writer.close();
+					} catch (IOException e) {
+						plugin.getLogger().severe("IO exception while trying to log purchase");
+					}
+				}
 			}
 		}
 	}

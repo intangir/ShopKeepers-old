@@ -31,7 +31,6 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
-import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
@@ -46,7 +45,7 @@ import com.nisovin.shopkeepers.shopobjects.ShopObject;
 import com.nisovin.shopkeepers.shopobjects.VillagerShop;
 import com.nisovin.shopkeepers.shoptypes.*;
 
-public class ShopkeepersPlugin extends JavaPlugin implements Listener {
+public class ShopkeepersPlugin extends JavaPlugin {
 
 	static ShopkeepersPlugin plugin;
 
@@ -384,7 +383,6 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 		// spawn and save the shopkeeper
 		if (shopkeeper != null) {
 			shopkeeper.spawn();
-			System.out.println("new id: " + shopkeeper.getId());
 			activeShopkeepers.put(shopkeeper.getId(), shopkeeper);
 			addShopkeeper(shopkeeper);
 		}
@@ -601,7 +599,6 @@ public class ShopkeepersPlugin extends JavaPlugin implements Listener {
 				
 				// add to active shopkeepers if spawning not needed
 				if (!shopkeeper.needsSpawned()) {
-					System.out.println("loaded id: " + shopkeeper.getId());
 					activeShopkeepers.put(shopkeeper.getId(), shopkeeper);
 				}
 			}

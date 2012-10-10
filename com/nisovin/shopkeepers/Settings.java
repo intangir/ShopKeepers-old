@@ -9,12 +9,12 @@ public class Settings {
 	
 	public static boolean disableOtherVillagers = true;
 	public static boolean blockVillagerSpawns = false;
-	public static boolean saveInstantly = true;
 	public static boolean enableSpawnVerifier = false;
+	public static boolean enablePurchaseLogging = false;
+	public static boolean saveInstantly = true;
 	
 	public static boolean enableWorldGuardRestrictions = false;
-	public static boolean enableTownyRestrictions = false;
-	
+	public static boolean enableTownyRestrictions = false;	
 	
 	public static boolean createPlayerShopWithCommand = true;
 	public static boolean allowCustomQuantities = true;
@@ -28,6 +28,8 @@ public class Settings {
 	
 	public static boolean enableSignShops = true;
 	public static String signShopFirstLine = "[SHOP]";
+	public static int signShopCreationItem = Material.EMERALD.getId();
+	public static short signShopCreationItemData = 0;
 	
 	public static boolean enableBlockShops = true;
 	public static int blockShopType = 0;

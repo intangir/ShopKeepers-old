@@ -122,6 +122,10 @@ public abstract class Shopkeeper {
 		return world + "," + (x >> 4) + "," + (z >> 4);
 	}
 	
+	public String getPositionString() {
+		return world + "," + x + "," + y + "," + z;
+	}
+	
 	/**
 	 * Gets the name of the world this shopkeeper lives in.
 	 * @return the world name

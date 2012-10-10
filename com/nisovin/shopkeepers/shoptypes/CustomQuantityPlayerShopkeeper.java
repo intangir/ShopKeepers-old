@@ -177,7 +177,7 @@ public class CustomQuantityPlayerShopkeeper extends PlayerShopkeeper {
 	}
 	
 	@Override
-	public void onPurchaseClick(final InventoryClickEvent event) {
+	public void onPlayerPurchaseClick(final InventoryClickEvent event) {
 		// prevent shift clicks
 		if (event.isShiftClick() || event.isRightClick()) {
 			event.setCancelled(true);

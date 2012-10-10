@@ -1,18 +1,26 @@
 disable-other-villagers: true
 block-villager-spawns: false
 enable-spawn-verifier: false
+enable-purchase-logging: false
 save-instantly: true
 
 enable-world-guard-restrictions: false
 enable-towny-restrictions: false
 
 create-player-shop-with-command: true
-create-player-shop-with-egg: true
-deleting-player-shop-returns-egg: false
 allow-custom-quantities: true
 protect-chests: true
 max-shops-per-player: 0
 max-chest-distance: 15
+
+enable-villager-shops: true
+create-player-shop-with-egg: true
+deleting-player-shop-returns-egg: false
+
+enable-sign-shops: true
+sign-shop-first-line: "[SHOP]"
+sign-shop-creation-item: 388
+sign-shop-creation-item-data: 0
 
 editor-title: "Shopkeeper Editor"
 save-item: 133

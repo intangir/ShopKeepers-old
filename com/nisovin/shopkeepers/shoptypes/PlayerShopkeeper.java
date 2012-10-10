@@ -1,8 +1,11 @@
 package com.nisovin.shopkeepers.shoptypes;
 
+import java.util.Map;
+
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
@@ -187,7 +190,18 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 		saveEditor(event.getInventory());
 	}
 	
-	protected abstract void saveEditor(Inventory inv);	
+	protected abstract void saveEditor(Inventory inv);
+	
+	@Override
+	public final void onPurchaseClick(InventoryClickEvent event) {
+		if (event.getWhoClicked().getName().equalsIgnoreCase(owner)) {
+			event.setCancelled(true);
+		} else {
+			onPlayerPurchaseClick(event);
+		}
+	}
+	
+	protected abstract void onPlayerPurchaseClick(InventoryClickEvent event);
 
 	protected void setRecipeCost(ItemStack[] recipe, int cost) {
 		if (Settings.highCurrencyItem > 0 && cost > Settings.highCurrencyMinCost) {
@@ -267,7 +281,7 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 	protected boolean removeFromInventory(ItemStack item, ItemStack[] contents) {
 		item = item.clone();
 		for (int i = 0; i < contents.length; i++) {
-			if (contents[i] != null && contents[i].getTypeId() == item.getTypeId() && contents[i].getDurability() == item.getDurability()) {
+			if (contents[i] != null && contents[i].getTypeId() == item.getTypeId() && contents[i].getDurability() == item.getDurability() && equalEnchantments(item, contents[i])) {
 				if (contents[i].getAmount() > item.getAmount()) {
 					contents[i].setAmount(contents[i].getAmount() - item.getAmount());
 					return true;
@@ -301,6 +315,24 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 			}
 		}
 		return false;
+	}
+	
+	protected boolean equalEnchantments(ItemStack item1, ItemStack item2) {
+		Map<Enchantment, Integer> enchants1 = item1.getEnchantments();
+		Map<Enchantment, Integer> enchants2 = item2.getEnchantments();
+		if ((enchants1 == null || enchants1.size() == 0) && (enchants2 == null || enchants2.size() == 0)) {
+			return true;
+		} else if (enchants1 == null || enchants2 == null || enchants1.size() != enchants2.size()) {
+			return false;
+		} else {
+			for (Enchantment ench : enchants1.keySet()) {
+				Integer lvl2 = enchants2.get(ench);
+				if (lvl2 == null || !lvl2.equals(enchants1.get(ench))) {
+					return false;
+				}
+			}
+			return true;
+		}
 	}
 	
 }

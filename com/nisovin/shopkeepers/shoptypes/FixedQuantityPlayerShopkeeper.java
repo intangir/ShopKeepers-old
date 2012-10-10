@@ -138,7 +138,7 @@ public class FixedQuantityPlayerShopkeeper extends PlayerShopkeeper {
 	}
 	
 	@Override
-	public void onPurchaseClick(final InventoryClickEvent event) {		
+	public void onPlayerPurchaseClick(final InventoryClickEvent event) {		
 		// prevent shift clicks
 		if (event.isShiftClick() || event.isRightClick()) {
 			event.setCancelled(true);
@@ -146,7 +146,8 @@ public class FixedQuantityPlayerShopkeeper extends PlayerShopkeeper {
 		}
 		
 		// get type and cost
-		ItemTypeAndQuantity type = new ItemTypeAndQuantity(event.getCurrentItem());
+		ItemStack theItem = event.getCurrentItem();
+		ItemTypeAndQuantity type = new ItemTypeAndQuantity(theItem);
 		if (!costs.containsKey(type)) {
 			event.setCancelled(true);
 			return;
@@ -165,7 +166,7 @@ public class FixedQuantityPlayerShopkeeper extends PlayerShopkeeper {
 		ItemStack[] contents = inv.getContents();
 		for (int i = 0; i < contents.length; i++) {
 			ItemStack item = contents[i];
-			if (item != null && item.getTypeId() == type.id && item.getDurability() == type.data && item.getAmount() == type.amount) {
+			if (item != null && item.getTypeId() == type.id && item.getDurability() == type.data && item.getAmount() == type.amount && equalEnchantments(item, theItem)) {
 				contents[i] = null;
 				if (Settings.highCurrencyItem <= 0 || cost <= Settings.highCurrencyMinCost) {
 					boolean added = addToInventory(new ItemStack(Settings.currencyItem, cost, Settings.currencyItemData), contents);

@@ -327,7 +327,7 @@ public class AdminShopkeeper extends Shopkeeper {
 				ByteArrayOutputStream stream = new ByteArrayOutputStream();
 				NBTBase.a(tag, new DataOutputStream(stream));
 				config.set("nbtdata", stream.toByteArray());
-				// rest of code left for backwards compatibility and for just-in-case
+				// rest of code left for backwards compatibility and for just-in-case 
 				if (tag.hasKey("display")) {
 					NBTTagCompound display = tag.getCompound("display");
 					if (display.hasKey("Name")) {

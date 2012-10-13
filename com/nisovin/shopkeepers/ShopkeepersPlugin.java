@@ -416,7 +416,7 @@ public class ShopkeepersPlugin extends JavaPlugin {
 	 * @return whether the entity is a Shopkeeper
 	 */
 	public boolean isShopkeeper(Entity entity) {
-		return activeShopkeepers.containsKey(entity.getEntityId());
+		return activeShopkeepers.containsKey("entity" + entity.getEntityId());
 	}	
 
 	void addShopkeeper(Shopkeeper shopkeeper) {
@@ -536,8 +536,12 @@ public class ShopkeepersPlugin extends JavaPlugin {
 			debug("Loading " + shopkeepers.size() + " shopkeepers in chunk " + chunk.getX() + "," + chunk.getZ());
 			for (Shopkeeper shopkeeper : shopkeepers) {
 				if (!shopkeeper.isActive() && shopkeeper.needsSpawned()) {
-					shopkeeper.spawn();
-					activeShopkeepers.put(shopkeeper.getId(), shopkeeper);
+					boolean spawned = shopkeeper.spawn();
+					if (spawned) {
+						activeShopkeepers.put(shopkeeper.getId(), shopkeeper);
+					} else {
+						getLogger().warning("Failed to spawn shopkeeper at " + shopkeeper.getPositionString());
+					}
 				}
 			}
 			save();

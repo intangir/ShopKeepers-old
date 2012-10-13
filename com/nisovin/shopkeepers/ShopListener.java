@@ -193,7 +193,6 @@ class ShopListener implements Listener {
 	@EventHandler
 	void onChunkLoad(ChunkLoadEvent event) {
 		final Chunk chunk = event.getChunk();
-		plugin.loadShopkeepersInChunk(chunk);
 		Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
 			public void run() {
 				if (chunk.isLoaded()) {

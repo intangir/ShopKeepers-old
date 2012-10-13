@@ -8,6 +8,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Monster;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
 import org.bukkit.event.EventHandler;
@@ -168,11 +169,11 @@ public class VillagerListener implements Listener {
 	@EventHandler
 	void onEntityDamage(EntityDamageEvent event) {
 		// don't allow damaging shopkeepers!
-		if (plugin.activeShopkeepers.containsKey(event.getEntity().getEntityId())) {
+		if (plugin.activeShopkeepers.containsKey("entity" + event.getEntity().getEntityId())) {
 			event.setCancelled(true);
 			if (event instanceof EntityDamageByEntityEvent) {
 				EntityDamageByEntityEvent evt = (EntityDamageByEntityEvent)event;
-				if (evt.getDamager().getType() == EntityType.ZOMBIE) {
+				if (evt.getDamager() instanceof Monster) {
 					evt.getDamager().remove();
 				}
 			}
@@ -182,7 +183,7 @@ public class VillagerListener implements Listener {
 	@EventHandler
 	void onTarget(EntityTargetEvent event) {
 		Entity target = event.getTarget();
-		if (target != null && target.getType() == EntityType.VILLAGER && plugin.activeShopkeepers.containsKey(target.getEntityId())) {
+		if (target != null && target.getType() == EntityType.VILLAGER && plugin.activeShopkeepers.containsKey("entity" + target.getEntityId())) {
 			event.setCancelled(true);
 		}
 	}

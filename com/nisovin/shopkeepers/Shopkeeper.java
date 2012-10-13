@@ -83,8 +83,8 @@ public abstract class Shopkeeper {
 	 * Spawns the shopkeeper into the world at its spawn location. Also sets the
 	 * trade recipes and overwrites the villager AI.
 	 */
-	public void spawn() {
-		shopObject.spawn(world, x, y, z);
+	public boolean spawn() {
+		return shopObject.spawn(world, x, y, z);
 	}
 	
 	/**

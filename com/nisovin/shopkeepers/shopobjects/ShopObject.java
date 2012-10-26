@@ -1,5 +1,6 @@
 package com.nisovin.shopkeepers.shopobjects;
 
+import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
 
@@ -25,7 +26,9 @@ public abstract class ShopObject {
 	
 	public abstract String getId();
 	
-	public abstract void check(String world, int x, int y, int z);
+	public abstract Location getActualLocation();
+	
+	public abstract boolean check(String world, int x, int y, int z);
 	
 	public abstract void despawn();
 	

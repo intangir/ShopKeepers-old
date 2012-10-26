@@ -54,7 +54,7 @@ public class VillagerListener implements Listener {
 					ShopkeepersPlugin.debug("  Editor window NOT opened");
 				}
 			} else if (shopkeeper != null) {
-				// only allow one person per shopkeeper
+				// trading with shopkeeper
 				ShopkeepersPlugin.debug("  Opening trade window...");
 				OpenTradeEvent evt = new OpenTradeEvent(event.getPlayer(), shopkeeper);
 				Bukkit.getPluginManager().callEvent(evt);
@@ -63,14 +63,7 @@ public class VillagerListener implements Listener {
 					event.setCancelled(true);
 					return;
 				}
-				/*if (plugin.purchasing.containsValue(villager.getEntityId())) {
-					ShopkeepersPlugin.debug("  Villager already in use!");
-					plugin.sendMessage(event.getPlayer(), Settings.msgShopInUse);
-					event.setCancelled(true);
-					return;
-				}*/
-				// set the trade recipe list (also prevent shopkeepers adding their own recipes by refreshing them with our list)
-				//shopkeeper.updateRecipes();
+				// open trade window
 				event.setCancelled(true);
 				plugin.openTradeWindow(shopkeeper, event.getPlayer());
 				plugin.purchasing.put(event.getPlayer().getName(), shopkeeper.getId());

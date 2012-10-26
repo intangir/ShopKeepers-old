@@ -17,6 +17,7 @@ public class Settings {
 	public static boolean enableTownyRestrictions = false;	
 	
 	public static boolean createPlayerShopWithCommand = true;
+	public static boolean simulateRightClickOnCommand = true;
 	public static boolean allowCustomQuantities = true;
 	public static boolean protectChests = true;
 	public static int maxShopsPerPlayer = 0;

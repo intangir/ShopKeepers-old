@@ -1,25 +1,12 @@
 package com.nisovin.shopkeepers.shoptypes;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
-import net.minecraft.server.NBTBase;
-import net.minecraft.server.NBTTagCompound;
-import net.minecraft.server.NBTTagList;
-import net.minecraft.server.NBTTagString;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.craftbukkit.inventory.CraftItemStack;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event.Result;
@@ -32,7 +19,7 @@ import com.nisovin.shopkeepers.EditorClickResult;
 import com.nisovin.shopkeepers.Settings;
 import com.nisovin.shopkeepers.Shopkeeper;
 import com.nisovin.shopkeepers.ShopkeeperType;
-import com.nisovin.shopkeepers.ShopkeepersPlugin;
+import com.nisovin.shopkeepers.VolatileCode;
 import com.nisovin.shopkeepers.shopobjects.ShopObject;
 
 
@@ -238,78 +225,7 @@ public class AdminShopkeeper extends Shopkeeper {
 	 * @return
 	 */
 	private ItemStack loadItemStack(ConfigurationSection config) {
-		CraftItemStack item = new CraftItemStack(config.getInt("id"), config.getInt("amt"), (short)config.getInt("data"));
-		if (config.contains("nbtdata")) {
-			try {
-				Object nbtData = config.get("nbtdata");
-				ByteArrayInputStream stream = new ByteArrayInputStream((byte[]) nbtData);
-				NBTBase tag = NBTBase.b(new DataInputStream(stream));
-				if (tag instanceof NBTTagCompound) {
-					item.getHandle().tag = (NBTTagCompound)tag;
-				}
-			} catch (Exception e) {
-				ShopkeepersPlugin.debug("Error loading item NBT data");
-			}
-		}
-		// rest of code left for backwards compatibility and for just-in-case
-		if (config.contains("name") || config.contains("lore")) {
-			NBTTagCompound tag = ((CraftItemStack)item).getHandle().tag;
-			if (tag == null) {
-				tag = new NBTTagCompound();
-				item.getHandle().tag = tag;
-			}
-			NBTTagCompound display = tag.getCompound("display");
-			if (display == null) {
-				display = new NBTTagCompound();
-				tag.setCompound("display", display);
-			}
-			if (config.contains("name")) {
-				display.setString("Name", config.getString("name"));
-			}
-			if (config.contains("lore")) {
-				List<String> lore = config.getStringList("lore");
-				NBTTagList list = new NBTTagList();
-				for (String l : lore) {
-					list.add(new NBTTagString(l));
-				}
-				display.set("Lore", list);
-			}
-		}
-		if (config.contains("enchants")) {
-			List<String> list = config.getStringList("enchants");
-			for (String s : list) {
-				String[] enchantData = s.split(" ");
-				item.addUnsafeEnchantment(Enchantment.getById(Integer.parseInt(enchantData[0])), Integer.parseInt(enchantData[1]));
-			}
-		}
-		if (item.getType() == Material.WRITTEN_BOOK && config.contains("title") && config.contains("author") && config.contains("pages")) {
-			NBTTagCompound tag = ((CraftItemStack)item).getHandle().tag;
-			if (tag == null) {
-				tag = new NBTTagCompound();
-				item.getHandle().tag = tag;
-			}
-			tag.setString("title", config.getString("title"));
-			tag.setString("author", config.getString("author"));
-			List<String> pages = config.getStringList("pages");
-			NBTTagList tagPages = new NBTTagList();
-			for (String page : pages) {
-				NBTTagString tagPage = new NBTTagString(null, page);
-				tagPages.add(tagPage);
-			}
-			tag.set("pages", tagPages);
-		}
-		if (config.contains("extra")) {
-			NBTTagCompound tag = ((CraftItemStack)item).getHandle().tag;
-			if (tag == null) {
-				tag = new NBTTagCompound();
-				item.getHandle().tag = tag;
-			}
-			ConfigurationSection extraDataSection = config.getConfigurationSection("extra");
-			for (String key : extraDataSection.getKeys(false)) {
-				tag.setString(key, extraDataSection.getString(key));
-			}
-		}
-		return item;
+		return VolatileCode.loadItemStack(config);
 	}
 	
 	/**
@@ -318,69 +234,7 @@ public class AdminShopkeeper extends Shopkeeper {
 	 * @param config
 	 */
 	private void saveItemStack(ItemStack item, ConfigurationSection config) {
-		config.set("id", item.getTypeId());
-		config.set("data", item.getDurability());
-		config.set("amt", item.getAmount());
-		if (item instanceof CraftItemStack) {
-			NBTTagCompound tag = ((CraftItemStack)item).getHandle().tag;
-			if (tag != null) {
-				ByteArrayOutputStream stream = new ByteArrayOutputStream();
-				NBTBase.a(tag, new DataOutputStream(stream));
-				config.set("nbtdata", stream.toByteArray());
-				// rest of code left for backwards compatibility and for just-in-case 
-				if (tag.hasKey("display")) {
-					NBTTagCompound display = tag.getCompound("display");
-					if (display.hasKey("Name")) {
-						config.set("name", display.getString("Name"));
-					}
-					if (display.hasKey("Lore")) {
-						NBTTagList list = display.getList("Lore");
-						String[] lore = new String[list.size()];
-						for (int i = 0; i < list.size(); i++) {
-							lore[i] = ((NBTTagString)list.get(i)).data;
-						}
-						config.set("lore", lore);
-					}
-				}
-				Map<Enchantment, Integer> enchants = item.getEnchantments();
-				if (enchants.size() > 0) {
-					List<String> list = new ArrayList<String>();
-					for (Enchantment enchant : enchants.keySet()) {
-						list.add(enchant.getId() + " " + enchants.get(enchant));
-					}
-					config.set("enchants", list);
-				}
-				if (item.getType() == Material.WRITTEN_BOOK && tag.hasKey("title") && tag.hasKey("author") && tag.hasKey("pages")) {
-					config.set("title", tag.getString("title"));
-					config.set("author", tag.getString("author"));
-					List<String> pages = new ArrayList<String>();
-					NBTTagList tagPages = (NBTTagList)tag.get("pages");
-					for (int i = 0; i < tagPages.size(); i++) {
-						NBTTagString tagPage = (NBTTagString)tagPages.get(i);
-						if (tagPage.data != null) {
-							pages.add(tagPage.data);
-						}
-					}
-					config.set("pages", pages);
-				}
-				Map<String, String> extraData = new HashMap<String, String>();
-				for (Object o : tag.c()) {
-					if (o instanceof NBTTagString) {
-						NBTTagString s = (NBTTagString)o;
-						String name = s.getName();
-						if (!name.equals("title") && !name.equals("author")) {
-							extraData.put(name, s.data);
-						}
-					}
-				}
-				if (extraData.size() > 0) {
-					ConfigurationSection extraDataSection = config.createSection("extra");
-					for (String key : extraData.keySet()) {
-						extraDataSection.set(key, extraData.get(key));
-					}
-				}
-			}
-		}
+		VolatileCode.saveItemStack(item, config);
 	}
 	
 }

@@ -2,16 +2,12 @@ package com.nisovin.shopkeepers;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import net.minecraft.server.EntityVillager;
-import net.minecraft.server.MerchantRecipeList;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -26,7 +22,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
@@ -39,10 +34,8 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.nisovin.shopkeepers.events.*;
-import com.nisovin.shopkeepers.pluginhandlers.TownyHandler;
-import com.nisovin.shopkeepers.pluginhandlers.WorldGuardHandler;
-import com.nisovin.shopkeepers.shopobjects.ShopObject;
-import com.nisovin.shopkeepers.shopobjects.VillagerShop;
+import com.nisovin.shopkeepers.pluginhandlers.*;
+import com.nisovin.shopkeepers.shopobjects.*;
 import com.nisovin.shopkeepers.shoptypes.*;
 
 public class ShopkeepersPlugin extends JavaPlugin {
@@ -122,8 +115,20 @@ public class ShopkeepersPlugin extends JavaPlugin {
 		// start teleporter
 		Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
 			public void run() {
-				for (Shopkeeper shopkeeper : new ArrayList<Shopkeeper>(activeShopkeepers.values())) { // TODO: fix this
-					shopkeeper.teleport();
+				List<Shopkeeper> readd = new ArrayList<Shopkeeper>();
+				Iterator<Map.Entry<String, Shopkeeper>> iter = activeShopkeepers.entrySet().iterator();
+				while (iter.hasNext()) {
+					Shopkeeper shopkeeper = iter.next().getValue();
+					boolean update = shopkeeper.teleport();
+					if (update) {
+						readd.add(shopkeeper);
+						iter.remove();
+					}
+				}
+				for (Shopkeeper shopkeeper : readd) {
+					if (shopkeeper.isActive()) {
+						activeShopkeepers.put(shopkeeper.getId(), shopkeeper);
+					}
 				}
 			}
 		}, 200, 200);
@@ -138,9 +143,13 @@ public class ShopkeepersPlugin extends JavaPlugin {
 							List<Shopkeeper> shopkeepers = allShopkeepersByChunk.get(chunkStr);
 							for (Shopkeeper shopkeeper : shopkeepers) {
 								if (!shopkeeper.isActive()) {
-									shopkeeper.spawn();
-									activeShopkeepers.put(shopkeeper.getId(), shopkeeper);
-									count++;
+									boolean spawned = shopkeeper.spawn();
+									if (spawned) {
+										activeShopkeepers.put(shopkeeper.getId(), shopkeeper);
+										count++;
+									} else {
+										debug("Failed to spawn shopkeeper at " + shopkeeper.getPositionString());
+									}
 								}
 							}
 						}
@@ -219,6 +228,23 @@ public class ShopkeepersPlugin extends JavaPlugin {
 			reload();
 			sender.sendMessage(ChatColor.GREEN + "Shopkeepers plugin reloaded!");
 			return true;
+		} else if (args.length == 1 && args[0].equalsIgnoreCase("debug") && sender.isOp()) {
+			// toggle debug command
+			debug = !debug;
+			sender.sendMessage(ChatColor.GREEN + "Debug mode " + (debug?"enabled":"disabled"));
+			return true;
+			
+		} else if (args.length == 1 && args[0].equals("check") && sender.isOp()) {
+			for (Shopkeeper shopkeeper : activeShopkeepers.values()) {
+				if (shopkeeper.isActive()) {
+					Location loc = shopkeeper.getActualLocation();
+					sender.sendMessage("Shopkeeper at " + shopkeeper.getPositionString() + ": active (" + (loc != null ? loc.toString() : "maybe not?!?") + ")");
+				} else {
+					sender.sendMessage("Shopkeeper at " + shopkeeper.getPositionString() + ": INACTIVE!");
+				}
+			}
+			return true;
+			
 		} else if (sender instanceof Player) {
 			Player player = (Player)sender;
 						
@@ -237,10 +263,12 @@ public class ShopkeepersPlugin extends JavaPlugin {
 						return true;
 					}
 					// check for permission
-					PlayerInteractEvent event = new PlayerInteractEvent(player, Action.RIGHT_CLICK_BLOCK, new ItemStack(Material.AIR), block, BlockFace.UP);
-					Bukkit.getPluginManager().callEvent(event);
-					if (event.isCancelled()) {
-						return true;
+					if (Settings.simulateRightClickOnCommand) {
+						PlayerInteractEvent event = new PlayerInteractEvent(player, Action.RIGHT_CLICK_BLOCK, new ItemStack(Material.AIR), block, BlockFace.UP);
+						Bukkit.getPluginManager().callEvent(event);
+						if (event.isCancelled()) {
+							return true;
+						}
 					}
 					// create the player shopkeeper
 					ShopkeeperType shopType = null;
@@ -485,29 +513,8 @@ public class ShopkeepersPlugin extends JavaPlugin {
 		}, 1);
 	}
 	
-	@SuppressWarnings("unchecked")
 	boolean openTradeWindow(Shopkeeper shopkeeper, Player player) {
-		try {
-			EntityVillager villager = new EntityVillager(((CraftPlayer)player).getHandle().world, 0);
-			
-			Field recipeListField = EntityVillager.class.getDeclaredField(Settings.recipeListVar);
-			recipeListField.setAccessible(true);
-			MerchantRecipeList recipeList = (MerchantRecipeList)recipeListField.get(villager);
-			if (recipeList == null) {
-				recipeList = new MerchantRecipeList();
-				recipeListField.set(villager, recipeList);
-			}
-			recipeList.clear();
-			for (ItemStack[] recipe : shopkeeper.getRecipes()) {
-				recipeList.add(ShopRecipe.factory(recipe[0], recipe[1], recipe[2]));
-			}
-			
-			villager.c(((CraftPlayer)player).getHandle());
-			
-			return true;
-		} catch (Exception e) {
-			return false;
-		}
+		return VolatileCode.openTradeWindow(shopkeeper, player);
 	}
 	
 	boolean isChestProtected(Player player, Block block) {

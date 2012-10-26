@@ -5,15 +5,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import net.minecraft.server.NBTTagCompound;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
@@ -22,6 +19,7 @@ import org.bukkit.inventory.ItemStack;
 import com.nisovin.shopkeepers.EditorClickResult;
 import com.nisovin.shopkeepers.Settings;
 import com.nisovin.shopkeepers.ShopkeeperType;
+import com.nisovin.shopkeepers.VolatileCode;
 import com.nisovin.shopkeepers.shopobjects.ShopObject;
 
 
@@ -220,23 +218,11 @@ public class WrittenBookPlayerShopkeeper extends PlayerShopkeeper {
 	}
 	
 	private String getTitleOfBook(ItemStack book) {
-		if (book instanceof CraftItemStack) {
-			NBTTagCompound tag = ((CraftItemStack)book).getHandle().tag;
-			if (tag != null && tag.hasKey("title")) {
-				return tag.getString("title");
-			}
-		}
-		return null;
+		return VolatileCode.getTitleOfBook(book);
 	}
 	
 	private boolean isBookAuthoredByShopOwner(ItemStack book) {
-		if (book instanceof CraftItemStack) {
-			NBTTagCompound tag = ((CraftItemStack)book).getHandle().tag;
-			if (tag != null && tag.hasKey("author")) {
-				return tag.getString("author").equalsIgnoreCase(owner);
-			}
-		}
-		return false;
+		return VolatileCode.isBookAuthoredByShopOwner(book, owner);
 	}
 	
 	private boolean chestHasBlankBooks() {

@@ -1,6 +1,7 @@
 package com.nisovin.shopkeepers.shopobjects;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
@@ -36,9 +37,20 @@ public class BlockShop extends ShopObject {
 	public String getId() {
 		return "block" + shopkeeper.getWorldName() + "," + shopkeeper.getX() + "," + shopkeeper.getY() + "," + shopkeeper.getZ();
 	}
+	
+	@Override
+	public Location getActualLocation() {
+		World w = Bukkit.getWorld(shopkeeper.getWorldName());
+		if (w == null) {
+			return null;
+		} else {
+			return new Location(w, shopkeeper.getX(), shopkeeper.getY(), shopkeeper.getZ());
+		}
+	}
 
 	@Override
-	public void check(String world, int x, int y, int z) {
+	public boolean check(String world, int x, int y, int z) {
+		return false;
 	}
 
 	@Override

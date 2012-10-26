@@ -1,23 +1,12 @@
 package com.nisovin.shopkeepers.shopobjects;
 
-import java.lang.reflect.Field;
-import java.util.List;
-
-import net.minecraft.server.EntityHuman;
-import net.minecraft.server.EntityLiving;
-import net.minecraft.server.EntityVillager;
-import net.minecraft.server.PathfinderGoalFloat;
-import net.minecraft.server.PathfinderGoalLookAtPlayer;
-import net.minecraft.server.PathfinderGoalLookAtTradingPlayer;
-import net.minecraft.server.PathfinderGoalSelector;
-import net.minecraft.server.PathfinderGoalTradeWithPlayer;
-
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.craftbukkit.entity.CraftVillager;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Villager;
 import org.bukkit.inventory.ItemStack;
+
+import com.nisovin.shopkeepers.VolatileCode;
 
 public class VillagerShop extends LivingEntityShop {
 
@@ -45,9 +34,9 @@ public class VillagerShop extends LivingEntityShop {
 	@Override
 	public boolean spawn(String world, int x, int y, int z) {
 		boolean spawned = super.spawn(world, x, y, z);
-		if (spawned && entity != null && !entity.isDead()) {
+		if (spawned && entity != null && entity.isValid()) {
 			villager = (Villager)entity;
-			((CraftVillager)villager).getHandle().setProfession(profession);
+			VolatileCode.setVillagerProfession(villager, profession);
 			villager.setBreed(false);
 			return true;
 		} else {
@@ -64,7 +53,7 @@ public class VillagerShop extends LivingEntityShop {
 	public void cycleType() {
 		profession += 1;
 		if (profession > 5) profession = 0;
-		((CraftVillager)villager).getHandle().setProfession(profession);
+		VolatileCode.setVillagerProfession(villager, profession);
 	}	
 
 	private short getProfessionWoolColor() {
@@ -81,26 +70,7 @@ public class VillagerShop extends LivingEntityShop {
 	
 	@Override
 	protected void overwriteAI() {
-		try {
-			EntityVillager ev = ((CraftVillager)entity).getHandle();
-			
-			Field goalsField = EntityLiving.class.getDeclaredField("goalSelector");
-			goalsField.setAccessible(true);
-			PathfinderGoalSelector goals = (PathfinderGoalSelector) goalsField.get(ev);
-			
-			Field listField = PathfinderGoalSelector.class.getDeclaredField("a");
-			listField.setAccessible(true);
-			@SuppressWarnings("rawtypes")
-			List list = (List)listField.get(goals);
-			list.clear();
-
-			goals.a(0, new PathfinderGoalFloat(ev));
-			goals.a(1, new PathfinderGoalTradeWithPlayer(ev));
-			goals.a(1, new PathfinderGoalLookAtTradingPlayer(ev));
-			goals.a(2, new PathfinderGoalLookAtPlayer(ev, EntityHuman.class, 12.0F, 1.0F));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}		
+		VolatileCode.overwriteVillagerAI(entity);
 	}
 
 }

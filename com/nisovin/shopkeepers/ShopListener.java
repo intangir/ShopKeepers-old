@@ -208,9 +208,7 @@ class ShopListener implements Listener {
 		if (shopkeepers != null) {
 			ShopkeepersPlugin.debug("Unloading " + shopkeepers.size() + " shopkeepers in chunk " + event.getChunk().getX() + "," + event.getChunk().getZ());
 			for (Shopkeeper shopkeeper : shopkeepers) {
-				if (shopkeeper.isActive()) {
-					plugin.activeShopkeepers.remove(shopkeeper.getId());
-				}
+				plugin.activeShopkeepers.remove(shopkeeper.getId());
 				shopkeeper.remove();
 			}
 		}

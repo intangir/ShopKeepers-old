@@ -14,7 +14,7 @@ public enum ShopkeeperType {
 	/**
 	 * A admin shopkeeper, which has infinite supply and does not store income anywhere.
 	 */
-	ADMIN(0, "permission"),
+	ADMIN(0, "admin"),
 	
 	/**
 	 * A normal player shopkeeper that uses a chest for the item supply and to store income.

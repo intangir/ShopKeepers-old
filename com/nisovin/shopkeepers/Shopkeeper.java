@@ -97,9 +97,10 @@ public abstract class Shopkeeper {
 	
 	/**
 	 * Teleports this shopkeeper to its spawn location.
+	 * @return whether to update this shopkeeper in the collection
 	 */
-	public void teleport() {
-		shopObject.check(world, x, y, z);
+	public boolean teleport() {
+		return shopObject.check(world, x, y, z);
 	}
 	
 	/**
@@ -124,6 +125,10 @@ public abstract class Shopkeeper {
 	
 	public String getPositionString() {
 		return world + "," + x + "," + y + "," + z;
+	}
+	
+	public Location getActualLocation() {
+		return shopObject.getActualLocation();
 	}
 	
 	/**

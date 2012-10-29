@@ -54,7 +54,7 @@ public class VolatileCode {
 			}
 			recipeList.clear();
 			for (ItemStack[] recipe : shopkeeper.getRecipes()) {
-				recipeList.add(new ShopRecipe(convertItemStack(recipe[0]), convertItemStack(recipe[1]), convertItemStack(recipe[2])));
+				recipeList.add(createMerchantRecipe(recipe[0], recipe[1], recipe[2]));
 			}
 			
 			villager.c(((CraftPlayer)player).getHandle());
@@ -274,22 +274,19 @@ public class VolatileCode {
 		return false;
 	}
 	
+	private static MerchantRecipe createMerchantRecipe(ItemStack item1, ItemStack item2, ItemStack item3) {
+		MerchantRecipe recipe = new MerchantRecipe(convertItemStack(item1), convertItemStack(item2), convertItemStack(item3));
+		try {
+			Field maxUsesField = MerchantRecipe.class.getDeclaredField("maxUses");
+			maxUsesField.setAccessible(true);
+			maxUsesField.set(recipe, 10000);
+		} catch (Exception e) {}
+		return recipe;
+	}
+	
 	private static net.minecraft.server.ItemStack convertItemStack(org.bukkit.inventory.ItemStack item) {
 		if (item == null) return null;
 		return org.bukkit.craftbukkit.inventory.CraftItemStack.createNMSItemStack(item);
-	}
-	
-	static class ShopRecipe extends MerchantRecipe {
-
-		private ShopRecipe(net.minecraft.server.ItemStack cost1, net.minecraft.server.ItemStack cost2, net.minecraft.server.ItemStack result) {
-			super(cost1, cost2, result);
-		}
-		
-		@Override
-		public int getUses() {
-			return 0;
-		}
-
 	}
 
 	

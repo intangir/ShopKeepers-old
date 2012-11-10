@@ -121,12 +121,13 @@ class ShopListener implements Listener {
 			Shopkeeper shopkeeper = plugin.activeShopkeepers.get(id);
 			if (shopkeeper != null) {
 				// verify purchase
+				ItemStack item = event.getCurrentItem();
 				ItemStack item1 = event.getInventory().getItem(0);
 				ItemStack item2 = event.getInventory().getItem(1);
 				boolean ok = false;
 				List<ItemStack[]> recipes = shopkeeper.getRecipes();
 				for (ItemStack[] recipe : recipes) {
-					if (itemEquals(item1, recipe[0]) && itemEquals(item2, recipe[1])) {
+					if (itemEquals(item1, recipe[0]) && itemEquals(item2, recipe[1]) && itemEquals(item, recipe[2])) {
 						ok = true;
 						break;
 					}
@@ -142,7 +143,6 @@ class ShopListener implements Listener {
 				// log purchase
 				if (Settings.enablePurchaseLogging && !event.isCancelled()) {
 					try {
-						ItemStack item = event.getCurrentItem();
 						String owner = (shopkeeper instanceof PlayerShopkeeper ? ((PlayerShopkeeper)shopkeeper).getOwner() : "[Admin]");
 						File file = new File(plugin.getDataFolder(), "purchases-" + new SimpleDateFormat("yyyy-MM-dd").format(new Date()) + ".csv");
 						boolean isNew = !file.exists();

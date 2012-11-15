@@ -53,6 +53,7 @@ public class ShopkeepersPlugin extends JavaPlugin {
 	Map<String, Block> selectedChest = new HashMap<String, Block>();
 	
 	private boolean dirty = false;
+	private int chunkLoadSaveTask = -1;
 		
 	BlockFace[] faces = {BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST};
 	
@@ -110,6 +111,8 @@ public class ShopkeepersPlugin extends JavaPlugin {
 		}
 		if (Settings.protectChests) {
 			pm.registerEvents(new ChestProtectListener(this), this);
+		} else if (Settings.deleteShopkeeperOnBreakChest) {
+			pm.registerEvents(new ChestBreakListener(this), this);
 		}
 		
 		// start teleporter
@@ -529,6 +532,18 @@ public class ShopkeepersPlugin extends JavaPlugin {
 		return false;
 	}
 	
+	Shopkeeper getShopkeeperOwnerOfChest(Block block) {
+		for (Shopkeeper shopkeeper : activeShopkeepers.values()) {
+			if (shopkeeper instanceof PlayerShopkeeper) {
+				PlayerShopkeeper pshop = (PlayerShopkeeper)shopkeeper;
+				if (pshop.usesChest(block)) {
+					return pshop;
+				}
+			}
+		}
+		return null;
+	}
+	
 	void sendMessage(Player player, String message) {
 		message = ChatColor.translateAlternateColorCodes('&', message);
 		String[] msgs = message.split("\n");
@@ -551,7 +566,21 @@ public class ShopkeepersPlugin extends JavaPlugin {
 					}
 				}
 			}
-			save();
+			// save
+			dirty = true;
+			if (Settings.saveInstantly) {
+				if (chunkLoadSaveTask < 0) {
+					chunkLoadSaveTask = Bukkit.getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
+						public void run() {
+							if (dirty) {
+								saveReal();
+								dirty = false;
+							}
+							chunkLoadSaveTask = -1;
+						}
+					}, 600);
+				}
+			}
 		}
 	}
 	

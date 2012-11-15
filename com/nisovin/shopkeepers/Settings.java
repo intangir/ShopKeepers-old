@@ -20,6 +20,7 @@ public class Settings {
 	public static boolean simulateRightClickOnCommand = true;
 	public static boolean allowCustomQuantities = true;
 	public static boolean protectChests = true;
+	public static boolean deleteShopkeeperOnBreakChest = false;
 	public static int maxShopsPerPlayer = 0;
 	public static int maxChestDistance = 15;
 
@@ -41,10 +42,12 @@ public class Settings {
 	
 	public static int currencyItem = Material.EMERALD.getId();
 	public static short currencyItemData = 0;
+	public static String currencyItemName = null;
 	public static int zeroItem = Material.SLIME_BALL.getId();
 	
 	public static int highCurrencyItem = Material.EMERALD_BLOCK.getId();
 	public static short highCurrencyItemData = 0;
+	public static String highCurrencyItemName = null;
 	public static int highCurrencyValue = 9;
 	public static int highCurrencyMinCost = 20;
 	public static int highZeroItem = Material.SLIME_BALL.getId();

@@ -147,8 +147,18 @@ class ShopListener implements Listener {
 						File file = new File(plugin.getDataFolder(), "purchases-" + new SimpleDateFormat("yyyy-MM-dd").format(new Date()) + ".csv");
 						boolean isNew = !file.exists();
 						BufferedWriter writer = new BufferedWriter(new FileWriter(file, true));
-						if (isNew) writer.append("TIME,PLAYER,SHOP TYPE,SHOP POS,OWNER,ITEM TYPE,DATA,QUANTITY\n");
-						writer.append("\"" + new SimpleDateFormat("HH:mm:ss").format(new Date()) + "\",\"" + event.getWhoClicked().getName() + "\",\"" + shopkeeper.getType().name() + "\",\"" + shopkeeper.getPositionString() + "\",\"" + owner + "\",\"" + item.getType().name() + "\",\"" + item.getDurability() + "\",\"" + item.getAmount() + "\"\n");
+						if (isNew) writer.append("TIME,PLAYER,SHOP TYPE,SHOP POS,OWNER,ITEM TYPE,DATA,QUANTITY,CURRENCY 1,CURRENCY 2\n");
+						writer.append("\"" + 
+								new SimpleDateFormat("HH:mm:ss").format(new Date()) + "\",\"" + 
+								event.getWhoClicked().getName() + "\",\"" + 
+								shopkeeper.getType().name() + "\",\"" + 
+								shopkeeper.getPositionString() + "\",\"" + 
+								owner + "\",\"" + 
+								item.getType().name() + "\",\"" + 
+								item.getDurability() + "\",\"" + 
+								item.getAmount() + "\",\"" +
+								item1.getType().name() + ":" + item1.getDurability() + "\",\"" +
+								item2.getType().name() + ":" + item2.getDurability() + "\"\n");
 						writer.close();
 					} catch (IOException e) {
 						plugin.getLogger().severe("IO exception while trying to log purchase");

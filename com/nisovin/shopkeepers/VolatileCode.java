@@ -57,7 +57,7 @@ public class VolatileCode {
 				recipeList.add(createMerchantRecipe(recipe[0], recipe[1], recipe[2]));
 			}
 			
-			villager.c(((CraftPlayer)player).getHandle());
+			villager.a(((CraftPlayer)player).getHandle());
 			
 			return true;
 		} catch (Exception e) {
@@ -65,6 +65,7 @@ public class VolatileCode {
 		}
 	}
 	
+	@SuppressWarnings("rawtypes")
 	public static void overwriteLivingEntityAI(LivingEntity entity) {
 		try {
 			EntityLiving ev = ((CraftLivingEntity)entity).getHandle();
@@ -75,8 +76,11 @@ public class VolatileCode {
 			
 			Field listField = PathfinderGoalSelector.class.getDeclaredField("a");
 			listField.setAccessible(true);
-			@SuppressWarnings("rawtypes")
 			List list = (List)listField.get(goals);
+			list.clear();
+			listField = PathfinderGoalSelector.class.getDeclaredField("b");
+			listField.setAccessible(true);
+			list = (List)listField.get(goals);
 			list.clear();
 
 			goals.a(0, new PathfinderGoalFloat(ev));
@@ -86,6 +90,7 @@ public class VolatileCode {
 		}		
 	}
 	
+	@SuppressWarnings("rawtypes")
 	public static void overwriteVillagerAI(LivingEntity villager) {
 		try {
 			EntityVillager ev = ((CraftVillager)villager).getHandle();
@@ -96,8 +101,11 @@ public class VolatileCode {
 			
 			Field listField = PathfinderGoalSelector.class.getDeclaredField("a");
 			listField.setAccessible(true);
-			@SuppressWarnings("rawtypes")
 			List list = (List)listField.get(goals);
+			list.clear();
+			listField = PathfinderGoalSelector.class.getDeclaredField("b");
+			listField.setAccessible(true);
+			list = (List)listField.get(goals);
 			list.clear();
 
 			goals.a(0, new PathfinderGoalFloat(ev));
@@ -128,7 +136,7 @@ public class VolatileCode {
 			}
 		}
 		// rest of code left for backwards compatibility and for just-in-case
-		if (config.contains("name") || config.contains("lore")) {
+		if (config.contains("name") || config.contains("lore") || config.contains("color")) {
 			NBTTagCompound tag = ((CraftItemStack)item).getHandle().tag;
 			if (tag == null) {
 				tag = new NBTTagCompound();
@@ -137,7 +145,6 @@ public class VolatileCode {
 			NBTTagCompound display = tag.getCompound("display");
 			if (display == null) {
 				display = new NBTTagCompound();
-				tag.setCompound("display", display);
 			}
 			if (config.contains("name")) {
 				display.setString("Name", config.getString("name"));
@@ -146,10 +153,14 @@ public class VolatileCode {
 				List<String> lore = config.getStringList("lore");
 				NBTTagList list = new NBTTagList();
 				for (String l : lore) {
-					list.add(new NBTTagString(l));
+					list.add(new NBTTagString("", l));
 				}
 				display.set("Lore", list);
 			}
+			if (config.contains("color")) {
+				display.setInt("color", config.getInt("color"));
+			}
+			tag.setCompound("display", display);
 		}
 		if (config.contains("enchants")) {
 			List<String> list = config.getStringList("enchants");
@@ -211,6 +222,9 @@ public class VolatileCode {
 							lore[i] = ((NBTTagString)list.get(i)).data;
 						}
 						config.set("lore", lore);
+					}
+					if (display.hasKey("color")) {
+						config.set("color", display.getInt("color"));
 					}
 				}
 				Map<Enchantment, Integer> enchants = item.getEnchantments();

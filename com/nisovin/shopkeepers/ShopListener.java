@@ -157,8 +157,8 @@ class ShopListener implements Listener {
 								item.getType().name() + "\",\"" + 
 								item.getDurability() + "\",\"" + 
 								item.getAmount() + "\",\"" +
-								item1.getType().name() + ":" + item1.getDurability() + "\",\"" +
-								item2.getType().name() + ":" + item2.getDurability() + "\"\n");
+								(item1 != null ? item1.getType().name() + ":" + item1.getDurability() : "") + "\",\"" +
+								(item2 != null ? item2.getType().name() + ":" + item2.getDurability() : "") + "\"\n");
 						writer.close();
 					} catch (IOException e) {
 						plugin.getLogger().severe("IO exception while trying to log purchase");
@@ -171,7 +171,7 @@ class ShopListener implements Listener {
 	private boolean itemEquals(ItemStack item1, ItemStack item2) {
 		if ((item1 == null || item1.getTypeId() == 0) && (item2 == null || item2.getTypeId() == 0)) return true;
 		if (item1 == null || item2 == null) return false;
-		return item1.getTypeId() == item2.getTypeId() && item1.getDurability() == item2.getDurability();
+		return item1.getTypeId() == item2.getTypeId() && item1.getDurability() == item2.getDurability() && VolatileCode.itemNamesEqual(item1, item2);
 	}
 
 	@EventHandler(priority=EventPriority.LOW)

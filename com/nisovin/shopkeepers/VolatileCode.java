@@ -288,6 +288,25 @@ public class VolatileCode {
 		return false;
 	}
 	
+	public static String getNameOfItem(ItemStack item) {
+		if (item instanceof CraftItemStack) {
+			NBTTagCompound tag = ((CraftItemStack)item).getHandle().tag;
+			if (tag != null && tag.hasKey("display")) {
+				NBTTagCompound disp = tag.getCompound("display");
+				if (disp.hasKey("Name")) {
+					return disp.getString("Name");
+				}
+			}
+		}
+		return "";
+	}
+	
+	public static boolean itemNamesEqual(ItemStack item1, ItemStack item2) {
+		String name1 = getNameOfItem(item1);
+		String name2 = getNameOfItem(item2);
+		return (name1.equals(name2));
+	}
+	
 	private static MerchantRecipe createMerchantRecipe(ItemStack item1, ItemStack item2, ItemStack item3) {
 		MerchantRecipe recipe = new MerchantRecipe(convertItemStack(item1), convertItemStack(item2), convertItemStack(item3));
 		try {

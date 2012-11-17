@@ -670,6 +670,7 @@ public class ShopkeepersPlugin extends JavaPlugin {
 		}
 		try {
 			config.save(file);
+			debug("Saved shopkeeper data");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

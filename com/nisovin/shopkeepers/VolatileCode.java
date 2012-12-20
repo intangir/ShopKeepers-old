@@ -1,41 +1,26 @@
 package com.nisovin.shopkeepers;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import net.minecraft.server.EntityHuman;
-import net.minecraft.server.EntityLiving;
-import net.minecraft.server.EntityVillager;
-import net.minecraft.server.MerchantRecipe;
-import net.minecraft.server.MerchantRecipeList;
-import net.minecraft.server.NBTBase;
-import net.minecraft.server.NBTTagCompound;
-import net.minecraft.server.NBTTagList;
-import net.minecraft.server.NBTTagString;
-import net.minecraft.server.PathfinderGoalFloat;
-import net.minecraft.server.PathfinderGoalLookAtPlayer;
-import net.minecraft.server.PathfinderGoalLookAtTradingPlayer;
-import net.minecraft.server.PathfinderGoalSelector;
-import net.minecraft.server.PathfinderGoalTradeWithPlayer;
+import net.minecraft.server.v1_4_5.*;
 
+import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.craftbukkit.entity.CraftLivingEntity;
-import org.bukkit.craftbukkit.entity.CraftPlayer;
-import org.bukkit.craftbukkit.entity.CraftVillager;
-import org.bukkit.craftbukkit.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_4_5.entity.CraftLivingEntity;
+import org.bukkit.craftbukkit.v1_4_5.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_4_5.entity.CraftVillager;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.BookMeta;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.LeatherArmorMeta;
 
 public class VolatileCode {
 
@@ -120,47 +105,23 @@ public class VolatileCode {
 	public static void setVillagerProfession(Villager villager, int profession) {
 		((CraftVillager)villager).getHandle().setProfession(profession);
 	}
-	
+
+	// NO LONGER VOLATILE
 	public static ItemStack loadItemStack(ConfigurationSection config) {
-		CraftItemStack item = new CraftItemStack(config.getInt("id"), config.getInt("amt"), (short)config.getInt("data"));
-		if (config.contains("nbtdata")) {
-			try {
-				Object nbtData = config.get("nbtdata");
-				ByteArrayInputStream stream = new ByteArrayInputStream((byte[]) nbtData);
-				NBTBase tag = NBTBase.b(new DataInputStream(stream));
-				if (tag instanceof NBTTagCompound) {
-					item.getHandle().tag = (NBTTagCompound)tag;
-				}
-			} catch (Exception e) {
-				ShopkeepersPlugin.debug("Error loading item NBT data");
-			}
-		}
-		// rest of code left for backwards compatibility and for just-in-case
+		ItemStack item = new ItemStack(config.getInt("id"), config.getInt("amt"), (short)config.getInt("data"));
 		if (config.contains("name") || config.contains("lore") || config.contains("color")) {
-			NBTTagCompound tag = ((CraftItemStack)item).getHandle().tag;
-			if (tag == null) {
-				tag = new NBTTagCompound();
-				item.getHandle().tag = tag;
-			}
-			NBTTagCompound display = tag.getCompound("display");
-			if (display == null) {
-				display = new NBTTagCompound();
-			}
+			ItemMeta meta = item.getItemMeta();
 			if (config.contains("name")) {
-				display.setString("Name", config.getString("name"));
+				meta.setDisplayName(config.getString("name"));
 			}
 			if (config.contains("lore")) {
 				List<String> lore = config.getStringList("lore");
-				NBTTagList list = new NBTTagList();
-				for (String l : lore) {
-					list.add(new NBTTagString("", l));
-				}
-				display.set("Lore", list);
+				meta.setLore(lore);
 			}
-			if (config.contains("color")) {
-				display.setInt("color", config.getInt("color"));
+			if (config.contains("color") && meta instanceof LeatherArmorMeta) {
+				((LeatherArmorMeta)meta).setColor(Color.fromRGB(config.getInt("color")));
 			}
-			tag.setCompound("display", display);
+			item.setItemMeta(meta);
 		}
 		if (config.contains("enchants")) {
 			List<String> list = config.getStringList("enchants");
@@ -170,137 +131,88 @@ public class VolatileCode {
 			}
 		}
 		if (item.getType() == Material.WRITTEN_BOOK && config.contains("title") && config.contains("author") && config.contains("pages")) {
-			NBTTagCompound tag = ((CraftItemStack)item).getHandle().tag;
-			if (tag == null) {
-				tag = new NBTTagCompound();
-				item.getHandle().tag = tag;
-			}
-			tag.setString("title", config.getString("title"));
-			tag.setString("author", config.getString("author"));
-			List<String> pages = config.getStringList("pages");
-			NBTTagList tagPages = new NBTTagList();
-			for (String page : pages) {
-				NBTTagString tagPage = new NBTTagString(null, page);
-				tagPages.add(tagPage);
-			}
-			tag.set("pages", tagPages);
-		}
-		if (config.contains("extra")) {
-			NBTTagCompound tag = ((CraftItemStack)item).getHandle().tag;
-			if (tag == null) {
-				tag = new NBTTagCompound();
-				item.getHandle().tag = tag;
-			}
-			ConfigurationSection extraDataSection = config.getConfigurationSection("extra");
-			for (String key : extraDataSection.getKeys(false)) {
-				tag.setString(key, extraDataSection.getString(key));
-			}
+			BookMeta meta = (BookMeta)item.getItemMeta();
+			meta.setTitle(config.getString("title"));
+			meta.setAuthor(config.getString("author"));
+			meta.setPages(config.getStringList("pages"));
+			item.setItemMeta(meta);
 		}
 		return item;
 	}
-	
+
+	// NO LONGER VOLATILE
 	public static void saveItemStack(ItemStack item, ConfigurationSection config) {
 		config.set("id", item.getTypeId());
 		config.set("data", item.getDurability());
 		config.set("amt", item.getAmount());
-		if (item instanceof CraftItemStack) {
-			NBTTagCompound tag = ((CraftItemStack)item).getHandle().tag;
-			if (tag != null) {
-				ByteArrayOutputStream stream = new ByteArrayOutputStream();
-				NBTBase.a(tag, new DataOutputStream(stream));
-				config.set("nbtdata", stream.toByteArray());
-				// rest of code left for backwards compatibility and for just-in-case 
-				if (tag.hasKey("display")) {
-					NBTTagCompound display = tag.getCompound("display");
-					if (display.hasKey("Name")) {
-						config.set("name", display.getString("Name"));
-					}
-					if (display.hasKey("Lore")) {
-						NBTTagList list = display.getList("Lore");
-						String[] lore = new String[list.size()];
-						for (int i = 0; i < list.size(); i++) {
-							lore[i] = ((NBTTagString)list.get(i)).data;
-						}
-						config.set("lore", lore);
-					}
-					if (display.hasKey("color")) {
-						config.set("color", display.getInt("color"));
-					}
-				}
-				Map<Enchantment, Integer> enchants = item.getEnchantments();
-				if (enchants.size() > 0) {
-					List<String> list = new ArrayList<String>();
-					for (Enchantment enchant : enchants.keySet()) {
-						list.add(enchant.getId() + " " + enchants.get(enchant));
-					}
-					config.set("enchants", list);
-				}
-				if (item.getType() == Material.WRITTEN_BOOK && tag.hasKey("title") && tag.hasKey("author") && tag.hasKey("pages")) {
-					config.set("title", tag.getString("title"));
-					config.set("author", tag.getString("author"));
-					List<String> pages = new ArrayList<String>();
-					NBTTagList tagPages = (NBTTagList)tag.get("pages");
-					for (int i = 0; i < tagPages.size(); i++) {
-						NBTTagString tagPage = (NBTTagString)tagPages.get(i);
-						if (tagPage.data != null) {
-							pages.add(tagPage.data);
-						}
-					}
-					config.set("pages", pages);
-				}
-				Map<String, String> extraData = new HashMap<String, String>();
-				for (Object o : tag.c()) {
-					if (o instanceof NBTTagString) {
-						NBTTagString s = (NBTTagString)o;
-						String name = s.getName();
-						if (!name.equals("title") && !name.equals("author")) {
-							extraData.put(name, s.data);
-						}
-					}
-				}
-				if (extraData.size() > 0) {
-					ConfigurationSection extraDataSection = config.createSection("extra");
-					for (String key : extraData.keySet()) {
-						extraDataSection.set(key, extraData.get(key));
-					}
-				}
+		
+		ItemMeta meta = item.getItemMeta();
+		// basic meta
+		if (meta.hasDisplayName()) {
+			config.set("name", meta.getDisplayName());
+		}
+		if (meta.hasLore()) {
+			config.set("lore", meta.getLore());
+		}
+		if (meta instanceof LeatherArmorMeta) {
+			config.set("color", ((LeatherArmorMeta)meta).getColor().asRGB());
+		}
+		// book meta
+		if (meta instanceof BookMeta) {
+			BookMeta book = (BookMeta)meta;
+			if (book.hasTitle()) {
+				config.set("title", book.getTitle());
 			}
+			if (book.hasAuthor()) {
+				config.set("author", book.getAuthor());
+			}
+			if (book.hasPages()) {
+				config.set("pages", book.getPages());
+			}
+		}
+		// enchants
+		Map<Enchantment, Integer> enchants = item.getEnchantments();
+		if (enchants.size() > 0) {
+			List<String> list = new ArrayList<String>();
+			for (Enchantment enchant : enchants.keySet()) {
+				list.add(enchant.getId() + " " + enchants.get(enchant));
+			}
+			config.set("enchants", list);
 		}
 	}
 	
+	// NO LONGER VOLATILE
 	public static String getTitleOfBook(ItemStack book) {
-		if (book instanceof CraftItemStack) {
-			NBTTagCompound tag = ((CraftItemStack)book).getHandle().tag;
-			if (tag != null && tag.hasKey("title")) {
-				return tag.getString("title");
-			}
+		if (book.getType() == Material.WRITTEN_BOOK && book.hasItemMeta()) {
+			BookMeta meta = (BookMeta)book.getItemMeta();
+			return meta.getTitle();
 		}
 		return null;
 	}
-	
+
+	// NO LONGER VOLATILE
 	public static boolean isBookAuthoredByShopOwner(ItemStack book, String owner) {
-		if (book instanceof CraftItemStack) {
-			NBTTagCompound tag = ((CraftItemStack)book).getHandle().tag;
-			if (tag != null && tag.hasKey("author")) {
-				return tag.getString("author").equalsIgnoreCase(owner);
+		if (book.getType() == Material.WRITTEN_BOOK && book.hasItemMeta()) {
+			BookMeta meta = (BookMeta)book.getItemMeta();
+			if (meta.hasAuthor() && meta.getAuthor().equalsIgnoreCase(owner)) {
+				return true;
 			}
 		}
 		return false;
 	}
-	
+
+	// NO LONGER VOLATILE
 	public static String getNameOfItem(ItemStack item) {
-		if (item instanceof CraftItemStack) {
-			NBTTagCompound tag = ((CraftItemStack)item).getHandle().tag;
-			if (tag != null && tag.hasKey("display")) {
-				NBTTagCompound disp = tag.getCompound("display");
-				if (disp.hasKey("Name")) {
-					return disp.getString("Name");
-				}
+		if (item.hasItemMeta()) {
+			ItemMeta meta = item.getItemMeta();
+			if (meta.hasDisplayName()) {
+				return meta.getDisplayName();
 			}
 		}
 		return "";
 	}
-	
+
+	// NO LONGER VOLATILE
 	public static boolean itemNamesEqual(ItemStack item1, ItemStack item2) {
 		String name1 = getNameOfItem(item1);
 		String name2 = getNameOfItem(item2);
@@ -317,9 +229,9 @@ public class VolatileCode {
 		return recipe;
 	}
 	
-	private static net.minecraft.server.ItemStack convertItemStack(org.bukkit.inventory.ItemStack item) {
+	private static net.minecraft.server.v1_4_5.ItemStack convertItemStack(org.bukkit.inventory.ItemStack item) {
 		if (item == null) return null;
-		return org.bukkit.craftbukkit.inventory.CraftItemStack.createNMSItemStack(item);
+		return org.bukkit.craftbukkit.v1_4_5.inventory.CraftItemStack.asNMSCopy(item);
 	}
 
 	

@@ -6,7 +6,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Villager;
 import org.bukkit.inventory.ItemStack;
 
-import com.nisovin.shopkeepers.VolatileCode;
+import com.nisovin.shopkeepers.ShopkeepersPlugin;
 
 public class VillagerShop extends LivingEntityShop {
 
@@ -36,7 +36,7 @@ public class VillagerShop extends LivingEntityShop {
 		boolean spawned = super.spawn(world, x, y, z);
 		if (spawned && entity != null && entity.isValid()) {
 			villager = (Villager)entity;
-			VolatileCode.setVillagerProfession(villager, profession);
+			ShopkeepersPlugin.getVolatileCode().setVillagerProfession(villager, profession);
 			villager.setBreed(false);
 			return true;
 		} else {
@@ -53,7 +53,7 @@ public class VillagerShop extends LivingEntityShop {
 	public void cycleType() {
 		profession += 1;
 		if (profession > 5) profession = 0;
-		VolatileCode.setVillagerProfession(villager, profession);
+		ShopkeepersPlugin.getVolatileCode().setVillagerProfession(villager, profession);
 	}	
 
 	private short getProfessionWoolColor() {
@@ -70,7 +70,7 @@ public class VillagerShop extends LivingEntityShop {
 	
 	@Override
 	protected void overwriteAI() {
-		VolatileCode.overwriteVillagerAI(entity);
+		ShopkeepersPlugin.getVolatileCode().overwriteVillagerAI(entity);
 	}
 
 }

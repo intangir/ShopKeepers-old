@@ -37,10 +37,14 @@ import com.nisovin.shopkeepers.events.*;
 import com.nisovin.shopkeepers.pluginhandlers.*;
 import com.nisovin.shopkeepers.shopobjects.*;
 import com.nisovin.shopkeepers.shoptypes.*;
+import com.nisovin.shopkeepers.volatilecode.VolatileCodeHandle;
+import com.nisovin.shopkeepers.volatilecode.VolatileCode_1_4_5;
+import com.nisovin.shopkeepers.volatilecode.VolatileCode_1_4_6;
 
 public class ShopkeepersPlugin extends JavaPlugin {
 
 	static ShopkeepersPlugin plugin;
+	static VolatileCodeHandle volatileCodeHandle;
 
 	private boolean debug = false;
 	
@@ -60,6 +64,18 @@ public class ShopkeepersPlugin extends JavaPlugin {
 	@Override
 	public void onEnable() {
 		plugin = this;
+		
+		// load volatile code handler
+		String version = getServer().getVersion();
+		if (version.contains("(MC: 1.4.5)")) {
+			volatileCodeHandle = new VolatileCode_1_4_5();
+		} else if (version.contains("(MC: 1.4.6)")) {
+			volatileCodeHandle = new VolatileCode_1_4_6();
+		} else {
+			getLogger().severe("Incompatible server version: Shopkeepers plugin cannot be enabled.");
+			this.setEnabled(false);
+			return;
+		}
 		
 		// get config
 		File file = new File(getDataFolder(), "config.yml");
@@ -517,7 +533,7 @@ public class ShopkeepersPlugin extends JavaPlugin {
 	}
 	
 	boolean openTradeWindow(Shopkeeper shopkeeper, Player player) {
-		return VolatileCode.openTradeWindow(shopkeeper, player);
+		return volatileCodeHandle.openTradeWindow(shopkeeper, player);
 	}
 	
 	boolean isChestProtected(Player player, Block block) {
@@ -674,6 +690,10 @@ public class ShopkeepersPlugin extends JavaPlugin {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public static VolatileCodeHandle getVolatileCode() {
+		return volatileCodeHandle;
 	}
 	
 	public static void debug(String message) {

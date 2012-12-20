@@ -1,4 +1,4 @@
-package com.nisovin.shopkeepers;
+package com.nisovin.shopkeepers.volatilecode;
 
 import java.lang.reflect.Field;
 import java.util.List;
@@ -13,10 +13,14 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
 import org.bukkit.inventory.ItemStack;
 
-public class VolatileCode {
+import com.nisovin.shopkeepers.Settings;
+import com.nisovin.shopkeepers.Shopkeeper;
+
+public class VolatileCode_1_4_5 implements VolatileCodeHandle {
 
 	@SuppressWarnings("unchecked")
-	public static boolean openTradeWindow(Shopkeeper shopkeeper, Player player) {
+	@Override
+	public boolean openTradeWindow(Shopkeeper shopkeeper, Player player) {
 
 		try {
 			EntityVillager villager = new EntityVillager(((CraftPlayer)player).getHandle().world, 0);
@@ -42,7 +46,8 @@ public class VolatileCode {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static void overwriteLivingEntityAI(LivingEntity entity) {
+	@Override
+	public void overwriteLivingEntityAI(LivingEntity entity) {
 		try {
 			EntityLiving ev = ((CraftLivingEntity)entity).getHandle();
 			
@@ -67,7 +72,8 @@ public class VolatileCode {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static void overwriteVillagerAI(LivingEntity villager) {
+	@Override
+	public void overwriteVillagerAI(LivingEntity villager) {
 		try {
 			EntityVillager ev = ((CraftVillager)villager).getHandle();
 			
@@ -92,12 +98,13 @@ public class VolatileCode {
 			e.printStackTrace();
 		}		
 	}
-	
-	public static void setVillagerProfession(Villager villager, int profession) {
+
+	@Override
+	public void setVillagerProfession(Villager villager, int profession) {
 		((CraftVillager)villager).getHandle().setProfession(profession);
 	}
 	
-	private static MerchantRecipe createMerchantRecipe(ItemStack item1, ItemStack item2, ItemStack item3) {
+	private MerchantRecipe createMerchantRecipe(ItemStack item1, ItemStack item2, ItemStack item3) {
 		MerchantRecipe recipe = new MerchantRecipe(convertItemStack(item1), convertItemStack(item2), convertItemStack(item3));
 		try {
 			Field maxUsesField = MerchantRecipe.class.getDeclaredField("maxUses");
@@ -107,7 +114,7 @@ public class VolatileCode {
 		return recipe;
 	}
 	
-	private static net.minecraft.server.v1_4_5.ItemStack convertItemStack(org.bukkit.inventory.ItemStack item) {
+	private net.minecraft.server.v1_4_5.ItemStack convertItemStack(org.bukkit.inventory.ItemStack item) {
 		if (item == null) return null;
 		return org.bukkit.craftbukkit.v1_4_5.inventory.CraftItemStack.asNMSCopy(item);
 	}

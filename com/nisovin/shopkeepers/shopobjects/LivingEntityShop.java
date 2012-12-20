@@ -9,7 +9,6 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 
 import com.nisovin.shopkeepers.ShopkeepersPlugin;
-import com.nisovin.shopkeepers.VolatileCode;
 
 public abstract class LivingEntityShop extends ShopObject {
 	
@@ -132,7 +131,7 @@ public abstract class LivingEntityShop extends ShopObject {
 	}
 	
 	protected void overwriteAI() {
-		VolatileCode.overwriteLivingEntityAI(entity);
+		ShopkeepersPlugin.getVolatileCode().overwriteLivingEntityAI(entity);
 	}
 	
 }

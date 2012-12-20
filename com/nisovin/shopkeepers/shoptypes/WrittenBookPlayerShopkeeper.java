@@ -15,13 +15,12 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.BookMeta;
 
 import com.nisovin.shopkeepers.EditorClickResult;
 import com.nisovin.shopkeepers.Settings;
 import com.nisovin.shopkeepers.ShopkeeperType;
-import com.nisovin.shopkeepers.VolatileCode;
 import com.nisovin.shopkeepers.shopobjects.ShopObject;
-
 
 public class WrittenBookPlayerShopkeeper extends PlayerShopkeeper {
 
@@ -218,11 +217,21 @@ public class WrittenBookPlayerShopkeeper extends PlayerShopkeeper {
 	}
 	
 	private String getTitleOfBook(ItemStack book) {
-		return VolatileCode.getTitleOfBook(book);
+		if (book.getType() == Material.WRITTEN_BOOK && book.hasItemMeta()) {
+			BookMeta meta = (BookMeta)book.getItemMeta();
+			return meta.getTitle();
+		}
+		return null;
 	}
 	
 	private boolean isBookAuthoredByShopOwner(ItemStack book) {
-		return VolatileCode.isBookAuthoredByShopOwner(book, owner);
+		if (book.getType() == Material.WRITTEN_BOOK && book.hasItemMeta()) {
+			BookMeta meta = (BookMeta)book.getItemMeta();
+			if (meta.hasAuthor() && meta.getAuthor().equalsIgnoreCase(owner)) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	private boolean chestHasBlankBooks() {

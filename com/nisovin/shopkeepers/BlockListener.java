@@ -112,7 +112,7 @@ public class BlockListener implements Listener {
 						event.setCancelled(true);
 					} else if (plugin.selectedChest.containsKey(playerName) && validSignFace(event.getBlockFace())) {
 						Block chest = plugin.selectedChest.get(playerName);
-						if ((int)chest.getLocation().distance(block.getLocation()) > Settings.maxChestDistance) {
+						if (!chest.getWorld().equals(block.getWorld()) || (int)chest.getLocation().distance(block.getLocation()) > Settings.maxChestDistance) {
 							plugin.sendMessage(player, Settings.msgChestTooFar);
 						} else {
 							// get shop type

@@ -121,9 +121,9 @@ class ShopListener implements Listener {
 		if (event.getInventory().getName().equals("mob.villager") && event.getRawSlot() == 2 && plugin.purchasing.containsKey(event.getWhoClicked().getName())) {
 			String id = plugin.purchasing.get(event.getWhoClicked().getName());
 			Shopkeeper shopkeeper = plugin.activeShopkeepers.get(id);
-			if (shopkeeper != null) {
+			ItemStack item = event.getCurrentItem();
+			if (shopkeeper != null && item != null) {
 				// verify purchase
-				ItemStack item = event.getCurrentItem();
 				ItemStack item1 = event.getInventory().getItem(0);
 				ItemStack item2 = event.getInventory().getItem(1);
 				boolean ok = false;
@@ -135,6 +135,8 @@ class ShopListener implements Listener {
 					}
 				}
 				if (!ok) {
+					ShopkeepersPlugin.debug("Invalid trade by " + event.getWhoClicked().getName() + " with shopkeeper at " + shopkeeper.getPositionString() + ":");
+					ShopkeepersPlugin.debug("  " + itemStackToString(item1) + " and " + itemStackToString(item2) + " for " + itemStackToString(item));
 					event.setCancelled(true);
 					return;
 				}
@@ -177,13 +179,19 @@ class ShopListener implements Listener {
 	}
 
 	private static String getNameOfItem(ItemStack item) {
-		if (item.hasItemMeta()) {
+		if (item != null && item.getTypeId() > 0 && item.hasItemMeta()) {
 			ItemMeta meta = item.getItemMeta();
 			if (meta.hasDisplayName()) {
 				return meta.getDisplayName();
 			}
 		}
 		return "";
+	}
+	
+	private String itemStackToString(ItemStack item) {
+		if (item == null || item.getTypeId() == 0) return "(nothing)";
+		String name = getNameOfItem(item);
+		return item.getTypeId() + ":" + item.getDurability() + (!name.isEmpty() ? ":" + name : "");
 	}
 
 	private static boolean itemNamesEqual(ItemStack item1, ItemStack item2) {

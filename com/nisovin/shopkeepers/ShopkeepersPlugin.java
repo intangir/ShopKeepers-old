@@ -34,11 +34,10 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.nisovin.shopkeepers.events.*;
-import com.nisovin.shopkeepers.pluginhandlers.*;
 import com.nisovin.shopkeepers.shopobjects.*;
 import com.nisovin.shopkeepers.shoptypes.*;
 import com.nisovin.shopkeepers.volatilecode.VolatileCodeHandle;
-import com.nisovin.shopkeepers.volatilecode.VolatileCode_1_4_5;
+//import com.nisovin.shopkeepers.volatilecode.VolatileCode_1_4_5;
 import com.nisovin.shopkeepers.volatilecode.VolatileCode_1_4_6;
 
 public class ShopkeepersPlugin extends JavaPlugin {
@@ -67,9 +66,7 @@ public class ShopkeepersPlugin extends JavaPlugin {
 		
 		// load volatile code handler
 		String version = getServer().getVersion();
-		if (version.contains("(MC: 1.4.5)")) {
-			volatileCodeHandle = new VolatileCode_1_4_5();
-		} else if (version.contains("(MC: 1.4.6)")) {
+		if (version.contains("(MC: 1.4.6)")) {
 			volatileCodeHandle = new VolatileCode_1_4_6();
 		} else {
 			getLogger().severe("Incompatible server version: Shopkeepers plugin cannot be enabled.");
@@ -119,18 +116,7 @@ public class ShopkeepersPlugin extends JavaPlugin {
 		if (Settings.enableVillagerShops) {
 			pm.registerEvents(new VillagerListener(this), this);
 		}
-		if (Settings.enableSignShops) {
-			pm.registerEvents(new BlockListener(this), this);
-		}
-		if (Settings.blockVillagerSpawns) {
-			pm.registerEvents(new BlockSpawnListener(), this);
-		}
-		if (Settings.protectChests) {
-			pm.registerEvents(new ChestProtectListener(this), this);
-		} else if (Settings.deleteShopkeeperOnBreakChest) {
-			pm.registerEvents(new ChestBreakListener(this), this);
-		}
-		
+
 		// start teleporter
 		Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
 			public void run() {
@@ -365,23 +351,7 @@ public class ShopkeepersPlugin extends JavaPlugin {
 		if (shopType == null || shopObject == null) {
 			return null;
 		}
-		
-		// check worldguard
-		if (Settings.enableWorldGuardRestrictions) {
-			if (!WorldGuardHandler.canBuild(player, location)) {
-				plugin.sendMessage(player, Settings.msgShopCreateFail);
-				return null;
-			}
-		}
-		
-		// check towny
-		if (Settings.enableTownyRestrictions) {
-			if (!TownyHandler.isCommercialArea(location)) {
-				plugin.sendMessage(player, Settings.msgShopCreateFail);
-				return null;
-			}
-		}
-		
+
 		int maxShops = Settings.maxShopsPerPlayer;
 		
 		// call event

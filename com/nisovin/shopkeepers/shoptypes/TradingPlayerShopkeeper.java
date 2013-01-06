@@ -19,7 +19,6 @@ import org.bukkit.inventory.ItemStack;
 
 import com.nisovin.shopkeepers.EditorClickResult;
 import com.nisovin.shopkeepers.Settings;
-import com.nisovin.shopkeepers.ShopkeeperType;
 import com.nisovin.shopkeepers.shopobjects.ShopObject;
 import com.nisovin.shopkeepers.util.ItemType;
 
@@ -86,11 +85,6 @@ public class TradingPlayerShopkeeper extends PlayerShopkeeper {
 			itemSection.set("item2amount", cost.item2Amount);
 			count++;
 		}
-	}
-
-	@Override
-	public ShopkeeperType getType() {
-		return ShopkeeperType.PLAYER_TRADE;
 	}
 
 	@Override
@@ -319,7 +313,7 @@ public class TradingPlayerShopkeeper extends PlayerShopkeeper {
 			Inventory inv = ((Chest)chest.getState()).getInventory();
 			ItemStack[] contents = inv.getContents();
 			for (ItemStack item : contents) {
-				if (item != null && item.getType() != Material.AIR && item.getTypeId() != Settings.currencyItem && item.getTypeId() != Settings.highCurrencyItem && item.getType() != Material.WRITTEN_BOOK) {
+				if (item != null && item.getType() != Material.AIR) {
 					ItemType si = new ItemType(item);
 					if (map.containsKey(si)) {
 						map.put(si, map.get(si) + item.getAmount());

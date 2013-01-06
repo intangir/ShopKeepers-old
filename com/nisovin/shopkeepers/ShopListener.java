@@ -12,6 +12,7 @@ import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -83,6 +84,9 @@ class ShopListener implements Listener {
 						// end the editing session
 						plugin.closeTradingForShopkeeper(id);
 						plugin.save();
+						// open chest inventory
+						ShopkeepersPlugin.debug("caught the open inventory message");
+						shopkeeper.onOpenInventory((Player)event.getWhoClicked());
 					} else if (result == EditorClickResult.SAVE_AND_CONTINUE) {
 						plugin.save();
 					}
@@ -133,7 +137,6 @@ class ShopListener implements Listener {
 						writer.append("\"" + 
 								new SimpleDateFormat("HH:mm:ss").format(new Date()) + "\",\"" + 
 								event.getWhoClicked().getName() + "\",\"" + 
-								shopkeeper.getType().name() + "\",\"" + 
 								shopkeeper.getPositionString() + "\",\"" + 
 								owner + "\",\"" + 
 								item.getType().name() + "\",\"" + 

@@ -7,8 +7,6 @@ import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
-import com.nisovin.shopkeepers.ShopkeeperType;
-
 /**
  * This event is called whenever a player attempts to create a player shopkeeper.
  * It is called before the max shops check for the player. The location, profession
@@ -22,17 +20,15 @@ public class CreatePlayerShopkeeperEvent extends Event implements Cancellable {
 	private Block chest;
 	private Location location;
 	private int profession;
-	private ShopkeeperType type;
 	private int maxShops;
 	
 	private boolean cancelled;
 
-	public CreatePlayerShopkeeperEvent(Player player, Block chest, Location location, ShopkeeperType type, int maxShops) {
+	public CreatePlayerShopkeeperEvent(Player player, Block chest, Location location, int maxShops) {
 		this.player = player;
 		this.chest = chest;
 		this.location = location;
 		this.profession = 0;
-		this.type = type;
 		this.maxShops = maxShops;
 	}
 	
@@ -70,14 +66,6 @@ public class CreatePlayerShopkeeperEvent extends Event implements Cancellable {
 	}
 	
 	/**
-	 * Gets the type of shopkeeper that will spawn, either a normal, book, or buying shopkeeper.
-	 * @return the shopkeeper type
-	 */
-	public ShopkeeperType getType() {
-		return type;
-	}
-	
-	/**
 	 * Gets the maximum number of shops this player can have.
 	 * @return player max shops
 	 */
@@ -99,16 +87,6 @@ public class CreatePlayerShopkeeperEvent extends Event implements Cancellable {
 	 */
 	@Deprecated
 	public void setProfessionId(int profession) {
-	}
-	
-	/**
-	 * Sets the type of shopkeeper. This cannot be set to an admin shop.
-	 * @param type shopkeeper type
-	 */
-	public void setType(ShopkeeperType type) {
-		if (type != ShopkeeperType.ADMIN) {
-			this.type = type;
-		}
 	}
 	
 	/**

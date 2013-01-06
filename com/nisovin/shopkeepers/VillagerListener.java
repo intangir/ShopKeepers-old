@@ -19,6 +19,7 @@ import org.bukkit.event.Event.Result;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityTargetEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -26,6 +27,7 @@ import org.bukkit.inventory.ItemStack;
 
 import com.nisovin.shopkeepers.events.OpenTradeEvent;
 import com.nisovin.shopkeepers.shopobjects.VillagerShop;
+import com.nisovin.shopkeepers.shoptypes.PlayerShopkeeper;
 
 public class VillagerListener implements Listener {
 
@@ -129,23 +131,17 @@ public class VillagerListener implements Listener {
 						} else if ((int)chest.getLocation().distance(block.getLocation()) > Settings.maxChestDistance) {
 							plugin.sendMessage(player, Settings.msgChestTooFar);
 						} else {
-							// get shop type
-							ShopkeeperType shopType = ShopkeeperType.PLAYER_TRADE;
-							if (shopType == null) shopType = ShopkeeperType.next(player, null);
-							
-							if (shopType != null) {
-								// create player shopkeeper
-								Shopkeeper shopkeeper = plugin.createNewPlayerShopkeeper(player, chest, block.getLocation().add(0, 1.5, 0), shopType, new VillagerShop());
-								if (shopkeeper != null) {
-									// send message
-									plugin.sendCreatedMessage(player, shopType);
-									// remove egg
-									inHand.setAmount(inHand.getAmount() - 1);
-									if (inHand.getAmount() > 0) {
-										player.setItemInHand(inHand);
-									} else {
-										player.setItemInHand(null);
-									}
+							// create shopkeeper
+							Shopkeeper shopkeeper = plugin.createNewPlayerShopkeeper(player, chest, block.getLocation().add(0, 1.5, 0), new VillagerShop());
+							if (shopkeeper != null) {
+								// send message
+								plugin.sendMessage(player, Settings.msgTradeShopCreated);
+								// remove egg
+								inHand.setAmount(inHand.getAmount() - 1);
+								if (inHand.getAmount() > 0) {
+									player.setItemInHand(inHand);
+								} else {
+									player.setItemInHand(null);
 								}
 							}
 							
@@ -163,15 +159,37 @@ public class VillagerListener implements Listener {
 	@EventHandler
 	void onEntityDamage(EntityDamageEvent event) {
 		// don't allow damaging shopkeepers!
-		if (plugin.activeShopkeepers.containsKey("entity" + event.getEntity().getEntityId())) {
-			event.setCancelled(true);
-			if (event instanceof EntityDamageByEntityEvent) {
-				EntityDamageByEntityEvent evt = (EntityDamageByEntityEvent)event;
-				if (evt.getDamager() instanceof Monster) {
-					evt.getDamager().remove();
+		if(event.getEntityType() == EntityType.VILLAGER)
+		{
+			PlayerShopkeeper shopkeeper = (PlayerShopkeeper) plugin.activeShopkeepers.get("entity" + event.getEntity().getEntityId());
+			// only cancel damage if their chest is gone
+			if(shopkeeper != null && shopkeeper.isChestIntact())
+			{
+				event.setCancelled(true);
+				if (event instanceof EntityDamageByEntityEvent) {
+					EntityDamageByEntityEvent evt = (EntityDamageByEntityEvent)event;
+					if (evt.getDamager() instanceof Monster) {
+						evt.getDamager().remove();
+					}
 				}
 			}
 		}
+	}
+	
+	// if their chest has been broken, allow them to die
+	@EventHandler
+	void onEntityDeath(EntityDeathEvent event) {
+		if(event.getEntityType() == EntityType.VILLAGER)
+		{
+			String id = "entity" + event.getEntity().getEntityId();
+			PlayerShopkeeper shopkeeper = (PlayerShopkeeper) plugin.activeShopkeepers.get(id);
+			if(shopkeeper != null && !shopkeeper.isChestIntact())
+			{
+				plugin.activeShopkeepers.remove(id);
+				plugin.allShopkeepersByChunk.get(shopkeeper.getChunk()).remove(shopkeeper);
+				plugin.save();
+			}
+		}		
 	}
 	
 	// and monster targetting

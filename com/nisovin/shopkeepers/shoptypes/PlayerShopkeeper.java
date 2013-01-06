@@ -2,8 +2,11 @@ package com.nisovin.shopkeepers.shoptypes;
 
 import java.util.Map;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.Chest;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -79,14 +82,45 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 		return (chest.getWorld().getName().equals(world) && chest.getX() == chestx && chest.getY() == chesty && chest.getZ() == chestz);
 	}
 
+	/**
+	 * Checks whether the chest that the shopkeeper uses still exists.
+	 * @param chest the chest to check
+	 * @return
+	 */
+	public boolean isChestIntact() {
+		Block chest = Bukkit.getWorld(world).getBlockAt(chestx, chesty, chestz);
+		return (chest.getType() == Material.CHEST);
+	}
+
 
 	@Override
 	public boolean onEdit(Player player) {
-		if ((player.getName().equalsIgnoreCase(owner) && player.hasPermission("shopkeeper." + getType().getPermission())) || player.hasPermission("shopkeeper.bypass")) {
+		if ((player.getName().equalsIgnoreCase(owner) && player.hasPermission("shopkeeper.create")) || player.hasPermission("shopkeeper.bypass")) {
 			return onPlayerEdit(player);
 		} else {
 			return false;
 		}
+	}
+
+	// allows you to view your inventory through the vendor
+	@Override
+	public boolean onOpenInventory(final Player player) {
+		if ((player.getName().equalsIgnoreCase(owner) && player.hasPermission("shopkeeper.create")) || player.hasPermission("shopkeeper.bypass")) {
+
+			Block block = Bukkit.getWorld(world).getBlockAt(chestx, chesty, chestz);
+			if (block.getType() == Material.CHEST) {
+				ShopkeepersPlugin.debug("found chest");
+				final Chest chest = (Chest) block.getState();
+				Bukkit.getScheduler().scheduleSyncDelayedTask(ShopkeepersPlugin.plugin, new Runnable() {
+					public void run() {
+						player.openInventory(chest.getInventory());
+						ShopkeepersPlugin.debug("opening inventory");
+					}
+				}, 2);
+				return true;
+			}
+		} 
+		return false;
 	}
 
 	/**

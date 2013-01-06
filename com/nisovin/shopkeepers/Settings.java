@@ -34,7 +34,7 @@ public class Settings {
 	public static int blockShopType = 0;
 
 	public static String editorTitle = "Shopkeeper Editor";
-	public static int saveItem = Material.EMERALD_BLOCK.getId();
+	public static int saveItem = Material.CHEST.getId();
 	public static int deleteItem = Material.FIRE.getId();
 	
 	public static int currencyItem = Material.EMERALD.getId();
@@ -48,6 +48,8 @@ public class Settings {
 	public static int highCurrencyValue = 9;
 	public static int highCurrencyMinCost = 20;
 	public static int highZeroItem = Material.SLIME_BALL.getId();
+	
+	public static String inventoryTitle = "Shop Inventory";
 	
 	public static String msgSelectedNormalShop = "&aNormal shopkeeper selected (sells items to players).";
 	public static String msgSelectedBookShop = "&aBook shopkeeper selected (sell books).";

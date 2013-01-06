@@ -65,12 +65,6 @@ public abstract class Shopkeeper {
 		shopObject.save(config);
 	}
 	
-	/**
-	 * Gets the type of this shopkeeper (admin, normal player, book player, or buying player).
-	 * @return the shopkeeper type
-	 */
-	public abstract ShopkeeperType getType();
-	
 	public ShopObject getShopObject() {
 		return shopObject;
 	}
@@ -183,7 +177,15 @@ public abstract class Shopkeeper {
 	 * @return whether the player is now editing (returns false if permission fails)
 	 */
 	public abstract boolean onEdit(Player player);
-	
+
+	/**
+	 * Called when a player clicks the chest in the inventory editor
+	 * allows the owner to view his chests inventory through the shopkeeper
+	 * @param player the player doing the edit
+	 * @return whether the player is now editing (returns false if permission fails)
+	 */
+	public abstract boolean onOpenInventory(Player player);
+
 	/**
 	 * Called when a player clicks on any slot in the editor window.
 	 * @param event the click event

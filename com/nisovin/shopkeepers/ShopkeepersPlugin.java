@@ -33,12 +33,11 @@ import com.nisovin.shopkeepers.events.*;
 import com.nisovin.shopkeepers.shopobjects.*;
 import com.nisovin.shopkeepers.shoptypes.*;
 import com.nisovin.shopkeepers.volatilecode.VolatileCodeHandle;
-//import com.nisovin.shopkeepers.volatilecode.VolatileCode_1_4_5;
 import com.nisovin.shopkeepers.volatilecode.VolatileCode_1_4_6;
 
 public class ShopkeepersPlugin extends JavaPlugin {
 
-	static ShopkeepersPlugin plugin;
+	public static ShopkeepersPlugin plugin;
 	static VolatileCodeHandle volatileCodeHandle;
 
 	private boolean debug = false;
@@ -246,26 +245,6 @@ public class ShopkeepersPlugin extends JavaPlugin {
 		} else
 			return true;
 	}
-	
-	/**
-	 * Creates a new admin shopkeeper and spawns it into the world.
-	 * @param location the block location the shopkeeper should spawn
-	 * @param profession the shopkeeper's profession, a number from 0 to 5
-	 * @return the shopkeeper created
-	 */
-	public Shopkeeper createNewAdminShopkeeper(Location location, int profession) {
-		// make sure profession is valid
-		if (profession < 0 || profession > 5) {
-			profession = 0;
-		}
-		// create the shopkeeper (and spawn it)
-		Shopkeeper shopkeeper = new AdminShopkeeper(location, new VillagerShop());
-		shopkeeper.spawn();
-		activeShopkeepers.put(shopkeeper.getId(), shopkeeper);
-		addShopkeeper(shopkeeper);
-		
-		return shopkeeper;
-	}
 
 	/**
 	 * Creates a new player-based shopkeeper and spawns it into the world.
@@ -273,24 +252,22 @@ public class ShopkeepersPlugin extends JavaPlugin {
 	 * @param chest the backing chest for the shop
 	 * @param location the block location the shopkeeper should spawn
 	 * @param profession the shopkeeper's profession, a number from 0 to 5
-	 * @param type the player shop type (0=normal, 1=book, 2=buy)
 	 * @return the shopkeeper created
 	 */
-	public Shopkeeper createNewPlayerShopkeeper(Player player, Block chest, Location location, ShopkeeperType shopType, ShopObject shopObject) {
-		if (shopType == null || shopObject == null) {
+	public Shopkeeper createNewPlayerShopkeeper(Player player, Block chest, Location location, ShopObject shopObject) {
+		if (shopObject == null) {
 			return null;
 		}
 
 		int maxShops = Settings.maxShopsPerPlayer;
 		
 		// call event
-		CreatePlayerShopkeeperEvent event = new CreatePlayerShopkeeperEvent(player, chest, location, shopType, maxShops);
+		CreatePlayerShopkeeperEvent event = new CreatePlayerShopkeeperEvent(player, chest, location, maxShops);
 		Bukkit.getPluginManager().callEvent(event);
 		if (event.isCancelled()) {
 			return null;
 		} else {
 			location = event.getSpawnLocation();
-			shopType = event.getType();
 			maxShops = event.getMaxShopsForPlayer();
 		}
 		
@@ -312,19 +289,7 @@ public class ShopkeepersPlugin extends JavaPlugin {
 		
 		// create the shopkeeper
 		Shopkeeper shopkeeper = null;
-		if (shopType == ShopkeeperType.PLAYER_NORMAL) {
-			if (Settings.allowCustomQuantities) {
-				shopkeeper = new CustomQuantityPlayerShopkeeper(player, chest, location, shopObject);
-			} else {
-				shopkeeper = new FixedQuantityPlayerShopkeeper(player, chest, location, shopObject);
-			}
-		} else if (shopType == ShopkeeperType.PLAYER_BOOK) {
-			shopkeeper = new WrittenBookPlayerShopkeeper(player, chest, location, shopObject);
-		} else if (shopType == ShopkeeperType.PLAYER_BUY) {
-			shopkeeper = new BuyingPlayerShopkeeper(player, chest, location, shopObject);
-		} else if (shopType == ShopkeeperType.PLAYER_TRADE) {
-			shopkeeper = new TradingPlayerShopkeeper(player, chest, location, shopObject);
-		}
+		shopkeeper = new TradingPlayerShopkeeper(player, chest, location, shopObject);
 
 		// spawn and save the shopkeeper
 		if (shopkeeper != null) {
@@ -377,23 +342,6 @@ public class ShopkeepersPlugin extends JavaPlugin {
 		save();
 	}
 
-	boolean sendCreatedMessage(Player player, ShopkeeperType shopType) {
-		if (shopType == ShopkeeperType.PLAYER_NORMAL) {
-			plugin.sendMessage(player, Settings.msgPlayerShopCreated);
-			return true;
-		} else if (shopType == ShopkeeperType.PLAYER_BOOK) {
-			plugin.sendMessage(player, Settings.msgBookShopCreated);
-			return true;
-		} else if (shopType == ShopkeeperType.PLAYER_BUY) {
-			plugin.sendMessage(player, Settings.msgBuyShopCreated);
-			return true;
-		} else if (shopType == ShopkeeperType.PLAYER_TRADE) {
-			plugin.sendMessage(player, Settings.msgTradeShopCreated);
-			return true;
-		}
-		return false;
-	}
-	
 	void closeTradingForShopkeeper(final String id) {
 		Bukkit.getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
 			public void run() {
@@ -525,23 +473,7 @@ public class ShopkeepersPlugin extends JavaPlugin {
 		Set<String> keys = config.getKeys(false);
 		for (String key : keys) {
 			ConfigurationSection section = config.getConfigurationSection(key);
-			Shopkeeper shopkeeper = null;
-			String type = section.getString("type", "");
-			if (type.equals("book")) {
-				shopkeeper = new WrittenBookPlayerShopkeeper(section);
-			} else if (type.equals("buy")) {
-				shopkeeper = new BuyingPlayerShopkeeper(section);
-			} else if (type.equals("trade")) {
-				shopkeeper = new TradingPlayerShopkeeper(section);
-			} else if (type.equals("player") || section.contains("owner")) {
-				if (Settings.allowCustomQuantities) {
-					shopkeeper = new CustomQuantityPlayerShopkeeper(section);
-				} else {
-					shopkeeper = new FixedQuantityPlayerShopkeeper(section);
-				}
-			} else {
-				shopkeeper = new AdminShopkeeper(section);
-			}
+			Shopkeeper shopkeeper = new TradingPlayerShopkeeper(section);
 			if (shopkeeper != null) {
 				
 				// add to shopkeepers by chunk

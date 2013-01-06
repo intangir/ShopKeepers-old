@@ -34,8 +34,9 @@ public class Settings {
 	public static int blockShopType = 0;
 
 	public static String editorTitle = "Shopkeeper Editor";
-	public static int saveItem = Material.CHEST.getId();
-	public static int deleteItem = Material.FIRE.getId();
+	public static int inventoryItem = Material.CHEST.getId();
+	public static int deleteItemId = Material.MONSTER_EGG.getId();
+	public static short deleteItemData = 120;
 	
 	public static int currencyItem = Material.EMERALD.getId();
 	public static short currencyItemData = 0;

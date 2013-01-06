@@ -1,5 +1,6 @@
 package com.nisovin.shopkeepers.shoptypes;
 
+import java.util.ArrayList;
 import java.util.Map;
 
 import org.bukkit.Bukkit;
@@ -14,6 +15,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import com.nisovin.shopkeepers.EditorClickResult;
 import com.nisovin.shopkeepers.Settings;
@@ -293,10 +295,22 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 		}
 	}
 	
+	protected ItemStack setItemMetadata(ItemStack item, String name, String lore) {
+		ItemMeta im = item.getItemMeta();
+		im.setDisplayName(name);
+		ArrayList<String> lores = new ArrayList<String>();
+		for(String loreline: lore.split("\n")) {
+			lores.add(loreline);
+		}
+		im.setLore(lores);
+		item.setItemMeta(im);
+		return item;
+	}
+	
 	protected void setActionButtons(Inventory inv) {
-		inv.setItem(8, new ItemStack(Settings.saveItem));
-		inv.setItem(17, shopObject.getTypeItem());
-		inv.setItem(26, new ItemStack(Settings.deleteItem));
+		inv.setItem(8, setItemMetadata(new ItemStack(Settings.inventoryItem), "View Inventory", "lets you view the inventory\nyour vendor is using"));
+		inv.setItem(17, setItemMetadata(new ItemStack(shopObject.getTypeItem()), "Change Clothes", "changes the look\nof your shopkeeper"));
+		inv.setItem(26, setItemMetadata(new ItemStack(Settings.deleteItemId, 1, Settings.deleteItemData), "Close Shop", "close this shop location\nreturn vendor to egg"));
 	}
 	
 	protected int getCostFromColumn(Inventory inv, int column) {

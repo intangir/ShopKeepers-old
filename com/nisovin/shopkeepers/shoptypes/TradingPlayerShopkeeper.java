@@ -319,7 +319,7 @@ public class TradingPlayerShopkeeper extends PlayerShopkeeper {
 			Inventory inv = ((Chest)chest.getState()).getInventory();
 			ItemStack[] contents = inv.getContents();
 			for (ItemStack item : contents) {
-				if (item != null && item.getType() != Material.AIR && item.getTypeId() != Settings.currencyItem && item.getTypeId() != Settings.highCurrencyItem && item.getType() != Material.WRITTEN_BOOK) {
+				if (item != null && item.getType() != Material.AIR && item.getType() != Material.WRITTEN_BOOK) {
 					ItemType si = new ItemType(item);
 					if (map.containsKey(si)) {
 						map.put(si, map.get(si) + item.getAmount());

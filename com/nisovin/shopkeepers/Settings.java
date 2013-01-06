@@ -7,8 +7,6 @@ import org.bukkit.configuration.Configuration;
 
 public class Settings {
 	
-	public static boolean disableOtherVillagers = true;
-	public static boolean blockVillagerSpawns = false;
 	public static boolean enableSpawnVerifier = false;
 	public static boolean enablePurchaseLogging = false;
 	public static boolean saveInstantly = true;
@@ -16,20 +14,20 @@ public class Settings {
 	public static boolean enableWorldGuardRestrictions = false;
 	public static boolean enableTownyRestrictions = false;	
 	
-	public static boolean createPlayerShopWithCommand = true;
+	//public static boolean createPlayerShopWithCommand = true;
 	public static boolean simulateRightClickOnCommand = true;
 	public static boolean allowCustomQuantities = true;
-	public static boolean deleteShopkeeperOnBreakChest = false;
+	//public static boolean deleteShopkeeperOnBreakChest = false;
 	public static int maxShopsPerPlayer = 0;
 	public static int maxChestDistance = 15;
 
 	public static boolean enableVillagerShops = true;
+	public static int hireVillagerItem = Material.EMERALD.getId();
 	public static boolean createPlayerShopWithEgg = true;
 	public static boolean deletingPlayerShopReturnsEgg = false;
 	
 	public static boolean enableSignShops = true;
 	public static String signShopFirstLine = "[SHOP]";
-	public static int signShopCreationItem = Material.EMERALD.getId();
 	public static short signShopCreationItemData = 0;
 	
 	public static boolean enableBlockShops = true;
@@ -58,17 +56,20 @@ public class Settings {
 	public static String msgSelectedChest = "&aChest selected! Right click a block to place your shopkeeper.";
 	public static String msgMustSelectChest = "&aYou must right-click a chest before placing your shopkeeper.";
 	public static String msgChestTooFar = "&aThe shopkeeper's chest is too far away!";
-	public static String msgChestNotPlaced = "&aYou must select a chest you have recently placed.";
 	
 	public static String msgPlayerShopCreated = "&aShopkeeper created!\n&aAdd items you want to sell to your chest, then\n&aright-click the villager while sneaking to modify costs.";
 	public static String msgBookShopCreated = "&aShopkeeper created!\n&aAdd written books and blank books to your chest, then\n&aright-click the villager while sneaking to modify costs.";
 	public static String msgBuyShopCreated = "&aShopkeeper created!\n&aAdd one of each item you want to sell to your chest, then\n&aright-click the villager while sneaking to modify costs.";
 	public static String msgTradeShopCreated = "&aShopkeeper created!\n&aAdd items you want to sell to your chest, then\n&aright-click the villager while sneaking to modify costs.";
 	public static String msgAdminShopCreated = "&aShopkeeper created!\n&aRight-click the villager while sneaking to modify trades.";
-	public static String msgShopCreateFail = "&aYou cannot create a shopkeeper there.";
 	public static String msgTooManyShops = "&aYou have too many shops.";
 	public static String msgShopInUse = "&aSomeone else is already purchasing from this shopkeeper.";
+	
+	public static String msgVillagerHired = "&aYou hired the villager.";
+	public static String msgVillagerForHire = "&aThe villager offered his services as a shopkeeper in exchange for " + Material.getMaterial(hireVillagerItem).toString() + ".";
 
+	
+	
 	public static String recipeListVar = "i";
 	
 	public static void loadConfiguration(Configuration config) {

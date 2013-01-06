@@ -1,6 +1,7 @@
 package com.nisovin.shopkeepers;
 
-import java.util.List;
+import java.util.HashMap;
+import java.util.Iterator;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -68,17 +69,40 @@ public class VillagerListener implements Listener {
 				plugin.openTradeWindow(shopkeeper, event.getPlayer());
 				plugin.purchasing.put(event.getPlayer().getName(), shopkeeper.getId());
 				ShopkeepersPlugin.debug("  Trade window opened");
-			} else if (Settings.disableOtherVillagers && shopkeeper == null) {
-				// don't allow trading with other villagers
-				ShopkeepersPlugin.debug("  Non-shopkeeper, trade prevented");
-				event.setCancelled(true);
 			} else if (shopkeeper == null) {
-				ShopkeepersPlugin.debug("  Non-shopkeeper");
+				// non-shop keeper villager
+				
+				Player player = event.getPlayer();
+
+				// hire him if holding his hiring item
+				ItemStack inHand = player.getItemInHand();
+				if (inHand != null && inHand.getTypeId() == Settings.hireVillagerItem) {
+					inHand.setAmount(inHand.getAmount() - 1);
+					player.setItemInHand(inHand);
+					
+		    		// try to add a villager egg to inventory
+		    		HashMap<Integer, ItemStack> hash = player.getInventory().addItem(new ItemStack(Material.MONSTER_EGG, 1, (short)120));
+		    		// or drop it on ground
+					if (!hash.isEmpty()) {
+						Iterator<Integer> it = hash.keySet().iterator();
+						if (it.hasNext()) {
+							player.getWorld().dropItem(player.getLocation(), hash.get(it.next()));
+						}
+					}
+
+					// remove the npc
+					villager.remove();
+					
+					plugin.sendMessage(player, Settings.msgVillagerHired);
+				} else {
+					plugin.sendMessage(player, Settings.msgVillagerForHire);
+				}
+				event.setCancelled(true);
 			}
 		}
 	}
 	
-	@EventHandler(ignoreCancelled=true)
+	@EventHandler(ignoreCancelled=true, priority = EventPriority.HIGHEST)
 	void onPlayerInteract(PlayerInteractEvent event) {
 		Player player = event.getPlayer();
 		

@@ -13,7 +13,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -26,9 +25,6 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
-import org.bukkit.event.block.Action;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -247,66 +243,8 @@ public class ShopkeepersPlugin extends JavaPlugin {
 			}
 			return true;
 			
-		} else if (sender instanceof Player) {
-			Player player = (Player)sender;
-						
-			// get the spawn location for the shopkeeper
-			Block block = player.getTargetBlock(null, 10);
-			if (block != null && block.getType() != Material.AIR) {
-				if (Settings.createPlayerShopWithCommand && block.getType() == Material.CHEST) {
-					// check if already a chest
-					if (isChestProtected(null, block)) {
-						return true;
-					}
-					// check for permission
-					if (Settings.simulateRightClickOnCommand) {
-						PlayerInteractEvent event = new PlayerInteractEvent(player, Action.RIGHT_CLICK_BLOCK, new ItemStack(Material.AIR), block, BlockFace.UP);
-						Bukkit.getPluginManager().callEvent(event);
-						if (event.isCancelled()) {
-							return true;
-						}
-					}
-					// create the player shopkeeper
-					ShopkeeperType shopType = null;
-					if (args == null || args.length == 0) {
-						shopType = ShopkeeperType.next(player, null);
-					} else {
-						if ((args[0].toLowerCase().startsWith("norm") || args[0].toLowerCase().startsWith("sell"))) {
-							shopType = ShopkeeperType.PLAYER_NORMAL;
-						} else if (args[0].toLowerCase().startsWith("book")) {
-							shopType = ShopkeeperType.PLAYER_BOOK;
-						} else if (args[0].toLowerCase().startsWith("buy")) {
-							shopType = ShopkeeperType.PLAYER_BUY;
-						} else if (args[0].toLowerCase().startsWith("trad")) {
-							shopType = ShopkeeperType.PLAYER_TRADE;
-						}
-						if (!shopType.hasPermission(player)) {
-							shopType = null;
-						}
-					}
-					if (shopType != null) {
-						Shopkeeper shopkeeper = createNewPlayerShopkeeper(player, block, block.getLocation().add(0, 1.5, 0), shopType, new VillagerShop());
-						if (shopkeeper != null) {
-							sendCreatedMessage(player, shopType);
-						}
-					}
-				} else if (player.hasPermission("shopkeeper.admin")) {
-					// create the admin shopkeeper
-					Shopkeeper shopkeeper = createNewAdminShopkeeper(block.getLocation().add(0, 1.5, 0), 0);
-					if (shopkeeper != null) {
-						sendMessage(player, Settings.msgAdminShopCreated);
-					}
-				}
-			} else {
-				sendMessage(player, Settings.msgShopCreateFail);
-			}
-			
+		} else
 			return true;
-		} else {
-			sender.sendMessage("You must be a player to create a shopkeeper.");
-			sender.sendMessage("Use 'shopkeeper reload' to reload the plugin.");
-			return true;
-		}
 	}
 	
 	/**

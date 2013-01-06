@@ -51,8 +51,6 @@ public class ShopkeepersPlugin extends JavaPlugin {
 	Map<String, Shopkeeper> activeShopkeepers = new HashMap<String, Shopkeeper>();
 	Map<String, String> editing = new HashMap<String, String>();
 	Map<String, String> purchasing = new HashMap<String, String>();
-	Map<String, List<String>> recentlyPlacedChests = new HashMap<String, List<String>>();
-	Map<String, ShopkeeperType> selectedShopType = new HashMap<String, ShopkeeperType>();
 	Map<String, Block> selectedChest = new HashMap<String, Block>();
 	
 	private boolean dirty = false;
@@ -209,7 +207,6 @@ public class ShopkeepersPlugin extends JavaPlugin {
 		activeShopkeepers.clear();
 		allShopkeepersByChunk.clear();
 		
-		selectedShopType.clear();
 		selectedChest.clear();
 		
 		HandlerList.unregisterAll((Plugin)this);		
@@ -259,12 +256,6 @@ public class ShopkeepersPlugin extends JavaPlugin {
 				if (Settings.createPlayerShopWithCommand && block.getType() == Material.CHEST) {
 					// check if already a chest
 					if (isChestProtected(null, block)) {
-						return true;
-					}
-					// check for recently placed
-					List<String> list = plugin.recentlyPlacedChests.get(player.getName());
-					if (list == null || !list.contains(block.getWorld().getName() + "," + block.getX() + "," + block.getY() + "," + block.getZ())) {
-						sendMessage(player, Settings.msgChestNotPlaced);
 						return true;
 					}
 					// check for permission

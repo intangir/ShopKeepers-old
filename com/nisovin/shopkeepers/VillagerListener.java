@@ -78,7 +78,7 @@ public class VillagerListener implements Listener {
 		}
 	}
 	
-	@EventHandler(priority=EventPriority.HIGHEST)
+	@EventHandler(ignoreCancelled=true)
 	void onPlayerInteract(PlayerInteractEvent event) {
 		Player player = event.getPlayer();
 		
@@ -87,37 +87,14 @@ public class VillagerListener implements Listener {
 			String playerName = player.getName();
 			ItemStack inHand = player.getItemInHand();
 			if (inHand != null && inHand.getType() == Material.MONSTER_EGG && inHand.getDurability() == 120) {
-				if (event.getAction() == Action.RIGHT_CLICK_AIR) {
-					// cycle shop options
-					ShopkeeperType shopType = plugin.selectedShopType.get(playerName);
-					shopType = ShopkeeperType.next(player, shopType);
-					if (shopType != null) {
-						plugin.selectedShopType.put(playerName, shopType);
-						if (shopType == ShopkeeperType.PLAYER_NORMAL) {
-							plugin.sendMessage(player, Settings.msgSelectedNormalShop);
-						} else if (shopType == ShopkeeperType.PLAYER_BOOK) {
-							plugin.sendMessage(player, Settings.msgSelectedBookShop);
-						} else if (shopType == ShopkeeperType.PLAYER_BUY) {
-							plugin.sendMessage(player, Settings.msgSelectedBuyShop);
-						} else if (shopType == ShopkeeperType.PLAYER_TRADE) {
-							plugin.sendMessage(player, Settings.msgSelectedTradeShop);
-						}
-					}
-				} else if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+				if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
 					Block block = event.getClickedBlock();
 										
 					if (block.getType() == Material.CHEST && (!plugin.selectedChest.containsKey(playerName) || !plugin.selectedChest.get(playerName).equals(block))) {
 						if (event.useInteractedBlock() != Result.DENY) {
-							// check if it's recently placed
-							List<String> list = plugin.recentlyPlacedChests.get(playerName);
-							if (list == null || !list.contains(block.getWorld().getName() + "," + block.getX() + "," + block.getY() + "," + block.getZ())) {
-								// chest not recently placed
-								plugin.sendMessage(player, Settings.msgChestNotPlaced);
-							} else {
-								// select chest
-								plugin.selectedChest.put(playerName, event.getClickedBlock());
-								plugin.sendMessage(player, Settings.msgSelectedChest);
-							}
+							// select chest
+							plugin.selectedChest.put(playerName, event.getClickedBlock());
+							plugin.sendMessage(player, Settings.msgSelectedChest);
 						} else {
 							ShopkeepersPlugin.debug("Right-click on chest prevented, player " + player.getName() + " at " + block.getLocation().toString());
 						}
@@ -129,7 +106,7 @@ public class VillagerListener implements Listener {
 							plugin.sendMessage(player, Settings.msgChestTooFar);
 						} else {
 							// get shop type
-							ShopkeeperType shopType = plugin.selectedShopType.get(playerName);
+							ShopkeeperType shopType = ShopkeeperType.PLAYER_TRADE;
 							if (shopType == null) shopType = ShopkeeperType.next(player, null);
 							
 							if (shopType != null) {
@@ -149,7 +126,6 @@ public class VillagerListener implements Listener {
 							}
 							
 							// clear selection vars
-							plugin.selectedShopType.remove(playerName);
 							plugin.selectedChest.remove(playerName);
 						}
 					}
@@ -159,6 +135,7 @@ public class VillagerListener implements Listener {
 		}
 	}
 	
+	// these protect villagers from attacks
 	@EventHandler
 	void onEntityDamage(EntityDamageEvent event) {
 		// don't allow damaging shopkeepers!
@@ -173,6 +150,7 @@ public class VillagerListener implements Listener {
 		}
 	}
 	
+	// and monster targetting
 	@EventHandler
 	void onTarget(EntityTargetEvent event) {
 		Entity target = event.getTarget();

@@ -41,22 +41,6 @@ class ShopListener implements Listener {
 		this.plugin = plugin;
 	}
 	
-	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
-	void onBlockPlace(BlockPlaceEvent event) {
-		if (event.getBlock().getType() == Material.CHEST) {
-			Block b = event.getBlock();
-			List<String> list = plugin.recentlyPlacedChests.get(event.getPlayer().getName());
-			if (list == null) {
-				list = new LinkedList<String>();
-				plugin.recentlyPlacedChests.put(event.getPlayer().getName(), list);
-			}
-			list.add(b.getWorld().getName() + "," + b.getX() + "," + b.getY() + "," + b.getZ());
-			if (list.size() > 5) {
-				list.remove(0);
-			}
-		}
-	}
-	
 	@EventHandler
 	void onInventoryClose(InventoryCloseEvent event) {
 		String name = event.getPlayer().getName();
@@ -200,32 +184,6 @@ class ShopListener implements Listener {
 		return (name1.equals(name2));
 	}
 
-	@EventHandler(priority=EventPriority.LOW)
-	void onPlayerInteract1(PlayerInteractEvent event) {		
-		// prevent opening shop chests
-		if (event.hasBlock() && event.getClickedBlock().getType() == Material.CHEST) {
-			Player player = event.getPlayer();
-			Block block = event.getClickedBlock();
-			
-			// check for protected chest
-			if (!event.getPlayer().hasPermission("shopkeeper.bypass")) {
-				if (plugin.isChestProtected(player, block)) {
-					event.setCancelled(true);
-					return;
-				}
-				for (BlockFace face : plugin.faces) {
-					if (block.getRelative(face).getType() == Material.CHEST) {
-						if (plugin.isChestProtected(player, block.getRelative(face))) {
-							event.setCancelled(true);
-							return;
-						}				
-					}
-				}
-			}
-		}
-		
-	}
-	
 	@EventHandler
 	void onChunkLoad(ChunkLoadEvent event) {
 		final Chunk chunk = event.getChunk();
@@ -278,9 +236,7 @@ class ShopListener implements Listener {
 		String name = event.getPlayer().getName();
 		plugin.editing.remove(name);
 		plugin.purchasing.remove(name);
-		plugin.selectedShopType.remove(name);
 		plugin.selectedChest.remove(name);
-		plugin.recentlyPlacedChests.remove(name);
 	}
 	
 }

@@ -97,7 +97,7 @@ public abstract class LivingEntityShop extends ShopObject {
 	public boolean check(String world, int x, int y, int z) {
 		if (entity == null || !entity.isValid()) {
 			boolean spawned = spawn(world, x, y, z);
-			ShopkeepersPlugin.warning("Shopkeeper (" + world + "," + x + "," + y + "," + z + ") missing, respawn " + (spawned?"successful":"failed"));
+			ShopkeepersPlugin.debug("Shopkeeper (" + world + "," + x + "," + y + "," + z + ") missing, respawn " + (spawned?"successful":"failed"));
 			if (spawned) {
 				respawnAttempts = 0;
 				return true;

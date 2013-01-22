@@ -37,9 +37,7 @@ import com.nisovin.shopkeepers.events.*;
 import com.nisovin.shopkeepers.pluginhandlers.*;
 import com.nisovin.shopkeepers.shopobjects.*;
 import com.nisovin.shopkeepers.shoptypes.*;
-import com.nisovin.shopkeepers.volatilecode.VolatileCodeHandle;
-import com.nisovin.shopkeepers.volatilecode.VolatileCode_1_4_5;
-import com.nisovin.shopkeepers.volatilecode.VolatileCode_1_4_6;
+import com.nisovin.shopkeepers.volatilecode.*;
 
 public class ShopkeepersPlugin extends JavaPlugin {
 
@@ -71,6 +69,8 @@ public class ShopkeepersPlugin extends JavaPlugin {
 			volatileCodeHandle = new VolatileCode_1_4_5();
 		} else if (version.contains("(MC: 1.4.6)")) {
 			volatileCodeHandle = new VolatileCode_1_4_6();
+		} else if (version.contains("(MC: 1.4.7)")) {
+			volatileCodeHandle = new VolatileCode_1_4_R1();
 		} else {
 			getLogger().severe("Incompatible server version: Shopkeepers plugin cannot be enabled.");
 			this.setEnabled(false);

@@ -2,6 +2,7 @@ package com.nisovin.shopkeepers.shoptypes;
 
 import java.util.Map;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
@@ -11,6 +12,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import com.nisovin.shopkeepers.EditorClickResult;
 import com.nisovin.shopkeepers.Settings;
@@ -114,7 +116,7 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 			// change profession
 			event.setCancelled(true);
 			shopObject.cycleType();
-			event.getInventory().setItem(17, shopObject.getTypeItem());
+			event.getInventory().setItem(17, setItemStackName(shopObject.getTypeItem(), Settings.msgButtonType));
 			return EditorClickResult.SAVE_AND_CONTINUE;
 		} else if (event.getRawSlot() == 26) {
 			// delete
@@ -260,9 +262,24 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 	}
 	
 	protected void setActionButtons(Inventory inv) {
-		inv.setItem(8, new ItemStack(Settings.saveItem));
-		inv.setItem(17, shopObject.getTypeItem());
-		inv.setItem(26, new ItemStack(Settings.deleteItem));
+		inv.setItem(8, createItemStackWithName(Settings.saveItem, Settings.msgButtonSave));
+		inv.setItem(17, setItemStackName(shopObject.getTypeItem(), Settings.msgButtonType));
+		inv.setItem(26, createItemStackWithName(Settings.deleteItem, Settings.msgButtonDelete));
+	}
+	
+	private ItemStack createItemStackWithName(int type, String name) {
+		ItemStack item = new ItemStack(type, 1);
+		ItemMeta meta = item.getItemMeta();
+		meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', name));
+		item.setItemMeta(meta);
+		return item;
+	}
+	
+	private ItemStack setItemStackName(ItemStack item, String name) {
+		ItemMeta meta = item.getItemMeta();
+		meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', name));
+		item.setItemMeta(meta);
+		return item;
 	}
 	
 	protected int getCostFromColumn(Inventory inv, int column) {

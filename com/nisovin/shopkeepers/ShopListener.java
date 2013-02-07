@@ -119,6 +119,13 @@ class ShopListener implements Listener {
 		}
 		// purchase click
 		if (event.getInventory().getName().equals("mob.villager") && event.getRawSlot() == 2 && plugin.purchasing.containsKey(event.getWhoClicked().getName())) {
+			// prevent shift clicks
+			if (event.isShiftClick()) {
+				event.setCancelled(true);
+				return;
+			}
+			
+			// get shopkeeper
 			String id = plugin.purchasing.get(event.getWhoClicked().getName());
 			Shopkeeper shopkeeper = plugin.activeShopkeepers.get(id);
 			ItemStack item = event.getCurrentItem();

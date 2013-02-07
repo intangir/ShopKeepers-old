@@ -110,7 +110,7 @@ public class VillagerListener implements Listener {
 						if (event.useInteractedBlock() != Result.DENY) {
 							// check if it's recently placed
 							List<String> list = plugin.recentlyPlacedChests.get(playerName);
-							if (list == null || !list.contains(block.getWorld().getName() + "," + block.getX() + "," + block.getY() + "," + block.getZ())) {
+							if (Settings.requireChestRecentlyPlaced && (list == null || !list.contains(block.getWorld().getName() + "," + block.getX() + "," + block.getY() + "," + block.getZ()))) {
 								// chest not recently placed
 								plugin.sendMessage(player, Settings.msgChestNotPlaced);
 							} else {

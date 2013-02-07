@@ -276,10 +276,12 @@ public class ShopkeepersPlugin extends JavaPlugin {
 						return true;
 					}
 					// check for recently placed
-					List<String> list = plugin.recentlyPlacedChests.get(player.getName());
-					if (list == null || !list.contains(block.getWorld().getName() + "," + block.getX() + "," + block.getY() + "," + block.getZ())) {
-						sendMessage(player, Settings.msgChestNotPlaced);
-						return true;
+					if (Settings.requireChestRecentlyPlaced) {
+						List<String> list = plugin.recentlyPlacedChests.get(player.getName());
+						if (list == null || !list.contains(block.getWorld().getName() + "," + block.getX() + "," + block.getY() + "," + block.getZ())) {
+							sendMessage(player, Settings.msgChestNotPlaced);
+							return true;
+						}
 					}
 					// check for permission
 					if (Settings.simulateRightClickOnCommand) {

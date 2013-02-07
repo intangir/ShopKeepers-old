@@ -16,6 +16,7 @@ public class Settings {
 	public static boolean enableWorldGuardRestrictions = false;
 	public static boolean enableTownyRestrictions = false;	
 	
+	public static boolean requireChestRecentlyPlaced = true;
 	public static boolean createPlayerShopWithCommand = true;
 	public static boolean simulateRightClickOnCommand = true;
 	public static boolean allowCustomQuantities = true;
@@ -51,6 +52,10 @@ public class Settings {
 	public static int highCurrencyValue = 9;
 	public static int highCurrencyMinCost = 20;
 	public static int highZeroItem = Material.SLIME_BALL.getId();
+	
+	public static String msgButtonSave = "&aSave";
+	public static String msgButtonType = "&eChoose Type";
+	public static String msgButtonDelete = "&4Delete";
 	
 	public static String msgSelectedNormalShop = "&aNormal shopkeeper selected (sells items to players).";
 	public static String msgSelectedBookShop = "&aBook shopkeeper selected (sell books).";

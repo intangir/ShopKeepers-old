@@ -10,6 +10,7 @@ enable-towny-restrictions: false
 create-player-shop-with-command: true
 simulate-right-click-on-command: true
 allow-custom-quantities: true
+require-chest-recently-placed: true
 protect-chests: true
 max-shops-per-player: 0
 max-chest-distance: 15
@@ -38,6 +39,10 @@ high-currency-min-cost: 20
 high-zero-item: 341
 
 language: en
+
+msg-button-save: "&aSave"
+msg-button-type: "&eChoose Type"
+msg-button-delete: "&4Delete"
 
 msg-selected-normal-shop: "&aNormal shopkeeper selected (sells items to players)."
 msg-selected-book-shop: "&aBook shopkeeper selected (sell books)."

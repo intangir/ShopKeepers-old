@@ -6,6 +6,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
@@ -73,7 +74,15 @@ class ShopListener implements Listener {
 						
 						// return egg
 						if (Settings.deletingPlayerShopReturnsEgg && shopkeeper instanceof PlayerShopkeeper) {
-							event.getWhoClicked().getInventory().addItem(new ItemStack(Material.MONSTER_EGG, 1, (short)120));
+							HashMap<Integer, ItemStack> hash = event.getWhoClicked().getInventory().addItem(new ItemStack(Material.MONSTER_EGG, 1, (short)120));
+				    		// or drop it on ground
+							if (!hash.isEmpty()) {
+								Iterator<Integer> it = hash.keySet().iterator();
+								if (it.hasNext()) {
+									event.getWhoClicked().getWorld().dropItem(event.getWhoClicked().getLocation(), hash.get(it.next()));
+								}
+							}
+
 						}
 						
 						// remove shopkeeper

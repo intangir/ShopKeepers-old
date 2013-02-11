@@ -9,7 +9,6 @@ enable-towny-restrictions: false
 
 create-player-shop-with-command: true
 simulate-right-click-on-command: true
-allow-custom-quantities: true
 require-chest-recently-placed: true
 protect-chests: true
 max-shops-per-player: 0

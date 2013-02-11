@@ -152,15 +152,6 @@ public abstract class Shopkeeper {
 	}
 	
 	/**
-	 * Gets the villager entity for this shopkeeper. Can return null if the shopkeeper
-	 * is not spawned in the world.
-	 * @return the villager entity
-	 */
-	//public Villager getVillager() {
-	//	return villager;
-	//}
-	
-	/**
 	 * Gets the shopkeeper's ID.
 	 * @return the id, or 0 if the shopkeeper is not in the world
 	 */
@@ -206,44 +197,4 @@ public abstract class Shopkeeper {
 	protected void closeInventory(HumanEntity player) {
 		ShopkeepersPlugin.plugin.closeInventory(player);
 	}
-	
-	/*@SuppressWarnings("unchecked")
-	protected void updateRecipes() {
-		try {
-			EntityVillager ev = ((CraftVillager)villager).getHandle();
-			
-			Field recipeListField = EntityVillager.class.getDeclaredField(Settings.recipeListVar);
-			recipeListField.setAccessible(true);
-			MerchantRecipeList recipeList = (MerchantRecipeList)recipeListField.get(ev);
-			if (recipeList == null) {
-				recipeList = new MerchantRecipeList();
-				recipeListField.set(ev, recipeList);
-			}
-			recipeList.clear();
-			for (ItemStack[] recipe : getRecipes()) {
-				recipeList.add(ShopRecipe.factory(recipe[0], recipe[1], recipe[2]));
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
-	private void removeRecipes() {
-		try {
-			EntityVillager ev = ((CraftVillager)villager).getHandle();
-			
-			Field recipeListField = EntityVillager.class.getDeclaredField(Settings.recipeListVar);
-			recipeListField.setAccessible(true);
-			MerchantRecipeList recipeList = (MerchantRecipeList)recipeListField.get(ev);
-			if (recipeList == null) {
-				recipeList = new MerchantRecipeList();
-				recipeListField.set(ev, recipeList);
-			}
-			recipeList.clear();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}		
-	}
-	
-	}*/
 }

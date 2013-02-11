@@ -19,7 +19,6 @@ public class Settings {
 	public static boolean requireChestRecentlyPlaced = true;
 	public static boolean createPlayerShopWithCommand = true;
 	public static boolean simulateRightClickOnCommand = true;
-	public static boolean allowCustomQuantities = true;
 	public static boolean protectChests = true;
 	public static boolean deleteShopkeeperOnBreakChest = false;
 	public static int maxShopsPerPlayer = 0;

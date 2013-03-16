@@ -119,5 +119,9 @@ public class VolatileCode_1_4_R1 implements VolatileCodeHandle {
 		return org.bukkit.craftbukkit.v1_4_R1.inventory.CraftItemStack.asNMSCopy(item);
 	}
 
+	@Override
+	public void setEntityName(LivingEntity entity, String name) {
+	}
+
 	
 }

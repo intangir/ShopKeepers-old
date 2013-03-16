@@ -52,6 +52,7 @@ public class ShopkeepersPlugin extends JavaPlugin {
 	Map<String, String> purchasing = new HashMap<String, String>();
 	Map<String, List<String>> recentlyPlacedChests = new HashMap<String, List<String>>();
 	Map<String, ShopkeeperType> selectedShopType = new HashMap<String, ShopkeeperType>();
+	Map<String, ShopObjectType> selectedShopObjectType = new HashMap<String, ShopObjectType>();
 	Map<String, Block> selectedChest = new HashMap<String, Block>();
 	
 	private boolean dirty = false;
@@ -64,17 +65,18 @@ public class ShopkeepersPlugin extends JavaPlugin {
 		plugin = this;
 		
 		// load volatile code handler
-		String version = getServer().getVersion();
-		if (version.contains("(MC: 1.4.5)")) {
-			volatileCodeHandle = new VolatileCode_1_4_5();
-		} else if (version.contains("(MC: 1.4.6)")) {
-			volatileCodeHandle = new VolatileCode_1_4_6();
-		} else if (version.contains("(MC: 1.4.7)")) {
-			volatileCodeHandle = new VolatileCode_1_4_R1();
-		} else {
-			getLogger().severe("Incompatible server version: Shopkeepers plugin cannot be enabled.");
-			this.setEnabled(false);
-			return;
+		try {
+			Class.forName("net.minecraft.server.v1_5_R1.MinecraftServer");
+			volatileCodeHandle = new VolatileCode_1_5_R1();
+		} catch (ClassNotFoundException e_1_5_r1) {
+			try {
+				Class.forName("net.minecraft.server.v1_4_R1.MinecraftServer");
+				volatileCodeHandle = new VolatileCode_1_4_R1();
+			} catch (ClassNotFoundException e_1_4_r1) {
+				getLogger().severe("Incompatible server version: Shopkeepers plugin cannot be enabled.");
+				this.setEnabled(false);
+				return;
+			}
 		}
 		
 		// get config
@@ -116,6 +118,7 @@ public class ShopkeepersPlugin extends JavaPlugin {
 		// register events
 		PluginManager pm = getServer().getPluginManager();
 		pm.registerEvents(new ShopListener(this), this);
+		pm.registerEvents(new CreateListener(this), this);
 		if (Settings.enableVillagerShops) {
 			pm.registerEvents(new VillagerListener(this), this);
 		}
@@ -224,6 +227,7 @@ public class ShopkeepersPlugin extends JavaPlugin {
 		allShopkeepersByChunk.clear();
 		
 		selectedShopType.clear();
+		selectedShopObjectType.clear();
 		selectedChest.clear();
 		
 		HandlerList.unregisterAll((Plugin)this);		

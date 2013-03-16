@@ -94,7 +94,13 @@ class ShopListener implements Listener {
 						
 						// return egg
 						if (Settings.deletingPlayerShopReturnsEgg && shopkeeper instanceof PlayerShopkeeper) {
-							event.getWhoClicked().getInventory().addItem(new ItemStack(Material.MONSTER_EGG, 1, (short)120));
+							ItemStack creationItem = new ItemStack(Settings.shopCreationItem, 1, (short)Settings.shopCreationItemData);
+							if (Settings.shopCreationItemName != null && !Settings.shopCreationItemName.isEmpty()) {
+								ItemMeta meta = creationItem.getItemMeta();
+								meta.setDisplayName(Settings.shopCreationItemName);
+								creationItem.setItemMeta(meta);
+							}
+							event.getWhoClicked().getInventory().addItem(creationItem);
 						}
 						
 						// remove shopkeeper

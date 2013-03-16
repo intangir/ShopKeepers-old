@@ -1,13 +1,8 @@
 package com.nisovin.shopkeepers;
 
-import java.util.List;
-
 import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
-import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -17,11 +12,8 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.material.Attachable;
 
 import com.nisovin.shopkeepers.events.OpenTradeEvent;
-import com.nisovin.shopkeepers.shopobjects.BlockShop;
 import com.nisovin.shopkeepers.shoptypes.PlayerShopkeeper;
 
 public class BlockListener implements Listener {
@@ -71,83 +63,6 @@ public class BlockListener implements Listener {
 				}
 			}
 		}
-		
-		// check for player shop spawn
-		if (Settings.signShopCreationItem > 0 && player.getGameMode() != GameMode.CREATIVE) {
-			String playerName = player.getName();
-			ItemStack inHand = player.getItemInHand();
-			if (inHand != null && inHand.getTypeId() == Settings.signShopCreationItem) {
-				if (event.getAction() == Action.RIGHT_CLICK_AIR) {
-					// cycle shop options
-					ShopkeeperType shopType = plugin.selectedShopType.get(playerName);
-					shopType = ShopkeeperType.next(player, shopType);
-					if (shopType != null) {
-						plugin.selectedShopType.put(playerName, shopType);
-						if (shopType == ShopkeeperType.PLAYER_NORMAL) {
-							plugin.sendMessage(player, Settings.msgSelectedNormalShop);
-						} else if (shopType == ShopkeeperType.PLAYER_BOOK) {
-							plugin.sendMessage(player, Settings.msgSelectedBookShop);
-						} else if (shopType == ShopkeeperType.PLAYER_BUY) {
-							plugin.sendMessage(player, Settings.msgSelectedBuyShop);
-						} else if (shopType == ShopkeeperType.PLAYER_TRADE) {
-							plugin.sendMessage(player, Settings.msgSelectedTradeShop);
-						}
-					}
-				} else if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-					if (block.getType() == Material.CHEST && (!plugin.selectedChest.containsKey(playerName) || !plugin.selectedChest.get(playerName).equals(block))) {
-						if (event.useInteractedBlock() != Result.DENY) {
-							// check if it's recently placed
-							List<String> list = plugin.recentlyPlacedChests.get(playerName);
-							if (list == null || !list.contains(block.getWorld().getName() + "," + block.getX() + "," + block.getY() + "," + block.getZ())) {
-								// chest not recently placed
-								plugin.sendMessage(player, Settings.msgChestNotPlaced);
-							} else {
-								// select chest
-								plugin.selectedChest.put(playerName, event.getClickedBlock());
-								plugin.sendMessage(player, Settings.msgSelectedChest);
-							}
-						} else {
-							ShopkeepersPlugin.debug("Right-click on chest prevented, player " + player.getName() + " at " + block.getLocation().toString());
-						}
-						event.setCancelled(true);
-					} else if (plugin.selectedChest.containsKey(playerName) && validSignFace(event.getBlockFace())) {
-						Block chest = plugin.selectedChest.get(playerName);
-						if (!chest.getWorld().equals(block.getWorld()) || (int)chest.getLocation().distance(block.getLocation()) > Settings.maxChestDistance) {
-							plugin.sendMessage(player, Settings.msgChestTooFar);
-						} else {
-							// get shop type
-							ShopkeeperType shopType = plugin.selectedShopType.get(playerName);
-							if (shopType == null) shopType = ShopkeeperType.next(player, null);
-							
-							if (shopType != null) {
-								// create player shopkeeper
-								Block sign = event.getClickedBlock().getRelative(event.getBlockFace());
-								if (sign.getType() == Material.AIR) {
-									Shopkeeper shopkeeper = plugin.createNewPlayerShopkeeper(player, chest, sign.getLocation(), shopType, new BlockShop());
-									if (shopkeeper != null) {										
-										// set sign
-										sign.setType(Material.WALL_SIGN);
-										Sign signState = (Sign)sign.getState();
-										((Attachable)signState.getData()).setFacingDirection(event.getBlockFace());
-										signState.setLine(0, Settings.signShopFirstLine);
-										signState.setLine(2, playerName);
-										signState.update();
-										event.setCancelled(true);
-										
-										// send message
-										plugin.sendCreatedMessage(player, shopType);
-									}
-									
-									// clear selection vars
-									plugin.selectedShopType.remove(playerName);
-									plugin.selectedChest.remove(playerName);
-								}
-							}
-						}
-					}
-				}
-			}
-		}
 	}
 	
 	@EventHandler
@@ -156,7 +71,7 @@ public class BlockListener implements Listener {
 		if (block.getType() == Material.WALL_SIGN || block.getType() == Material.SIGN_POST) {
 			if (plugin.activeShopkeepers.containsKey("block" + block.getWorld().getName() + "," + block.getX() + "," + block.getY() + "," + block.getZ())) {
 				event.setCancelled(true);
-			}			
+			}
 		}
 	}
 	
@@ -170,9 +85,5 @@ public class BlockListener implements Listener {
 			event.setLine(2, ((PlayerShopkeeper)shopkeeper).getOwner());
 			event.setLine(3, "");
 		}
-	}
-	
-	private boolean validSignFace(BlockFace face) {
-		return face == BlockFace.NORTH || face == BlockFace.SOUTH || face == BlockFace.EAST || face == BlockFace.WEST;
 	}
 }

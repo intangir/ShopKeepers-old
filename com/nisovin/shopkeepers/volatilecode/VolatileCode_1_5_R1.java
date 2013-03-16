@@ -3,11 +3,11 @@ package com.nisovin.shopkeepers.volatilecode;
 import java.lang.reflect.Field;
 import java.util.List;
 
-import net.minecraft.server.v1_4_5.*;
+import net.minecraft.server.v1_5_R1.*;
 
-import org.bukkit.craftbukkit.v1_4_5.entity.CraftLivingEntity;
-import org.bukkit.craftbukkit.v1_4_5.entity.CraftPlayer;
-import org.bukkit.craftbukkit.v1_4_5.entity.CraftVillager;
+import org.bukkit.craftbukkit.v1_5_R1.entity.CraftLivingEntity;
+import org.bukkit.craftbukkit.v1_5_R1.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_5_R1.entity.CraftVillager;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
@@ -16,7 +16,7 @@ import org.bukkit.inventory.ItemStack;
 import com.nisovin.shopkeepers.Settings;
 import com.nisovin.shopkeepers.Shopkeeper;
 
-public class VolatileCode_1_4_5 implements VolatileCodeHandle {
+public class VolatileCode_1_5_R1 implements VolatileCodeHandle {
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -37,7 +37,7 @@ public class VolatileCode_1_4_5 implements VolatileCodeHandle {
 				recipeList.add(createMerchantRecipe(recipe[0], recipe[1], recipe[2]));
 			}
 			
-			villager.a(((CraftPlayer)player).getHandle());
+			villager.a_(((CraftPlayer)player).getHandle());
 			
 			return true;
 		} catch (Exception e) {
@@ -114,9 +114,15 @@ public class VolatileCode_1_4_5 implements VolatileCodeHandle {
 		return recipe;
 	}
 	
-	private net.minecraft.server.v1_4_5.ItemStack convertItemStack(org.bukkit.inventory.ItemStack item) {
+	private net.minecraft.server.v1_5_R1.ItemStack convertItemStack(org.bukkit.inventory.ItemStack item) {
 		if (item == null) return null;
-		return org.bukkit.craftbukkit.v1_4_5.inventory.CraftItemStack.asNMSCopy(item);
+		return org.bukkit.craftbukkit.v1_5_R1.inventory.CraftItemStack.asNMSCopy(item);
+	}
+
+	@Override
+	public void setEntityName(LivingEntity entity, String name) {
+		entity.setCustomName(name);
+		entity.setCustomNameVisible(true);
 	}
 
 	

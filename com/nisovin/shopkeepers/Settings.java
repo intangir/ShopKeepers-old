@@ -17,21 +17,22 @@ public class Settings {
 	public static boolean enableTownyRestrictions = false;	
 	
 	public static boolean requireChestRecentlyPlaced = true;
-	public static boolean createPlayerShopWithCommand = true;
+	public static boolean createPlayerShopWithCommand = false;
 	public static boolean simulateRightClickOnCommand = true;
 	public static boolean protectChests = true;
 	public static boolean deleteShopkeeperOnBreakChest = false;
 	public static int maxShopsPerPlayer = 0;
 	public static int maxChestDistance = 15;
+	
+	public static int shopCreationItem = 383;
+	public static int shopCreationItemData = 120;
+	public static String shopCreationItemName = "";
+	public static boolean deletingPlayerShopReturnsEgg = false;
 
 	public static boolean enableVillagerShops = true;
-	public static boolean createPlayerShopWithEgg = true;
-	public static boolean deletingPlayerShopReturnsEgg = false;
 	
 	public static boolean enableSignShops = true;
 	public static String signShopFirstLine = "[SHOP]";
-	public static int signShopCreationItem = Material.EMERALD.getId();
-	public static short signShopCreationItemData = 0;
 	
 	public static boolean enableBlockShops = true;
 	public static int blockShopType = 0;
@@ -53,26 +54,29 @@ public class Settings {
 	public static int highZeroItem = Material.SLIME_BALL.getId();
 	
 	public static String msgButtonSave = "&aSave";
-	public static String msgButtonType = "&eChoose Type";
+	public static String msgButtonType = "&eChoose Appearance";
 	public static String msgButtonDelete = "&4Delete";
 	
 	public static String msgSelectedNormalShop = "&aNormal shopkeeper selected (sells items to players).";
 	public static String msgSelectedBookShop = "&aBook shopkeeper selected (sell books).";
 	public static String msgSelectedBuyShop = "&aBuying shopkeeper selected (buys items from players).";
 	public static String msgSelectedTradeShop = "&aTrading shopkeeper selected (trade items with players).";
+	
+	public static String msgSelectedVillagerShop = "&aVillager shop selected.";
+	public static String msgSelectedSignShop = "&aSign shop selected.";
+	
 	public static String msgSelectedChest = "&aChest selected! Right click a block to place your shopkeeper.";
 	public static String msgMustSelectChest = "&aYou must right-click a chest before placing your shopkeeper.";
 	public static String msgChestTooFar = "&aThe shopkeeper's chest is too far away!";
 	public static String msgChestNotPlaced = "&aYou must select a chest you have recently placed.";
 	
-	public static String msgPlayerShopCreated = "&aShopkeeper created!\n&aAdd items you want to sell to your chest, then\n&aright-click the villager while sneaking to modify costs.";
-	public static String msgBookShopCreated = "&aShopkeeper created!\n&aAdd written books and blank books to your chest, then\n&aright-click the villager while sneaking to modify costs.";
-	public static String msgBuyShopCreated = "&aShopkeeper created!\n&aAdd one of each item you want to sell to your chest, then\n&aright-click the villager while sneaking to modify costs.";
-	public static String msgTradeShopCreated = "&aShopkeeper created!\n&aAdd items you want to sell to your chest, then\n&aright-click the villager while sneaking to modify costs.";
-	public static String msgAdminShopCreated = "&aShopkeeper created!\n&aRight-click the villager while sneaking to modify trades.";
+	public static String msgPlayerShopCreated = "&aShopkeeper created!\n&aAdd items you want to sell to your chest, then\n&aright-click the shop while sneaking to modify costs.";
+	public static String msgBookShopCreated = "&aShopkeeper created!\n&aAdd written books and blank books to your chest, then\n&aright-click the shop while sneaking to modify costs.";
+	public static String msgBuyShopCreated = "&aShopkeeper created!\n&aAdd one of each item you want to sell to your chest, then\n&aright-click the shop while sneaking to modify costs.";
+	public static String msgTradeShopCreated = "&aShopkeeper created!\n&aAdd items you want to sell to your chest, then\n&aright-click the shop while sneaking to modify costs.";
+	public static String msgAdminShopCreated = "&aShopkeeper created!\n&aRight-click the shop while sneaking to modify trades.";
 	public static String msgShopCreateFail = "&aYou cannot create a shopkeeper there.";
 	public static String msgTooManyShops = "&aYou have too many shops.";
-	public static String msgShopInUse = "&aSomeone else is already purchasing from this shopkeeper.";
 
 	public static String recipeListVar = "i";
 	

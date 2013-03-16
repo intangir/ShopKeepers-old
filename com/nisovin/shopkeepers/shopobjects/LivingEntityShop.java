@@ -9,6 +9,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 
 import com.nisovin.shopkeepers.ShopkeepersPlugin;
+import com.nisovin.shopkeepers.shoptypes.PlayerShopkeeper;
 
 public abstract class LivingEntityShop extends ShopObject {
 	
@@ -58,6 +59,10 @@ public abstract class LivingEntityShop extends ShopObject {
 		if (entity == null || !entity.isValid()) {
 			entity = (LivingEntity)w.spawnEntity(loc, getEntityType());
 			uuid = entity.getUniqueId().toString();
+			if (shopkeeper instanceof PlayerShopkeeper) {
+				String owner = ((PlayerShopkeeper)shopkeeper).getOwner();
+				ShopkeepersPlugin.getVolatileCode().setEntityName(entity, owner + "'s shop");
+			}
 		}
 		if (entity != null && entity.isValid()) {
 			overwriteAI();

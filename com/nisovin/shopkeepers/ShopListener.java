@@ -213,7 +213,8 @@ class ShopListener implements Listener {
 	private boolean itemEquals(ItemStack item1, ItemStack item2) {
 		if ((item1 == null || item1.getTypeId() == 0) && (item2 == null || item2.getTypeId() == 0)) return true;
 		if (item1 == null || item2 == null) return false;
-		return item1.getTypeId() == item2.getTypeId() && item1.getDurability() == item2.getDurability() && itemNamesEqual(item1, item2);
+		return item1.isSimilar(item2);
+		//return item1.getTypeId() == item2.getTypeId() && item1.getDurability() == item2.getDurability() && itemNamesEqual(item1, item2);
 	}
 
 	private static String getNameOfItem(ItemStack item) {
@@ -232,11 +233,11 @@ class ShopListener implements Listener {
 		return item.getTypeId() + ":" + item.getDurability() + (!name.isEmpty() ? ":" + name : "");
 	}
 
-	private static boolean itemNamesEqual(ItemStack item1, ItemStack item2) {
+	/*private static boolean itemNamesEqual(ItemStack item1, ItemStack item2) {
 		String name1 = getNameOfItem(item1);
 		String name2 = getNameOfItem(item2);
 		return (name1.equals(name2));
-	}
+	}*/
 
 	@EventHandler(priority=EventPriority.LOW)
 	void onPlayerInteract1(PlayerInteractEvent event) {		

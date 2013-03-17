@@ -1,11 +1,8 @@
 package com.nisovin.shopkeepers.shoptypes;
 
-import java.util.Map;
-
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
@@ -181,8 +178,9 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 	
 	@Override
 	public final void onPurchaseClick(InventoryClickEvent event) {
-		if (event.getWhoClicked().getName().equalsIgnoreCase(owner)) {
+		if (event.getWhoClicked().getName().equalsIgnoreCase(owner) && !event.getWhoClicked().isOp()) {
 			event.setCancelled(true);
+			ShopkeepersPlugin.debug("Cancelled trade from " + event.getWhoClicked().getName() + " because he can't trade with his own shop");
 		} else {
 			onPlayerPurchaseClick(event);
 		}
@@ -262,7 +260,7 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 	protected boolean removeFromInventory(ItemStack item, ItemStack[] contents) {
 		item = item.clone();
 		for (int i = 0; i < contents.length; i++) {
-			if (contents[i] != null && contents[i].getTypeId() == item.getTypeId() && contents[i].getDurability() == item.getDurability() && equalEnchantments(item, contents[i])) {
+			if (contents[i] != null && item.isSimilar(contents[i])) {
 				if (contents[i].getAmount() > item.getAmount()) {
 					contents[i].setAmount(contents[i].getAmount() - item.getAmount());
 					return true;
@@ -284,7 +282,7 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 			if (contents[i] == null) {
 				contents[i] = item;
 				return true;
-			} else if (contents[i].getTypeId() == item.getTypeId() && contents[i].getDurability() == item.getDurability() && contents[i].getAmount() != contents[i].getMaxStackSize()) {
+			} else if (item.isSimilar(contents[i]) && contents[i].getAmount() != contents[i].getMaxStackSize()) {
 				int amt = contents[i].getAmount() + item.getAmount();
 				if (amt <= contents[i].getMaxStackSize()) {
 					contents[i].setAmount(amt);
@@ -296,24 +294,6 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 			}
 		}
 		return false;
-	}
-	
-	protected boolean equalEnchantments(ItemStack item1, ItemStack item2) {
-		Map<Enchantment, Integer> enchants1 = item1.getEnchantments();
-		Map<Enchantment, Integer> enchants2 = item2.getEnchantments();
-		if ((enchants1 == null || enchants1.size() == 0) && (enchants2 == null || enchants2.size() == 0)) {
-			return true;
-		} else if (enchants1 == null || enchants2 == null || enchants1.size() != enchants2.size()) {
-			return false;
-		} else {
-			for (Enchantment ench : enchants1.keySet()) {
-				Integer lvl2 = enchants2.get(ench);
-				if (lvl2 == null || !lvl2.equals(enchants1.get(ench))) {
-					return false;
-				}
-			}
-			return true;
-		}
 	}
 	
 }

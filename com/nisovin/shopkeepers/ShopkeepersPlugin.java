@@ -298,25 +298,40 @@ public class ShopkeepersPlugin extends JavaPlugin {
 						}
 					}
 					// create the player shopkeeper
-					ShopkeeperType shopType = null;
-					if (args == null || args.length == 0) {
-						shopType = ShopkeeperType.next(player, null);
-					} else {
-						if ((args[0].toLowerCase().startsWith("norm") || args[0].toLowerCase().startsWith("sell"))) {
-							shopType = ShopkeeperType.PLAYER_NORMAL;
-						} else if (args[0].toLowerCase().startsWith("book")) {
-							shopType = ShopkeeperType.PLAYER_BOOK;
-						} else if (args[0].toLowerCase().startsWith("buy")) {
-							shopType = ShopkeeperType.PLAYER_BUY;
-						} else if (args[0].toLowerCase().startsWith("trad")) {
-							shopType = ShopkeeperType.PLAYER_TRADE;
+					ShopkeeperType shopType = ShopkeeperType.next(player, null);
+					ShopObjectType shopObjType = ShopObjectType.next(player, null);
+					if (args != null && args.length > 0) {
+						if (args.length >= 1) {
+							if ((args[0].toLowerCase().startsWith("norm") || args[0].toLowerCase().startsWith("sell"))) {
+								shopType = ShopkeeperType.PLAYER_NORMAL;
+							} else if (args[0].toLowerCase().startsWith("book")) {
+								shopType = ShopkeeperType.PLAYER_BOOK;
+							} else if (args[0].toLowerCase().startsWith("buy")) {
+								shopType = ShopkeeperType.PLAYER_BUY;
+							} else if (args[0].toLowerCase().startsWith("trad")) {
+								shopType = ShopkeeperType.PLAYER_TRADE;
+							} else if (args[0].toLowerCase().equals("villager")) {
+								shopObjType = ShopObjectType.VILLAGER;
+							} else if (args[0].toLowerCase().equals("sign")) {
+								shopObjType = ShopObjectType.SIGN;
+							}
+						}
+						if (args.length >= 2) {
+							if (args[1].equalsIgnoreCase("villager")) {
+								shopObjType = ShopObjectType.VILLAGER;
+							} else if (args[1].equalsIgnoreCase("sign")) {
+								shopObjType = ShopObjectType.SIGN;
+							}
 						}
 						if (shopType != null && !shopType.hasPermission(player)) {
 							shopType = null;
 						}
+						if (shopObjType != null && !shopObjType.hasPermission(player)) {
+							shopObjType = null;
+						}
 					}
 					if (shopType != null) {
-						Shopkeeper shopkeeper = createNewPlayerShopkeeper(player, block, block.getLocation().add(0, 1.5, 0), shopType, new VillagerShop());
+						Shopkeeper shopkeeper = createNewPlayerShopkeeper(player, block, block.getLocation().add(0, 1.5, 0), shopType, shopObjType.createObject());
 						if (shopkeeper != null) {
 							sendCreatedMessage(player, shopType);
 						}

@@ -58,7 +58,7 @@ public class BlockShop extends ShopObject {
 		Location loc = getActualLocation();
 		if (loc != null) {
 			Block block = loc.getBlock();
-			if (block.getType() == Material.WALL_SIGN) {
+			if (block.getType() == Material.WALL_SIGN || block.getType() == Material.SIGN_POST) {
 				Sign sign = (Sign)block.getState();
 				sign.setLine(0, Settings.signShopFirstLine);
 				sign.setLine(1, name);

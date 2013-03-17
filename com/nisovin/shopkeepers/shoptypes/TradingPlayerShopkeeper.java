@@ -25,7 +25,7 @@ import com.nisovin.shopkeepers.util.ItemType;
 
 public class TradingPlayerShopkeeper extends PlayerShopkeeper {
 
-	private Map<ItemType, Cost> costs;
+	private Map<ItemStack, Cost> costs;
 	
 	public TradingPlayerShopkeeper(ConfigurationSection config) {
 		super(config);
@@ -33,32 +33,39 @@ public class TradingPlayerShopkeeper extends PlayerShopkeeper {
 
 	public TradingPlayerShopkeeper(Player owner, Block chest, Location location, ShopObject shopObject) {
 		super(owner, chest, location, shopObject);
-		this.costs = new HashMap<ItemType, Cost>();
+		this.costs = new HashMap<ItemStack, Cost>();
 	}
 	
 	@Override
 	public void load(ConfigurationSection config) {
 		super.load(config);
-		costs = new HashMap<ItemType, Cost>();
+		costs = new HashMap<ItemStack, Cost>();
 		ConfigurationSection costsSection = config.getConfigurationSection("costs");
 		if (costsSection != null) {
 			for (String key : costsSection.getKeys(false)) {
 				ConfigurationSection itemSection = costsSection.getConfigurationSection(key);
-				ItemType type = new ItemType();
-				Cost cost = new Cost();
-				type.id = itemSection.getInt("id");
-				type.data = (short)itemSection.getInt("data");
-				if (itemSection.contains("enchants")) {
-					type.enchants = itemSection.getString("enchants");
+				ItemStack item;
+				if (itemSection.contains("item")) {
+					item = itemSection.getItemStack("item");
+				} else {
+					ItemType type = new ItemType();
+					type.id = itemSection.getInt("id");
+					type.data = (short)itemSection.getInt("data");
+					if (itemSection.contains("enchants")) {
+						type.enchants = itemSection.getString("enchants");
+					}
+					item = type.getItemStack(1);
 				}
+				Cost cost = new Cost();
 				cost.amount = itemSection.getInt("amount");
-				cost.item1Type = itemSection.getInt("item1type");
-				cost.item1Data = (short)itemSection.getInt("item1data");
-				cost.item1Amount = itemSection.getInt("item1amount");
-				cost.item2Type = itemSection.getInt("item2type");
-				cost.item2Data = (short)itemSection.getInt("item2data");
-				cost.item2Amount = itemSection.getInt("item2amount");
-				costs.put(type, cost);
+				if (itemSection.contains("item1") || itemSection.contains("item2")) {
+					cost.item1 = itemSection.getItemStack("item1");
+					cost.item2 = itemSection.getItemStack("item2");
+				} else {
+					cost.item1 = new ItemStack(itemSection.getInt("item1type"), itemSection.getInt("item1amount"), (short)itemSection.getInt("item1data"));
+					cost.item2 = new ItemStack(itemSection.getInt("item2type"), itemSection.getInt("item2amount"), (short)itemSection.getInt("item2data"));
+				}
+				costs.put(item, cost);
 			}
 		}
 	}
@@ -69,21 +76,13 @@ public class TradingPlayerShopkeeper extends PlayerShopkeeper {
 		config.set("type", "trade");
 		ConfigurationSection costsSection = config.createSection("costs");
 		int count = 0;
-		for (ItemType type : costs.keySet()) {
-			Cost cost = costs.get(type);
+		for (ItemStack item : costs.keySet()) {
+			Cost cost = costs.get(item);
 			ConfigurationSection itemSection = costsSection.createSection(count + "");
-			itemSection.set("id", type.id);
-			itemSection.set("data", type.data);
-			if (type.enchants != null) {
-				itemSection.set("enchants", type.enchants);
-			}
+			itemSection.set("item", item);
 			itemSection.set("amount", cost.amount);
-			itemSection.set("item1type", cost.item1Type);
-			itemSection.set("item1data", cost.item1Data);
-			itemSection.set("item1amount", cost.item1Amount);
-			itemSection.set("item2type", cost.item2Type);
-			itemSection.set("item2data", cost.item2Data);
-			itemSection.set("item2amount", cost.item2Amount);
+			itemSection.set("item1", cost.item1);
+			itemSection.set("item2", cost.item2);
 			count++;
 		}
 	}
@@ -96,20 +95,22 @@ public class TradingPlayerShopkeeper extends PlayerShopkeeper {
 	@Override
 	public List<ItemStack[]> getRecipes() {
 		List<ItemStack[]> recipes = new ArrayList<ItemStack[]>();
-		Map<ItemType, Integer> chestItems = getItemsFromChest();
-		for (ItemType type : costs.keySet()) {
-			if (chestItems.containsKey(type)) {
-				Cost cost = costs.get(type);
-				int chestAmt = chestItems.get(type);
+		Map<ItemStack, Integer> chestItems = getItemsFromChest();
+		for (ItemStack item : costs.keySet()) {
+			if (chestItems.containsKey(item)) {
+				Cost cost = costs.get(item);
+				int chestAmt = chestItems.get(item);
 				if (chestAmt >= cost.amount) {
 					ItemStack[] recipe = new ItemStack[3];
-					if (cost.item1Type > 0 && cost.item1Amount > 0) {
-						recipe[0] = new ItemStack(cost.item1Type, cost.item1Amount, cost.item1Data);
+					if (cost.item1 != null && cost.item1.getTypeId() > 0 && cost.item1.getAmount() > 0) {
+						recipe[0] = cost.item1;
 					}
-					if (cost.item2Type > 0 && cost.item2Amount > 0) {
-						recipe[1] = new ItemStack(cost.item2Type, cost.item2Amount, cost.item2Data);
+					if (cost.item2 != null && cost.item2.getTypeId() > 0 && cost.item2.getAmount() > 0) {
+						recipe[1] = cost.item2;
 					}
-					recipe[2] = type.getItemStack(cost.amount);
+					ItemStack saleItem = item.clone();
+					saleItem.setAmount(cost.amount);
+					recipe[2] = saleItem;
 					recipes.add(recipe);
 				}
 			}
@@ -122,20 +123,21 @@ public class TradingPlayerShopkeeper extends PlayerShopkeeper {
 		Inventory inv = Bukkit.createInventory(player, 27, Settings.editorTitle);
 		
 		// add the sale types
-		Map<ItemType, Integer> typesFromChest = getItemsFromChest();
+		Map<ItemStack, Integer> typesFromChest = getItemsFromChest();
 		int i = 0;
-		for (ItemType type : typesFromChest.keySet()) {
-			Cost cost = costs.get(type);
+		for (ItemStack item : typesFromChest.keySet()) {
+			Cost cost = costs.get(item);
 			if (cost != null) {
-				inv.setItem(i, type.getItemStack(cost.amount));
-				if (cost.item1Type > 0 && cost.item1Amount > 0) {
-					inv.setItem(i + 9, new ItemStack(cost.item1Type, cost.item1Amount, cost.item1Data));
+				item.setAmount(cost.amount);
+				inv.setItem(i, item);
+				if (cost.item1 != null && cost.item1.getTypeId() > 0 && cost.item1.getAmount() > 0) {
+					inv.setItem(i + 9, cost.item1);
 				}
-				if (cost.item2Type > 0 && cost.item2Amount > 0) {
-					inv.setItem(i + 18, new ItemStack(cost.item2Type, cost.item2Amount, cost.item2Data));
+				if (cost.item2 != null && cost.item2.getTypeId() > 0 && cost.item2.getAmount() > 0) {
+					inv.setItem(i + 18, cost.item2);
 				}
 			} else {
-				inv.setItem(i, type.getItemStack(1));
+				inv.setItem(i, item);
 			}
 			i++;
 			if (i > 8) break;
@@ -234,15 +236,11 @@ public class TradingPlayerShopkeeper extends PlayerShopkeeper {
 				if (cost1 != null) {
 					Cost cost = new Cost();
 					cost.amount = item.getAmount();
-					cost.item1Type = cost1.getTypeId();
-					cost.item1Data = cost1.getDurability();
-					cost.item1Amount = cost1.getAmount();
-					if (cost2 != null) {
-						cost.item2Type = cost2.getTypeId();
-						cost.item2Data = cost2.getDurability();
-						cost.item2Amount = cost2.getAmount();
-					}
-					costs.put(new ItemType(item), cost);
+					cost.item1 = cost1;
+					cost.item2 = cost2;
+					ItemStack saleItem = item.clone();
+					saleItem.setAmount(1);
+					costs.put(saleItem, cost);
 				} else {
 					costs.remove(new ItemType(item));
 				}
@@ -260,7 +258,8 @@ public class TradingPlayerShopkeeper extends PlayerShopkeeper {
 		
 		// get type and cost
 		ItemStack item = event.getCurrentItem();
-		ItemType type = new ItemType(item);
+		ItemStack type = item.clone();
+		type.setAmount(1);
 		if (!costs.containsKey(type)) {
 			event.setCancelled(true);
 			return;
@@ -288,20 +287,18 @@ public class TradingPlayerShopkeeper extends PlayerShopkeeper {
 		}
 		
 		// add traded items to chest
-		ItemStack cost1 = cost.getItem1();
-		ItemStack cost2 = cost.getItem2();
-		if (cost1 == null) {
+		if (cost.item1 == null) {
 			event.setCancelled(true);
 			return;
 		} else {
-			boolean added = addToInventory(cost1, contents);
+			boolean added = addToInventory(cost.item1, contents);
 			if (!added) {
 				event.setCancelled(true);
 				return;
 			}
 		}
-		if (cost2 != null) {
-			boolean added = addToInventory(cost2, contents);
+		if (cost.item2 != null) {
+			boolean added = addToInventory(cost.item2, contents);
 			if (!added) {
 				event.setCancelled(true);
 				return;
@@ -312,19 +309,20 @@ public class TradingPlayerShopkeeper extends PlayerShopkeeper {
 		inv.setContents(contents);
 	}
 	
-	private Map<ItemType, Integer> getItemsFromChest() {
-		Map<ItemType, Integer> map = new LinkedHashMap<ItemType, Integer>();
+	private Map<ItemStack, Integer> getItemsFromChest() {
+		Map<ItemStack, Integer> map = new LinkedHashMap<ItemStack, Integer>();
 		Block chest = Bukkit.getWorld(world).getBlockAt(chestx, chesty, chestz);
 		if (chest.getType() == Material.CHEST) {
 			Inventory inv = ((Chest)chest.getState()).getInventory();
 			ItemStack[] contents = inv.getContents();
 			for (ItemStack item : contents) {
-				if (item != null && item.getType() != Material.AIR && item.getType() != Material.WRITTEN_BOOK) {
-					ItemType si = new ItemType(item);
-					if (map.containsKey(si)) {
-						map.put(si, map.get(si) + item.getAmount());
+				if (item != null && item.getType() != Material.AIR) {
+					ItemStack i = item.clone();
+					i.setAmount(1);
+					if (map.containsKey(i)) {
+						map.put(i, map.get(i) + item.getAmount());
 					} else {
-						map.put(si, item.getAmount());
+						map.put(i, item.getAmount());
 					}
 				}
 			}
@@ -334,31 +332,9 @@ public class TradingPlayerShopkeeper extends PlayerShopkeeper {
 	
 	private class Cost {
 		
-		int amount;
-		
-		int item1Type;
-		short item1Data;
-		int item1Amount;
-		
-		int item2Type;
-		short item2Data;
-		int item2Amount;
-		
-		ItemStack getItem1() {
-			if (item1Type > 0 && item1Amount > 0) {
-				return new ItemStack(item1Type, item1Amount, item1Data);
-			} else {
-				return null;
-			}
-		}
-		
-		ItemStack getItem2() {
-			if (item2Type > 0 && item2Amount > 0) {
-				return new ItemStack(item2Type, item2Amount, item2Data);
-			} else {
-				return null;
-			}
-		}
+		int amount;		
+		ItemStack item1;
+		ItemStack item2;
 		
 	}
 

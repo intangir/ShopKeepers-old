@@ -2,7 +2,6 @@ package com.nisovin.shopkeepers.shoptypes;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
@@ -202,6 +201,9 @@ public class AdminShopkeeper extends Shopkeeper {
 	 * @return
 	 */
 	private ItemStack loadItemStack(ConfigurationSection config) {
+		if (config.contains("item")) {
+			return config.getItemStack("item");
+		}
 		ItemStack item = new ItemStack(config.getInt("id"), config.getInt("amt"), (short)config.getInt("data"));
 		if (config.contains("name") || config.contains("lore") || config.contains("color")) {
 			ItemMeta meta = item.getItemMeta();
@@ -240,7 +242,8 @@ public class AdminShopkeeper extends Shopkeeper {
 	 * @param config
 	 */
 	private void saveItemStack(ItemStack item, ConfigurationSection config) {
-		config.set("id", item.getTypeId());
+		config.set("item", item);
+		/*config.set("id", item.getTypeId());
 		config.set("data", item.getDurability());
 		config.set("amt", item.getAmount());
 		
@@ -276,7 +279,7 @@ public class AdminShopkeeper extends Shopkeeper {
 				list.add(enchant.getId() + " " + enchants.get(enchant));
 			}
 			config.set("enchants", list);
-		}
+		}*/
 	}
 	
 }

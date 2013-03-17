@@ -13,9 +13,14 @@ public enum EditorClickResult {
 	NOTHING,
 	
 	/**
-	 * Some changes have occured, so save, but editing will continue.
+	 * Some changes have occurred, so save, but editing will continue.
 	 */
 	SAVE_AND_CONTINUE,
+	
+	/**
+	 * The player wants to change the shopkeeper name.
+	 */
+	SET_NAME,
 	
 	/**
 	 * Done editing, so save and close the editor window.

@@ -2,6 +2,7 @@ package com.nisovin.shopkeepers;
 
 import java.util.List;
 
+import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -32,11 +33,11 @@ public class CreateListener implements Listener {
 		if (event.getAction() == Action.LEFT_CLICK_AIR || event.getAction() == Action.LEFT_CLICK_BLOCK) return;
 		
 		// get player, ignore creative mode
-		Player player = event.getPlayer();
+		final Player player = event.getPlayer();
 		if (player.getGameMode() == GameMode.CREATIVE) return;
 		
 		// make sure item in hand is the creation item
-		ItemStack inHand = player.getItemInHand();
+		final ItemStack inHand = player.getItemInHand();
 		if (inHand == null || inHand.getTypeId() != Settings.shopCreationItem || inHand.getDurability() != Settings.shopCreationItemData) {
 			return;
 		}
@@ -86,7 +87,7 @@ public class CreateListener implements Listener {
 				if (event.useInteractedBlock() != Result.DENY) {
 					// check if it's recently placed
 					List<String> list = plugin.recentlyPlacedChests.get(playerName);
-					if (list == null || !list.contains(block.getWorld().getName() + "," + block.getX() + "," + block.getY() + "," + block.getZ())) {
+					if (Settings.requireChestRecentlyPlaced && (list == null || !list.contains(block.getWorld().getName() + "," + block.getX() + "," + block.getY() + "," + block.getZ()))) {
 						// chest not recently placed
 						plugin.sendMessage(player, Settings.msgChestNotPlaced);
 					} else {
@@ -99,11 +100,11 @@ public class CreateListener implements Listener {
 				}
 				event.setCancelled(true);
 				
-			} else if (plugin.selectedChest.containsKey(playerName) && validSignFace(event.getBlockFace())) {
-				// placing villager
+			} else if (plugin.selectedChest.containsKey(playerName)) {
+				// placing shop
 				Block chest = plugin.selectedChest.get(playerName);
 				
-				//
+				// check for too far
 				if (!chest.getWorld().equals(block.getWorld()) || (int)chest.getLocation().distance(block.getLocation()) > Settings.maxChestDistance) {
 					plugin.sendMessage(player, Settings.msgChestTooFar);
 				} else {
@@ -112,6 +113,10 @@ public class CreateListener implements Listener {
 					if (shopType == null) shopType = ShopkeeperType.next(player, null);
 					ShopObjectType objType = plugin.selectedShopObjectType.get(playerName);
 					if (objType == null) objType = ShopObjectType.next(player, null);
+					
+					if (objType == ShopObjectType.SIGN && !validSignFace(event.getBlockFace())) {
+						return;
+					}
 					
 					if (shopType != null && objType != null) {
 						ShopObject obj = objType.createObject();
@@ -138,6 +143,18 @@ public class CreateListener implements Listener {
 								// clear selection vars
 								plugin.selectedShopType.remove(playerName);
 								plugin.selectedChest.remove(playerName);
+								// remove creation item manually
+								event.setCancelled(true);
+								Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+									public void run() {
+										if (inHand.getAmount() <= 1) {
+											player.setItemInHand(null);
+										} else {
+											inHand.setAmount(inHand.getAmount() - 1);
+											player.setItemInHand(inHand);
+										}
+									}
+								});
 							}
 						}
 					}

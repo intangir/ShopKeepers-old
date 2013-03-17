@@ -7,9 +7,9 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.inventory.ItemStack;
 
 import com.nisovin.shopkeepers.ShopkeepersPlugin;
-import com.nisovin.shopkeepers.shoptypes.PlayerShopkeeper;
 
 public abstract class LivingEntityShop extends ShopObject {
 	
@@ -48,8 +48,12 @@ public abstract class LivingEntityShop extends ShopObject {
 			Entity[] entities = loc.getChunk().getEntities();
 			for (Entity e : entities) {
 				if (e.getType() == getEntityType() && e.getUniqueId().toString().equalsIgnoreCase(uuid) && e.isValid()) {
-					entity = (LivingEntity)e;
+					entity = (LivingEntity)e;					
 					entity.setHealth(entity.getMaxHealth());
+					String name = shopkeeper.getName();
+					if (name != null && !name.isEmpty()) {
+						ShopkeepersPlugin.getVolatileCode().setEntityName(entity, name);
+					}
 					entity.teleport(loc);
 					break;
 				}
@@ -59,9 +63,9 @@ public abstract class LivingEntityShop extends ShopObject {
 		if (entity == null || !entity.isValid()) {
 			entity = (LivingEntity)w.spawnEntity(loc, getEntityType());
 			uuid = entity.getUniqueId().toString();
-			if (shopkeeper instanceof PlayerShopkeeper) {
-				String owner = ((PlayerShopkeeper)shopkeeper).getOwner();
-				ShopkeepersPlugin.getVolatileCode().setEntityName(entity, owner + "'s shop");
+			String name = shopkeeper.getName();
+			if (name != null && !name.isEmpty()) {
+				ShopkeepersPlugin.getVolatileCode().setEntityName(entity, name);
 			}
 		}
 		if (entity != null && entity.isValid()) {
@@ -95,6 +99,21 @@ public abstract class LivingEntityShop extends ShopObject {
 			return null;
 		} else {
 			return entity.getLocation();
+		}
+	}
+	
+	@Override
+	public void setName(String name) {
+		if (entity != null && entity.isValid()) {
+			ShopkeepersPlugin.getVolatileCode().setEntityName(entity, name);
+		}
+	}
+	
+	@Override
+	public void setItem(ItemStack item) {
+		if (entity != null && entity.isValid()) {
+			entity.getEquipment().setItemInHand(item);
+			entity.getEquipment().setItemInHandDropChance(0);
 		}
 	}
 	

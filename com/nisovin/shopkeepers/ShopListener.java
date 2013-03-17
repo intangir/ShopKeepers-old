@@ -22,6 +22,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
@@ -113,6 +114,11 @@ class ShopListener implements Listener {
 						plugin.save();
 					} else if (result == EditorClickResult.SAVE_AND_CONTINUE) {
 						plugin.save();
+					} else if (result == EditorClickResult.SET_NAME) {
+						// close editor window and ask for new name
+						plugin.closeTradingForShopkeeper(id);
+						plugin.naming.put(event.getWhoClicked().getName(), id);
+						plugin.sendMessage((Player)event.getWhoClicked(), Settings.msgTypeNewName);
 					}
 				} else {
 					event.setCancelled(true);
@@ -182,6 +188,25 @@ class ShopListener implements Listener {
 					}
 				}
 			}
+		}
+	}
+	
+	@EventHandler
+	public void onChat(AsyncPlayerChatEvent event) {
+		final Player player = event.getPlayer();
+		final String name = player.getName();
+		if (plugin.naming.containsKey(name)) {
+			event.setCancelled(true);
+			final String message = event.getMessage();
+			Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+				public void run() {
+					String id = plugin.naming.remove(name);
+					Shopkeeper shopkeeper = plugin.activeShopkeepers.get(id);
+					shopkeeper.setName(message);
+					plugin.save();
+					plugin.sendMessage(player, Settings.msgNameSet);
+				}
+			});
 		}
 	}
 	

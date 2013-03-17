@@ -24,6 +24,10 @@ public class VolatileCode_1_5_R1 implements VolatileCodeHandle {
 
 		try {
 			EntityVillager villager = new EntityVillager(((CraftPlayer)player).getHandle().world, 0);
+			String name = shopkeeper.getName();
+			if (name != null && !name.isEmpty()) {
+				villager.setCustomName(name);
+			}
 			
 			Field recipeListField = EntityVillager.class.getDeclaredField(Settings.recipeListVar);
 			recipeListField.setAccessible(true);

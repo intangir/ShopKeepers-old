@@ -2,13 +2,17 @@ package com.nisovin.shopkeepers;
 
 import java.util.List;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import com.nisovin.shopkeepers.shopobjects.ShopObject;
 
@@ -19,6 +23,7 @@ public abstract class Shopkeeper {
 	protected int x;
 	protected int y;
 	protected int z;
+	protected String name;
 
 	public Shopkeeper(ConfigurationSection config) {
 		load(config);
@@ -44,6 +49,7 @@ public abstract class Shopkeeper {
 	 * @param config the config section
 	 */
 	public void load(ConfigurationSection config) {
+		name = config.getString("name");
 		world = config.getString("world");
 		x = config.getInt("x");
 		y = config.getInt("y");
@@ -58,6 +64,7 @@ public abstract class Shopkeeper {
 	 * @param config the config section
 	 */
 	public void save(ConfigurationSection config) {
+		config.set("name", name);
 		config.set("world", world);
 		config.set("x", x);
 		config.set("y", y);
@@ -70,6 +77,15 @@ public abstract class Shopkeeper {
 	 * @return the shopkeeper type
 	 */
 	public abstract ShopkeeperType getType();
+	
+	public String getName() {
+		return name;
+	}
+	
+	public void setName(String name) {
+		this.name = name;
+		shopObject.setName(name);
+	}
 	
 	public ShopObject getShopObject() {
 		return shopObject;
@@ -180,7 +196,34 @@ public abstract class Shopkeeper {
 	 * @param event the click event
 	 * @return how the main plugin should handle the click
 	 */
-	public abstract EditorClickResult onEditorClick(InventoryClickEvent event);	
+	public EditorClickResult onEditorClick(InventoryClickEvent event) {
+		// check for special buttons
+		if (event.getRawSlot() == 8) {
+			// it's the name button - ask for new name
+			event.setCancelled(true);
+			return EditorClickResult.SET_NAME;
+		} else if (event.getRawSlot() == 17) {
+			// it's the cycle button - cycle to next type
+			if (event.getCursor() != null && event.getCursor().getType() != Material.AIR) {
+				shopObject.setItem(event.getCursor().clone());
+			} else {
+				shopObject.cycleType();
+				ItemStack typeItem = shopObject.getTypeItem();
+				if (typeItem != null) {
+					event.getInventory().setItem(17, setItemStackName(typeItem, Settings.msgButtonType));
+				}
+			}
+			event.setCancelled(true);
+			return EditorClickResult.SAVE_AND_CONTINUE;
+		} else if (event.getRawSlot() == 26) {
+			// it's the delete button - remove the shopkeeper
+			delete();
+			event.setCancelled(true);
+			return EditorClickResult.DELETE_SHOPKEEPER;
+		} else {
+			return EditorClickResult.NOTHING;
+		}
+	}
 	
 	/**
 	 * Called when a player closes the editor window.
@@ -196,5 +239,29 @@ public abstract class Shopkeeper {
 	
 	protected void closeInventory(HumanEntity player) {
 		ShopkeepersPlugin.plugin.closeInventory(player);
+	}
+	
+	protected void setActionButtons(Inventory inv) {
+		inv.setItem(8, createItemStackWithName(Settings.nameItem, Settings.msgButtonName));
+		ItemStack typeItem = shopObject.getTypeItem();
+		if (typeItem != null) {
+			inv.setItem(17, setItemStackName(typeItem, Settings.msgButtonType));
+		}
+		inv.setItem(26, createItemStackWithName(Settings.deleteItem, Settings.msgButtonDelete));
+	}
+	
+	protected ItemStack createItemStackWithName(int type, String name) {
+		ItemStack item = new ItemStack(type, 1);
+		ItemMeta meta = item.getItemMeta();
+		meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', name));
+		item.setItemMeta(meta);
+		return item;
+	}
+	
+	protected ItemStack setItemStackName(ItemStack item, String name) {
+		ItemMeta meta = item.getItemMeta();
+		meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', name));
+		item.setItemMeta(meta);
+		return item;
 	}
 }

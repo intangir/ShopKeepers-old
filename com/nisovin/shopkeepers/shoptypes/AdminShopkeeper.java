@@ -21,7 +21,6 @@ import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 
-import com.nisovin.shopkeepers.EditorClickResult;
 import com.nisovin.shopkeepers.Settings;
 import com.nisovin.shopkeepers.Shopkeeper;
 import com.nisovin.shopkeepers.ShopkeeperType;
@@ -106,39 +105,12 @@ public class AdminShopkeeper extends Shopkeeper {
 				inv.setItem(i + 18, recipe[2]);
 			}
 			// add the special buttons
-			inv.setItem(8, new ItemStack(Settings.saveItem));
-			inv.setItem(17, shopObject.getTypeItem());
-			inv.setItem(26, new ItemStack(Settings.deleteItem));
+			setActionButtons(inv);
 			// show editing inventory
 			player.openInventory(inv);
 			return true;
 		} else {
 			return false;
-		}
-	}
-	
-	@Override
-	public EditorClickResult onEditorClick(InventoryClickEvent event) {
-		// check for special buttons
-		if (event.getRawSlot() == 8) {
-			// it's the save button - get the trades and save them to the shopkeeper
-			Inventory inv = event.getInventory();
-			saveEditor(inv, event.getWhoClicked());
-			event.setCancelled(true);
-			return EditorClickResult.DONE_EDITING;
-		} else if (event.getRawSlot() == 17) {
-			// it's the cycle button - cycle to next profession
-			shopObject.cycleType();
-			event.getInventory().setItem(17, shopObject.getTypeItem());
-			event.setCancelled(true);
-			return EditorClickResult.SAVE_AND_CONTINUE;
-		} else if (event.getRawSlot() == 26) {
-			// it's the delete button - remove the shopkeeper
-			delete();
-			event.setCancelled(true);
-			return EditorClickResult.DELETE_SHOPKEEPER;
-		} else {
-			return EditorClickResult.NOTHING;
 		}
 	}
 

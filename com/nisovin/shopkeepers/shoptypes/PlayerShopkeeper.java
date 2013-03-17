@@ -2,7 +2,6 @@ package com.nisovin.shopkeepers.shoptypes;
 
 import java.util.Map;
 
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
@@ -12,7 +11,6 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 
 import com.nisovin.shopkeepers.EditorClickResult;
 import com.nisovin.shopkeepers.Settings;
@@ -107,23 +105,7 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 			event.setCancelled(true);
 			return EditorClickResult.NOTHING;
 		}
-		if (event.getRawSlot() == 8) {
-			// save
-			event.setCancelled(true);
-			saveEditor(event.getInventory());
-			return EditorClickResult.DONE_EDITING;
-		} else if (event.getRawSlot() == 17) {
-			// change profession
-			event.setCancelled(true);
-			shopObject.cycleType();
-			event.getInventory().setItem(17, setItemStackName(shopObject.getTypeItem(), Settings.msgButtonType));
-			return EditorClickResult.SAVE_AND_CONTINUE;
-		} else if (event.getRawSlot() == 26) {
-			// delete
-			event.setCancelled(true);
-			delete();
-			return EditorClickResult.DELETE_SHOPKEEPER;
-		} else if (event.getRawSlot() >= 18 && event.getRawSlot() <= 25) {
+		if (event.getRawSlot() >= 18 && event.getRawSlot() <= 25) {
 			// change low cost
 			event.setCancelled(true);
 			ItemStack item = event.getCurrentItem();
@@ -153,6 +135,7 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 					item.setAmount(1);
 				}
 			}
+			return EditorClickResult.NOTHING;
 		} else if (event.getRawSlot() >= 9 && event.getRawSlot() <= 16) {
 			// change high cost
 			event.setCancelled(true);
@@ -183,8 +166,10 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 					item.setAmount(1);
 				}
 			}
+			return EditorClickResult.NOTHING;
+		} else {
+			return super.onEditorClick(event);
 		}
-		return EditorClickResult.NOTHING;
 	}
 
 	@Override
@@ -259,27 +244,6 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 				inv.setItem(column + 9, new ItemStack(Settings.highZeroItem));
 			}
 		}
-	}
-	
-	protected void setActionButtons(Inventory inv) {
-		inv.setItem(8, createItemStackWithName(Settings.saveItem, Settings.msgButtonSave));
-		inv.setItem(17, setItemStackName(shopObject.getTypeItem(), Settings.msgButtonType));
-		inv.setItem(26, createItemStackWithName(Settings.deleteItem, Settings.msgButtonDelete));
-	}
-	
-	private ItemStack createItemStackWithName(int type, String name) {
-		ItemStack item = new ItemStack(type, 1);
-		ItemMeta meta = item.getItemMeta();
-		meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', name));
-		item.setItemMeta(meta);
-		return item;
-	}
-	
-	private ItemStack setItemStackName(ItemStack item, String name) {
-		ItemMeta meta = item.getItemMeta();
-		meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', name));
-		item.setItemMeta(meta);
-		return item;
 	}
 	
 	protected int getCostFromColumn(Inventory inv, int column) {

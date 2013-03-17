@@ -3,6 +3,7 @@ package com.nisovin.shopkeepers;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -49,6 +50,7 @@ public class ShopkeepersPlugin extends JavaPlugin {
 	Map<String, List<Shopkeeper>> allShopkeepersByChunk = new HashMap<String, List<Shopkeeper>>();
 	Map<String, Shopkeeper> activeShopkeepers = new HashMap<String, Shopkeeper>();
 	Map<String, String> editing = new HashMap<String, String>();
+	Map<String, String> naming = Collections.synchronizedMap(new HashMap<String, String>());
 	Map<String, String> purchasing = new HashMap<String, String>();
 	Map<String, List<String>> recentlyPlacedChests = new HashMap<String, List<String>>();
 	Map<String, ShopkeeperType> selectedShopType = new HashMap<String, ShopkeeperType>();
@@ -309,7 +311,7 @@ public class ShopkeepersPlugin extends JavaPlugin {
 						} else if (args[0].toLowerCase().startsWith("trad")) {
 							shopType = ShopkeeperType.PLAYER_TRADE;
 						}
-						if (!shopType.hasPermission(player)) {
+						if (shopType != null && !shopType.hasPermission(player)) {
 							shopType = null;
 						}
 					}

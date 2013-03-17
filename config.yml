@@ -11,6 +11,7 @@ create-player-shop-with-command: false
 simulate-right-click-on-command: true
 require-chest-recently-placed: true
 protect-chests: true
+delete-shopkeeper-on-break-chest: false
 max-shops-per-player: 0
 max-chest-distance: 15
 
@@ -25,7 +26,7 @@ enable-sign-shops: true
 sign-shop-first-line: "[SHOP]"
 
 editor-title: "Shopkeeper Editor"
-save-item: 133
+name-item: 145
 delete-item: 51
 
 currency-item: 388
@@ -40,8 +41,8 @@ high-zero-item: 341
 
 language: en
 
-msg-button-save: "&aSave"
-msg-button-type: "&eChoose Appearance"
+msg-button-name: "&aSet Shop Name"
+msg-button-type: "&aChoose Appearance"
 msg-button-delete: "&4Delete"
 
 msg-selected-normal-shop: "&aNormal shopkeeper selected (sells items to players)."
@@ -54,6 +55,8 @@ msg-chest-too-far: "&aThe shopkeeper's chest is too far away!"
 msg-chest-not-placed: "&aYou must select a chest you have recently placed."
 msg-shop-create-fail: "&aYou cannot create a shopkeeper there."
 msg-too-many-shops: "&aYou have too many shops."
+msg-type-new-name: "&aPlease type the shop's name into the chat."
+msg-name-set: "&aThe shop's name has been set!"
 
 msg-player-shop-created: |
     &aShopkeeper created!

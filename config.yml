@@ -21,8 +21,9 @@ shop-creation-item-name: ""
 deleting-player-shop-returns-egg: false
 
 enable-villager-shops: true
-
 enable-sign-shops: true
+enable-witch-shops: true
+
 sign-shop-first-line: "[SHOP]"
 
 editor-title: "Shopkeeper Editor"

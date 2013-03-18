@@ -15,11 +15,14 @@ import org.bukkit.Chunk;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.entity.Monster;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
@@ -207,6 +210,20 @@ class ShopListener implements Listener {
 					plugin.sendMessage(player, Settings.msgNameSet);
 				}
 			});
+		}
+	}
+
+	@EventHandler
+	void onEntityDamage(EntityDamageEvent event) {
+		// don't allow damaging shopkeepers!
+		if (plugin.activeShopkeepers.containsKey("entity" + event.getEntity().getEntityId())) {
+			event.setCancelled(true);
+			if (event instanceof EntityDamageByEntityEvent) {
+				EntityDamageByEntityEvent evt = (EntityDamageByEntityEvent)event;
+				if (evt.getDamager() instanceof Monster) {
+					evt.getDamager().remove();
+				}
+			}
 		}
 	}
 	

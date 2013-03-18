@@ -127,6 +127,9 @@ public class ShopkeepersPlugin extends JavaPlugin {
 		if (Settings.enableSignShops) {
 			pm.registerEvents(new BlockListener(this), this);
 		}
+		if (Settings.enableWitchShops) {
+			pm.registerEvents(new WitchListener(this), this);
+		}
 		if (Settings.blockVillagerSpawns) {
 			pm.registerEvents(new BlockSpawnListener(), this);
 		}
@@ -338,7 +341,17 @@ public class ShopkeepersPlugin extends JavaPlugin {
 					}
 				} else if (player.hasPermission("shopkeeper.admin")) {
 					// create the admin shopkeeper
-					Shopkeeper shopkeeper = createNewAdminShopkeeper(block.getLocation().add(0, 1.5, 0), 0);
+					ShopObjectType shopObjType = ShopObjectType.VILLAGER;
+					Location loc = block.getLocation().add(0, 1.5, 0);
+					if (args.length > 0) {
+						if (args[0].equals("sign")) {
+							shopObjType = ShopObjectType.SIGN;
+							loc = block.getLocation();
+						} else if (args[0].equals("witch")) {
+							shopObjType = ShopObjectType.WITCH;
+						}
+					}
+					Shopkeeper shopkeeper = createNewAdminShopkeeper(loc, shopObjType.createObject());
 					if (shopkeeper != null) {
 						sendMessage(player, Settings.msgAdminShopCreated);
 					}
@@ -361,11 +374,7 @@ public class ShopkeepersPlugin extends JavaPlugin {
 	 * @param profession the shopkeeper's profession, a number from 0 to 5
 	 * @return the shopkeeper created
 	 */
-	public Shopkeeper createNewAdminShopkeeper(Location location, int profession) {
-		// make sure profession is valid
-		if (profession < 0 || profession > 5) {
-			profession = 0;
-		}
+	public Shopkeeper createNewAdminShopkeeper(Location location, ShopObject shopObject) {
 		// create the shopkeeper (and spawn it)
 		Shopkeeper shopkeeper = new AdminShopkeeper(location, new VillagerShop());
 		shopkeeper.spawn();
@@ -512,6 +521,33 @@ public class ShopkeepersPlugin extends JavaPlugin {
 			return true;
 		}
 		return false;
+	}
+	
+	void handleShopkeeperInteraction(Player player, Shopkeeper shopkeeper) {
+		if (shopkeeper != null && player.isSneaking()) {
+			// modifying a shopkeeper
+			ShopkeepersPlugin.debug("  Opening editor window...");
+			boolean isEditing = shopkeeper.onEdit(player);
+			if (isEditing) {
+				ShopkeepersPlugin.debug("  Editor window opened");
+				plugin.editing.put(player.getName(), shopkeeper.getId());
+			} else {
+				ShopkeepersPlugin.debug("  Editor window NOT opened");
+			}
+		} else if (shopkeeper != null) {
+			// trading with shopkeeper
+			ShopkeepersPlugin.debug("  Opening trade window...");
+			OpenTradeEvent evt = new OpenTradeEvent(player, shopkeeper);
+			Bukkit.getPluginManager().callEvent(evt);
+			if (evt.isCancelled()) {
+				ShopkeepersPlugin.debug("  Trade cancelled by another plugin");
+				return;
+			}
+			// open trade window
+			plugin.openTradeWindow(shopkeeper, player);
+			plugin.purchasing.put(player.getName(), shopkeeper.getId());
+			ShopkeepersPlugin.debug("  Trade window opened");
+		}
 	}
 	
 	void closeTradingForShopkeeper(final String id) {

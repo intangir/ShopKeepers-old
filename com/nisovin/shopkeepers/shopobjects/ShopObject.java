@@ -49,6 +49,8 @@ public abstract class ShopObject {
 				return new VillagerShop();				
 			} else if (obj.equals("block")) {
 				return new BlockShop();
+			} else if (obj.equals("witch")) {
+				return new WitchShop();
 			}
 		}
 		return new VillagerShop();

@@ -5,9 +5,7 @@ import java.util.Map;
 
 import org.bukkit.entity.Player;
 
-import com.nisovin.shopkeepers.shopobjects.BlockShop;
-import com.nisovin.shopkeepers.shopobjects.ShopObject;
-import com.nisovin.shopkeepers.shopobjects.VillagerShop;
+import com.nisovin.shopkeepers.shopobjects.*;
 
 public enum ShopObjectType {
 
@@ -15,9 +13,11 @@ public enum ShopObjectType {
 	
 	VILLAGER(1, "villager"),
 	
-	SIGN(2, "sign");
+	SIGN(2, "sign"),
 	
-	private static final int MAX_ID = 2;
+	WITCH(3, "witch");
+	
+	private static final int MAX_ID = 3;
 	
 	private final int id;
 	private final String permission;
@@ -44,6 +44,8 @@ public enum ShopObjectType {
 			return new VillagerShop();
 		} else if (id == 2) {
 			return new BlockShop();
+		} else if (id == 3) {
+			return new WitchShop();
 		} else {
 			return null;
 		}

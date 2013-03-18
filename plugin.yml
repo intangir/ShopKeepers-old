@@ -52,3 +52,6 @@ permissions:
     shopkeeper.sign:
         description: Create a sign shopkeeper
         default: true
+    shopkeeper.witch:
+        description: Create a witch shopkeeper
+        default: op

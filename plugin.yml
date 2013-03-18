@@ -54,4 +54,4 @@ permissions:
         default: true
     shopkeeper.witch:
         description: Create a witch shopkeeper
-        default: op
+        default: true

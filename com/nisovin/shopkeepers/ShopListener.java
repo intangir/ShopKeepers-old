@@ -6,9 +6,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
@@ -41,8 +43,11 @@ class ShopListener implements Listener {
 
 	ShopkeepersPlugin plugin;
 	
+	Map<String, Long> lastPurchase;
+	
 	public ShopListener(ShopkeepersPlugin plugin) {
 		this.plugin = plugin;
+		this.lastPurchase = new HashMap<String, Long>();
 	}
 	
 	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
@@ -85,9 +90,10 @@ class ShopListener implements Listener {
 	void onInventoryClick(InventoryClickEvent event) {
 		// shopkeeper editor click
 		if (event.getInventory().getTitle().equals(Settings.editorTitle)) {
-			if (plugin.editing.containsKey(event.getWhoClicked().getName())) {
+			String playerName = event.getWhoClicked().getName();
+			if (plugin.editing.containsKey(playerName)) {
 				// get the shopkeeper being edited
-				String id = plugin.editing.get(event.getWhoClicked().getName());
+				String id = plugin.editing.get(playerName);
 				Shopkeeper shopkeeper = plugin.activeShopkeepers.get(id);
 				if (shopkeeper != null) {
 					// editor click
@@ -132,8 +138,10 @@ class ShopListener implements Listener {
 				plugin.closeInventory(event.getWhoClicked());
 			}
 		}
+		
 		// purchase click
 		if (event.getInventory().getName().equals("mob.villager") && event.getRawSlot() == 2 && plugin.purchasing.containsKey(event.getWhoClicked().getName())) {
+			String playerName = event.getWhoClicked().getName();
 			// prevent shift clicks
 			if (event.isShiftClick()) {
 				event.setCancelled(true);
@@ -145,6 +153,15 @@ class ShopListener implements Listener {
 			Shopkeeper shopkeeper = plugin.activeShopkeepers.get(id);
 			ItemStack item = event.getCurrentItem();
 			if (shopkeeper != null && item != null) {
+				// prevent double-clicks (ugly fix, but necessary to prevent dupes)
+				Long last = lastPurchase.remove(playerName);
+				long curr = System.currentTimeMillis();
+				if (last != null && last.longValue() > curr - 500) {
+					event.setCancelled(true);
+					return;
+				}
+				lastPurchase.put(playerName, curr);
+				
 				// verify purchase
 				ItemStack item1 = event.getInventory().getItem(0);
 				ItemStack item2 = event.getInventory().getItem(1);
@@ -176,7 +193,7 @@ class ShopListener implements Listener {
 						if (isNew) writer.append("TIME,PLAYER,SHOP TYPE,SHOP POS,OWNER,ITEM TYPE,DATA,QUANTITY,CURRENCY 1,CURRENCY 2\n");
 						writer.append("\"" + 
 								new SimpleDateFormat("HH:mm:ss").format(new Date()) + "\",\"" + 
-								event.getWhoClicked().getName() + "\",\"" + 
+								playerName + "\",\"" + 
 								shopkeeper.getType().name() + "\",\"" + 
 								shopkeeper.getPositionString() + "\",\"" + 
 								owner + "\",\"" + 
@@ -205,7 +222,11 @@ class ShopListener implements Listener {
 				public void run() {
 					String id = plugin.naming.remove(name);
 					Shopkeeper shopkeeper = plugin.activeShopkeepers.get(id);
-					shopkeeper.setName(message);
+					if (message.equals("-")) {
+						shopkeeper.setName("");
+					} else {
+						shopkeeper.setName(message);
+					}
 					plugin.save();
 					plugin.sendMessage(player, Settings.msgNameSet);
 				}

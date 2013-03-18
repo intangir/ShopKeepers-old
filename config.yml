@@ -50,13 +50,18 @@ msg-selected-normal-shop: "&aNormal shopkeeper selected (sells items to players)
 msg-selected-book-shop: "&aBook shopkeeper selected (sell books)."
 msg-selected-buy-shop: "&aBuying shopkeeper selected (buys items from players)."
 msg-selected-trade-shop: "&aTrading shopkeeper selected (trades items with players)."
+
+msg-selected-villager-shop: "&aVillager shop selected."
+msg-selected-sign-shop: "&aSign shop selected."
+msg-selected-witch-shop: "&aWitch shop selected."
+
 msg-selected-chest: "&aChest selected! Right click a block to place your shopkeeper."
 msg-must-select-chest: "&aYou must right-click a chest before placing your shopkeeper."
 msg-chest-too-far: "&aThe shopkeeper's chest is too far away!"
 msg-chest-not-placed: "&aYou must select a chest you have recently placed."
 msg-shop-create-fail: "&aYou cannot create a shopkeeper there."
 msg-too-many-shops: "&aYou have too many shops."
-msg-type-new-name: "&aPlease type the shop's name into the chat."
+msg-type-new-name: "&aPlease type the shop's name into the chat.\n  &aType a dash (-) to remove the name."
 msg-name-set: "&aThe shop's name has been set!"
 
 msg-player-shop-created: |

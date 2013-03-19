@@ -43,7 +43,7 @@ import com.nisovin.shopkeepers.volatilecode.*;
 public class ShopkeepersPlugin extends JavaPlugin {
 
 	static ShopkeepersPlugin plugin;
-	static VolatileCodeHandle volatileCodeHandle;
+	static VolatileCodeHandle volatileCodeHandle = null;
 
 	private boolean debug = false;
 	
@@ -75,10 +75,19 @@ public class ShopkeepersPlugin extends JavaPlugin {
 				Class.forName("net.minecraft.server.v1_4_R1.MinecraftServer");
 				volatileCodeHandle = new VolatileCode_1_4_R1();
 			} catch (ClassNotFoundException e_1_4_r1) {
-				getLogger().severe("Incompatible server version: Shopkeepers plugin cannot be enabled.");
-				this.setEnabled(false);
-				return;
+				try {
+					Class.forName("net.minecraft.server.MinecraftServer");
+					if (getServer().getVersion().contains("1.5")) {
+						volatileCodeHandle = new VolatileCode_1_5_Z();
+					}
+				} catch (ClassNotFoundException e_1_5_null) {					
+				}
 			}
+		}
+		if (volatileCodeHandle == null) {
+			getLogger().severe("Incompatible server version: Shopkeepers plugin cannot be enabled.");
+			this.setEnabled(false);
+			return;
 		}
 		
 		// get config

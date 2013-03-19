@@ -117,7 +117,7 @@ public class WrittenBookPlayerShopkeeper extends PlayerShopkeeper {
 	}
 
 	@Override
-	protected void saveEditor(Inventory inv) {
+	protected void saveEditor(Inventory inv, Player player) {
 		for (int i = 0; i < 8; i++) {
 			ItemStack item = inv.getItem(i);
 			if (item != null && item.getType() == Material.WRITTEN_BOOK) {

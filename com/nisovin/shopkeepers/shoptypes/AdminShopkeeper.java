@@ -9,7 +9,6 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event.Result;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -116,10 +115,11 @@ public class AdminShopkeeper extends Shopkeeper {
 	@Override
 	public void onEditorClose(InventoryCloseEvent event) {
 		Inventory inv = event.getInventory();
-		saveEditor(inv, event.getPlayer());
+		saveEditor(inv, (Player)event.getPlayer());
 	}
 	
-	private void saveEditor(Inventory inv, HumanEntity player) {
+	@Override
+	protected void saveEditor(Inventory inv, Player player) {
 		List<ItemStack[]> recipes = new ArrayList<ItemStack[]>();
 		for (int i = 0; i < 8; i++) {
 			ItemStack cost1 = inv.getItem(i);
@@ -132,7 +132,7 @@ public class AdminShopkeeper extends Shopkeeper {
 				recipe[1] = cost2;
 				recipe[2] = result;
 				recipes.add(recipe);
-			} else {
+			} else if (player != null) {
 				// return unused items to inventory
 				if (cost1 != null) {
 					player.getInventory().addItem(cost1);

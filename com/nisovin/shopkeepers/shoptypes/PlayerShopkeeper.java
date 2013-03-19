@@ -171,10 +171,8 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 
 	@Override
 	public void onEditorClose(InventoryCloseEvent event) {
-		saveEditor(event.getInventory());
+		saveEditor(event.getInventory(), null);
 	}
-	
-	protected abstract void saveEditor(Inventory inv);
 	
 	@Override
 	public final void onPurchaseClick(InventoryClickEvent event) {

@@ -194,7 +194,7 @@ public class BuyingPlayerShopkeeper extends PlayerShopkeeper {
 	}
 	
 	@Override
-	protected void saveEditor(Inventory inv) {
+	protected void saveEditor(Inventory inv, Player player) {
 		for (int i = 0; i < 8; i++) {
 			ItemStack item = inv.getItem(i + 18);
 			if (item != null) {

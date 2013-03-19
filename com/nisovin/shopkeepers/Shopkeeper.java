@@ -201,6 +201,7 @@ public abstract class Shopkeeper {
 		if (event.getRawSlot() == 8) {
 			// it's the name button - ask for new name
 			event.setCancelled(true);
+			saveEditor(event.getInventory(), (Player)event.getWhoClicked());
 			return EditorClickResult.SET_NAME;
 		} else if (event.getRawSlot() == 17) {
 			// it's the cycle button - cycle to next type
@@ -224,6 +225,8 @@ public abstract class Shopkeeper {
 			return EditorClickResult.NOTHING;
 		}
 	}
+	
+	protected abstract void saveEditor(Inventory inv, Player player);
 	
 	/**
 	 * Called when a player closes the editor window.

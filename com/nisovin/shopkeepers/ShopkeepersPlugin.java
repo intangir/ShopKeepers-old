@@ -4,15 +4,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.nio.MappedByteBuffer;
-import java.nio.channels.FileChannel;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.Set;
 
 import org.bukkit.Bukkit;
@@ -693,10 +691,9 @@ public class ShopkeepersPlugin extends JavaPlugin {
 		try {
 			if (Settings.fileEncoding != null && !Settings.fileEncoding.isEmpty()) {
 				FileInputStream stream = new FileInputStream(file);
-				FileChannel fc = stream.getChannel();
-				MappedByteBuffer bb = fc.map(FileChannel.MapMode.READ_ONLY, 0, fc.size());
-				String data = Charset.forName(Settings.fileEncoding).decode(bb).toString();
+				String data = new Scanner(stream, Settings.fileEncoding).useDelimiter("\\A").next();
 				config.loadFromString(data);
+				stream.close();
 			} else {
 				config.load(file);
 			}

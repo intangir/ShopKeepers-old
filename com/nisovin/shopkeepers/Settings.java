@@ -34,6 +34,8 @@ public class Settings {
 	public static boolean enableWitchShops = true;
 	
 	public static String signShopFirstLine = "[SHOP]";
+	public static boolean showNameplates = true;
+	public static String nameplatePrefix = "&a";
 	
 	public static boolean enableBlockShops = true;
 	public static int blockShopType = 0;

@@ -25,6 +25,8 @@ enable-sign-shops: true
 enable-witch-shops: true
 
 sign-shop-first-line: "[SHOP]"
+show-nameplates: true
+nameplate-prefix: "&a"
 
 editor-title: "Shopkeeper Editor"
 name-item: 145

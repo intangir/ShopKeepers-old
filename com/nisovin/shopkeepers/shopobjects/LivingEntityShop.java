@@ -1,6 +1,7 @@
 package com.nisovin.shopkeepers.shopobjects;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
@@ -9,6 +10,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.ItemStack;
 
+import com.nisovin.shopkeepers.Settings;
 import com.nisovin.shopkeepers.ShopkeepersPlugin;
 
 public abstract class LivingEntityShop extends ShopObject {
@@ -64,7 +66,10 @@ public abstract class LivingEntityShop extends ShopObject {
 			entity = (LivingEntity)w.spawnEntity(loc, getEntityType());
 			uuid = entity.getUniqueId().toString();
 			String name = shopkeeper.getName();
-			if (name != null && !name.isEmpty()) {
+			if (name != null && !name.isEmpty() && Settings.showNameplates) {
+				if (Settings.nameplatePrefix != null && !Settings.nameplatePrefix.isEmpty()) {
+					name = ChatColor.translateAlternateColorCodes('&', Settings.nameplatePrefix) + name;
+				}
 				ShopkeepersPlugin.getVolatileCode().setEntityName(entity, name);
 			}
 		}
@@ -104,7 +109,10 @@ public abstract class LivingEntityShop extends ShopObject {
 	
 	@Override
 	public void setName(String name) {
-		if (entity != null && entity.isValid()) {
+		if (entity != null && entity.isValid() && Settings.showNameplates) {
+			if (Settings.nameplatePrefix != null && !Settings.nameplatePrefix.isEmpty()) {
+				name = ChatColor.translateAlternateColorCodes('&', Settings.nameplatePrefix) + name;
+			}
 			ShopkeepersPlugin.getVolatileCode().setEntityName(entity, name);
 		}
 	}

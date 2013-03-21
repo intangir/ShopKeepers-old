@@ -1,7 +1,12 @@
 package com.nisovin.shopkeepers;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -68,19 +73,24 @@ public class ShopkeepersPlugin extends JavaPlugin {
 		
 		// load volatile code handler
 		try {
-			Class.forName("net.minecraft.server.v1_5_R1.MinecraftServer");
-			volatileCodeHandle = new VolatileCode_1_5_R1();
-		} catch (ClassNotFoundException e_1_5_r1) {
+			Class.forName("net.minecraft.server.v1_5_R2.MinecraftServer");
+			volatileCodeHandle = new VolatileCode_1_5_R2();
+		} catch (ClassNotFoundException e_1_5_r2) {
 			try {
-				Class.forName("net.minecraft.server.v1_4_R1.MinecraftServer");
-				volatileCodeHandle = new VolatileCode_1_4_R1();
-			} catch (ClassNotFoundException e_1_4_r1) {
+				Class.forName("net.minecraft.server.v1_5_R1.MinecraftServer");
+				volatileCodeHandle = new VolatileCode_1_5_R1();
+			} catch (ClassNotFoundException e_1_5_r1) {
 				try {
-					Class.forName("net.minecraft.server.MinecraftServer");
-					if (getServer().getVersion().contains("1.5")) {
-						volatileCodeHandle = new VolatileCode_1_5_Z();
+					Class.forName("net.minecraft.server.v1_4_R1.MinecraftServer");
+					volatileCodeHandle = new VolatileCode_1_4_R1();
+				} catch (ClassNotFoundException e_1_4_r1) {
+					try {
+						Class.forName("net.minecraft.server.MinecraftServer");
+						if (getServer().getVersion().contains("1.5")) {
+							volatileCodeHandle = new VolatileCode_1_5_Z();
+						}
+					} catch (ClassNotFoundException e_1_5_null) {					
 					}
-				} catch (ClassNotFoundException e_1_5_null) {					
 				}
 			}
 		}
@@ -681,7 +691,15 @@ public class ShopkeepersPlugin extends JavaPlugin {
 		
 		YamlConfiguration config = new YamlConfiguration();
 		try {
-			config.load(file);
+			if (Settings.fileEncoding != null && !Settings.fileEncoding.isEmpty()) {
+				FileInputStream stream = new FileInputStream(file);
+				FileChannel fc = stream.getChannel();
+				MappedByteBuffer bb = fc.map(FileChannel.MapMode.READ_ONLY, 0, fc.size());
+				String data = Charset.forName(Settings.fileEncoding).decode(bb).toString();
+				config.loadFromString(data);
+			} else {
+				config.load(file);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			return;
@@ -745,7 +763,13 @@ public class ShopkeepersPlugin extends JavaPlugin {
 			file.delete();
 		}
 		try {
-			config.save(file);
+			if (Settings.fileEncoding != null && !Settings.fileEncoding.isEmpty()) {
+				PrintWriter writer = new PrintWriter(file, Settings.fileEncoding);
+				writer.write(config.saveToString());
+				writer.close();
+			} else {
+				config.save(file);
+			}
 			debug("Saved shopkeeper data");
 		} catch (IOException e) {
 			e.printStackTrace();

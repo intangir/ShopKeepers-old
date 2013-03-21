@@ -110,7 +110,10 @@ class ShopListener implements Listener {
 								meta.setDisplayName(Settings.shopCreationItemName);
 								creationItem.setItemMeta(meta);
 							}
-							event.getWhoClicked().getInventory().addItem(creationItem);
+							HashMap<Integer, ItemStack> remaining = event.getWhoClicked().getInventory().addItem(creationItem);
+							if (!remaining.isEmpty()) {
+								event.getWhoClicked().getWorld().dropItem(shopkeeper.getActualLocation(), creationItem);
+							}
 						}
 						
 						// remove shopkeeper
@@ -143,7 +146,7 @@ class ShopListener implements Listener {
 		if (event.getInventory().getName().equals("mob.villager") && event.getRawSlot() == 2 && plugin.purchasing.containsKey(event.getWhoClicked().getName())) {
 			String playerName = event.getWhoClicked().getName();
 			// prevent shift clicks
-			if (event.isShiftClick()) {
+			if (event.isShiftClick() || event.isRightClick()) {
 				event.setCancelled(true);
 				return;
 			}

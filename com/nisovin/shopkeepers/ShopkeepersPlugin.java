@@ -60,10 +60,10 @@ public class ShopkeepersPlugin extends JavaPlugin {
 		String version = getServer().getVersion();
 		if (version.contains("(MC: 1.4.6)")) {
 			volatileCodeHandle = new VolatileCode_1_4_6();
-		} else if (version.contains("(MC: 1.4.7)")) {
+		} else if (version.contains("(MC: 1.4.7)") || version.contains("git-Spigot-629")) {
 			volatileCodeHandle = new VolatileCode_1_4_R1();
 		} else {
-			getLogger().severe("Incompatible server version: Shopkeepers plugin cannot be enabled.");
+			getLogger().severe(String.format("Incompatible server version: Shopkeepers plugin cannot be enabled. (%s)", version));
 			this.setEnabled(false);
 			return;
 		}

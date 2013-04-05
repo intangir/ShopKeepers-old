@@ -13,7 +13,6 @@ import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event.Result;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -21,12 +20,15 @@ import org.bukkit.inventory.ItemStack;
 import com.nisovin.shopkeepers.EditorClickResult;
 import com.nisovin.shopkeepers.Settings;
 import com.nisovin.shopkeepers.ShopkeeperType;
+import com.nisovin.shopkeepers.ShopkeepersPlugin;
 import com.nisovin.shopkeepers.shopobjects.ShopObject;
 import com.nisovin.shopkeepers.util.ItemType;
 
 public class TradingPlayerShopkeeper extends PlayerShopkeeper {
 
 	private Map<ItemStack, Cost> costs;
+	
+	private ItemStack clickedItem;
 	
 	public TradingPlayerShopkeeper(ConfigurationSection config) {
 		super(config);
@@ -153,8 +155,8 @@ public class TradingPlayerShopkeeper extends PlayerShopkeeper {
 	}
 
 	@Override
-	public EditorClickResult onEditorClick(InventoryClickEvent event) {
-		int slot = event.getRawSlot();
+	public EditorClickResult onEditorClick(final InventoryClickEvent event) {
+		final int slot = event.getRawSlot();
 		if (slot >= 0 && slot <= 7) {
 			event.setCancelled(true);
 			// handle changing sell stack size
@@ -181,14 +183,14 @@ public class TradingPlayerShopkeeper extends PlayerShopkeeper {
 			return EditorClickResult.NOTHING;
 		} else if ((slot >= 9 && slot <= 16) || (slot >= 18 && slot <= 25)) {
 			event.setCancelled(true);
-			ItemStack cursor = event.getCursor();
-			if (cursor != null && cursor.getType() != Material.AIR) {
+			if (clickedItem != null) {
 				// placing item
-				ItemStack item = cursor.clone();
-				item.setAmount(1);
-				event.getInventory().setItem(slot, item);
-				event.setCursor(null);
-				event.setResult(Result.ALLOW);
+				Bukkit.getScheduler().scheduleSyncDelayedTask(ShopkeepersPlugin.getInstance(), new Runnable() {
+					public void run() {
+						event.getInventory().setItem(slot, clickedItem);
+						clickedItem = null;
+					}
+				}, 1);
 			} else {
 				// changing stack size
 				ItemStack item = event.getCurrentItem();
@@ -228,10 +230,8 @@ public class TradingPlayerShopkeeper extends PlayerShopkeeper {
 			}
 			ItemStack current = event.getCurrentItem();
 			if (current != null && current.getType() != Material.AIR) {
-				current = current.clone();
-				current.setAmount(0);
-				event.setCursor(current);
-				event.setResult(Result.ALLOW);
+				clickedItem = current.clone();
+				clickedItem.setAmount(1);
 			}
 			return EditorClickResult.NOTHING;
 		} else {

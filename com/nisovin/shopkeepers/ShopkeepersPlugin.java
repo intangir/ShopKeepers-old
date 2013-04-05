@@ -768,6 +768,10 @@ public class ShopkeepersPlugin extends JavaPlugin {
 		return volatileCodeHandle;
 	}
 	
+	public static ShopkeepersPlugin getInstance() {
+		return plugin;
+	}
+	
 	public static void debug(String message) {
 		if (plugin.debug) {
 			plugin.getLogger().info(message);

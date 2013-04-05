@@ -32,6 +32,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
@@ -500,7 +501,11 @@ public class ShopkeepersPlugin extends JavaPlugin {
 	 */
 	public boolean isShopkeeper(Entity entity) {
 		return activeShopkeepers.containsKey("entity" + entity.getEntityId());
-	}	
+	}
+	
+	public boolean isShopkeeperEditorWindow(Inventory inventory) {
+		return inventory.getTitle().equals(Settings.editorTitle);
+	}
 
 	void addShopkeeper(Shopkeeper shopkeeper) {
 		// add to chunk list

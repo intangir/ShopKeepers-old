@@ -74,7 +74,7 @@ class ShopListener implements Listener {
 			String id = plugin.editing.remove(name);
 			Shopkeeper shopkeeper = plugin.activeShopkeepers.get(id);
 			if (shopkeeper != null) {
-				if (event.getInventory().getTitle().equals(Settings.editorTitle)) {
+				if (plugin.isShopkeeperEditorWindow(event.getInventory())) {
 					shopkeeper.onEditorClose(event);
 					plugin.closeTradingForShopkeeper(id);
 					plugin.save();
@@ -89,7 +89,7 @@ class ShopListener implements Listener {
 	@EventHandler
 	void onInventoryClick(InventoryClickEvent event) {
 		// shopkeeper editor click
-		if (event.getInventory().getTitle().equals(Settings.editorTitle)) {
+		if (plugin.isShopkeeperEditorWindow(event.getInventory())) {
 			String playerName = event.getWhoClicked().getName();
 			if (plugin.editing.containsKey(playerName)) {
 				// get the shopkeeper being edited

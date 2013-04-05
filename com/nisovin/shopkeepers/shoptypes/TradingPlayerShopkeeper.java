@@ -28,8 +28,6 @@ public class TradingPlayerShopkeeper extends PlayerShopkeeper {
 
 	private Map<ItemStack, Cost> costs;
 	
-	private ItemStack clickedItem = null;
-	
 	public TradingPlayerShopkeeper(ConfigurationSection config) {
 		super(config);
 	}
@@ -235,6 +233,7 @@ public class TradingPlayerShopkeeper extends PlayerShopkeeper {
 				event.setCursor(current);
 				event.setResult(Result.ALLOW);
 			}
+			return EditorClickResult.NOTHING;
 		} else {
 			return super.onEditorClick(event);
 		}

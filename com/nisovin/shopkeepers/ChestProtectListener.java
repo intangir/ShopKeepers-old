@@ -3,11 +3,14 @@ package com.nisovin.shopkeepers;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.Chest;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.inventory.InventoryMoveItemEvent;
+import org.bukkit.inventory.InventoryHolder;
 
 class ChestProtectListener implements Listener {
 
@@ -73,6 +76,17 @@ class ChestProtectListener implements Listener {
 			if (b.getType() == Material.CHEST && plugin.isChestProtected(player, b)) {
 				event.setCancelled(true);
 				return;
+			}
+		}
+	}
+	
+	@EventHandler(ignoreCancelled=true)
+	void onInventoryMoveItem(InventoryMoveItemEvent event) {
+		InventoryHolder holder = event.getSource().getHolder();
+		if (holder != null && holder instanceof Chest) {
+			Block block = ((Chest)holder).getBlock();
+			if (plugin.isChestProtected(null, block)) {
+				event.setCancelled(true);
 			}
 		}
 	}

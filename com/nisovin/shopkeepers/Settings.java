@@ -23,6 +23,7 @@ public class Settings {
 	public static boolean deleteShopkeeperOnBreakChest = false;
 	public static int maxShopsPerPlayer = 0;
 	public static int maxChestDistance = 15;
+	public static int playerShopkeeperInactiveDays = 0;
 	
 	public static int shopCreationItem = 383;
 	public static int shopCreationItemData = 120;

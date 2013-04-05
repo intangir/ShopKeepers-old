@@ -18,6 +18,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -715,6 +716,15 @@ public class ShopkeepersPlugin extends JavaPlugin {
 				shopkeeper = new AdminShopkeeper(section);
 			}
 			if (shopkeeper != null) {
+				// check if shop is too old
+				if (Settings.playerShopkeeperInactiveDays > 0 && shopkeeper instanceof PlayerShopkeeper) {
+					String owner = ((PlayerShopkeeper)shopkeeper).getOwner();
+					OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(owner);
+					if ((System.currentTimeMillis() - offlinePlayer.getLastPlayed()) / 86400000 > Settings.playerShopkeeperInactiveDays) {
+						// shop is too old, don't load it
+						continue;
+					}
+				}
 				
 				// add to shopkeepers by chunk
 				List<Shopkeeper> list = allShopkeepersByChunk.get(shopkeeper.getChunk());

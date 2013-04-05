@@ -27,7 +27,7 @@ class ChestProtectListener implements Listener {
 					event.setCancelled(true);
 					return;
 				}
-				for (BlockFace face : plugin.faces) {
+				for (BlockFace face : plugin.chestProtectFaces) {
 					if (block.getRelative(face).getType() == Material.CHEST) {
 						if (plugin.isChestProtected(player, block.getRelative(face))) {
 							event.setCancelled(true);
@@ -41,16 +41,38 @@ class ChestProtectListener implements Listener {
 	
 	@EventHandler(ignoreCancelled=true)
 	void onBlockPlace(BlockPlaceEvent event) {
-		if (event.getBlock().getType() == Material.CHEST) {
+		Block block = event.getBlock();
+		int id = block.getTypeId();
+		if (id == Material.CHEST.getId()) {
 			Player player = event.getPlayer();
-			Block block = event.getBlock();
-			for (BlockFace face : plugin.faces) {
-				if (block.getRelative(face).getType() == Material.CHEST) {
-					if (plugin.isChestProtected(player, block.getRelative(face))) {
+			Block b;
+			for (BlockFace face : plugin.chestProtectFaces) {
+				b = block.getRelative(face);
+				if (b.getType() == Material.CHEST) {
+					if (plugin.isChestProtected(player, b)) {
 						event.setCancelled(true);
 						return;
 					}				
 				}
+			}
+		} else if (id == 154 /* hopper */) {
+			Player player = event.getPlayer();
+			Block b;
+			for (BlockFace face : plugin.hopperProtectFaces) {
+				b = block.getRelative(face);
+				if (b.getType() == Material.CHEST) {
+					if (plugin.isChestProtected(player, b)) {
+						event.setCancelled(true);
+						return;
+					}				
+				}
+			}
+		} else if (id == Material.RAILS.getId() || id == Material.POWERED_RAIL.getId() || id == Material.DETECTOR_RAIL.getId() || id == 157 /*activator rail*/) {
+			Player player = event.getPlayer();
+			Block b = block.getRelative(BlockFace.UP);
+			if (b.getType() == Material.CHEST && plugin.isChestProtected(player, b)) {
+				event.setCancelled(true);
+				return;
 			}
 		}
 	}

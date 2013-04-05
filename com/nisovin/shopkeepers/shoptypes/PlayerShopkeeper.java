@@ -73,7 +73,22 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 	 * @return
 	 */
 	public boolean usesChest(Block chest) {
-		return (chest.getWorld().getName().equals(world) && chest.getX() == chestx && chest.getY() == chesty && chest.getZ() == chestz);
+		if (!chest.getWorld().getName().equals(world)) 
+			return false;
+		int x = chest.getX();
+		int y = chest.getY();
+		int z = chest.getZ();
+		if (x == chestx && y == chesty && z == chestz) 
+			return true;
+		if (x == chestx + 1 && y == chesty && z == chestz) 
+			return true;
+		if (x == chestx - 1 && y == chesty && z == chestz) 
+			return true;
+		if (x == chestx && y == chesty && z == chestz + 1) 
+			return true;
+		if (x == chestx && y == chesty && z == chestz - 1) 
+			return true;
+		return false;
 	}
 
 
@@ -180,6 +195,10 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 			event.setCancelled(true);
 			ShopkeepersPlugin.debug("Cancelled trade from " + event.getWhoClicked().getName() + " because he can't trade with his own shop");
 		} else {
+			if (event.isRightClick() || event.isShiftClick()) {
+				event.setCancelled(true);
+				return;
+			}
 			onPlayerPurchaseClick(event);
 		}
 	}

@@ -63,7 +63,8 @@ public class ShopkeepersPlugin extends JavaPlugin {
 	private boolean dirty = false;
 	private int chunkLoadSaveTask = -1;
 		
-	BlockFace[] faces = {BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST};
+	BlockFace[] chestProtectFaces = {BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST};
+	BlockFace[] hopperProtectFaces = {BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST, BlockFace.UP, BlockFace.DOWN};
 	
 	@Override
 	public void onEnable() {

@@ -293,7 +293,7 @@ class ShopListener implements Listener {
 					event.setCancelled(true);
 					return;
 				}
-				for (BlockFace face : plugin.faces) {
+				for (BlockFace face : plugin.chestProtectFaces) {
 					if (block.getRelative(face).getType() == Material.CHEST) {
 						if (plugin.isChestProtected(player, block.getRelative(face))) {
 							event.setCancelled(true);

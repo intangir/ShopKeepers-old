@@ -184,12 +184,6 @@ public class CustomQuantityPlayerShopkeeper extends PlayerShopkeeper {
 	
 	@Override
 	public void onPlayerPurchaseClick(final InventoryClickEvent event) {
-		// prevent shift clicks
-		if (event.isShiftClick() || event.isRightClick()) {
-			event.setCancelled(true);
-			return;
-		}
-		
 		// get type and cost
 		ItemStack item = event.getCurrentItem();
 		ItemStack type = item.clone();

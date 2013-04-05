@@ -195,6 +195,7 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 			event.setCancelled(true);
 			ShopkeepersPlugin.debug("Cancelled trade from " + event.getWhoClicked().getName() + " because he can't trade with his own shop");
 		} else {
+			// prevent unwanted special clicks
 			if (event.isRightClick() || event.isShiftClick()) {
 				event.setCancelled(true);
 				return;

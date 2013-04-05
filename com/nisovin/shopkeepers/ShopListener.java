@@ -145,8 +145,8 @@ class ShopListener implements Listener {
 		// purchase click
 		if (event.getInventory().getName().equals("mob.villager") && event.getRawSlot() == 2 && plugin.purchasing.containsKey(event.getWhoClicked().getName())) {
 			String playerName = event.getWhoClicked().getName();
-			// prevent shift clicks
-			if (event.isShiftClick() || event.isRightClick()) {
+			// prevent unwanted special clicks
+			if (event.isRightClick()) {
 				event.setCancelled(true);
 				return;
 			}

@@ -227,6 +227,8 @@ class ShopListener implements Listener {
 					Shopkeeper shopkeeper = plugin.activeShopkeepers.get(id);
 					if (message.equals("-")) {
 						shopkeeper.setName("");
+					} else if (message.length() > 32) {
+						shopkeeper.setName(message.substring(0, 32));
 					} else {
 						shopkeeper.setName(message);
 					}

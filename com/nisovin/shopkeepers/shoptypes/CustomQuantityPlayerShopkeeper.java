@@ -176,7 +176,9 @@ public class CustomQuantityPlayerShopkeeper extends PlayerShopkeeper {
 					saleItem.setAmount(1);
 					costs.put(saleItem, new Cost(item.getAmount(), cost));
 				} else {
-					costs.remove(new ItemType(item));
+					ItemStack saleItem = item.clone();
+					saleItem.setAmount(1);
+					costs.remove(saleItem);
 				}
 			}
 		}

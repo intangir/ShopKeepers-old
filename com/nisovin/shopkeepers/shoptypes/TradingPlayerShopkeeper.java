@@ -264,10 +264,13 @@ public class TradingPlayerShopkeeper extends PlayerShopkeeper {
 					saleItem.setAmount(1);
 					costs.put(saleItem, cost);
 				} else {
-					costs.remove(new ItemType(item));
+					ItemStack saleItem = item.clone();
+					saleItem.setAmount(1);
+					costs.remove(saleItem);
 				}
 			}
 		}
+		clickedItem = null;
 	}
 
 	@Override

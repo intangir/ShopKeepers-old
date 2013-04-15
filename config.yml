@@ -3,6 +3,7 @@ block-villager-spawns: false
 enable-spawn-verifier: false
 enable-purchase-logging: false
 save-instantly: true
+file-encoding: ""
 
 enable-world-guard-restrictions: false
 enable-towny-restrictions: false

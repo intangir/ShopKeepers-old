@@ -720,8 +720,10 @@ public class ShopkeepersPlugin extends JavaPlugin {
 				if (Settings.playerShopkeeperInactiveDays > 0 && shopkeeper instanceof PlayerShopkeeper) {
 					String owner = ((PlayerShopkeeper)shopkeeper).getOwner();
 					OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(owner);
-					if ((System.currentTimeMillis() - offlinePlayer.getLastPlayed()) / 86400000 > Settings.playerShopkeeperInactiveDays) {
+					long lastPlayed = offlinePlayer.getLastPlayed();
+					if ((lastPlayed > 0) && ((System.currentTimeMillis() - lastPlayed) / 86400000 > Settings.playerShopkeeperInactiveDays)) {
 						// shop is too old, don't load it
+						getLogger().info("Shopkeeper owned by " + owner + " at " + shopkeeper.getPositionString() + " has been removed for owner inactivity");
 						continue;
 					}
 				}

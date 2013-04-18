@@ -82,11 +82,13 @@ class ChestProtectListener implements Listener {
 	
 	@EventHandler(ignoreCancelled=true)
 	void onInventoryMoveItem(InventoryMoveItemEvent event) {
-		InventoryHolder holder = event.getSource().getHolder();
-		if (holder != null && holder instanceof Chest) {
-			Block block = ((Chest)holder).getBlock();
-			if (plugin.isChestProtected(null, block)) {
-				event.setCancelled(true);
+		if (event.getSource() != null) {
+			InventoryHolder holder = event.getSource().getHolder();
+			if (holder != null && holder instanceof Chest) {
+				Block block = ((Chest)holder).getBlock();
+				if (plugin.isChestProtected(null, block)) {
+					event.setCancelled(true);
+				}
 			}
 		}
 	}

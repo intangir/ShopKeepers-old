@@ -57,13 +57,13 @@ public class ShopkeepersPlugin extends JavaPlugin {
 		plugin = this;
 		
 		// load volatile code handler
-		String version = getServer().getVersion();
-		if (version.contains("(MC: 1.4.6)")) {
-			volatileCodeHandle = new VolatileCode_1_4_6();
-		} else if (version.contains("(MC: 1.4.7)") || version.contains("git-Spigot-629")) {
-			volatileCodeHandle = new VolatileCode_1_4_R1();
-		} else {
-			getLogger().severe(String.format("Incompatible server version: Shopkeepers plugin cannot be enabled. (%s)", version));
+		try {
+			Class.forName("net.minecraft.server.v1_5_R2.MinecraftServer");
+			volatileCodeHandle = new VolatileCode_1_5_R2();
+		} catch (ClassNotFoundException e_1_5_r2) {
+		}
+		if (volatileCodeHandle == null) {
+			getLogger().severe("Incompatible server version: Shopkeepers plugin cannot be enabled.");
 			this.setEnabled(false);
 			return;
 		}

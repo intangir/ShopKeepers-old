@@ -128,7 +128,8 @@ class ShopListener implements Listener {
 						plugin.save();
 					} else if (result == EditorClickResult.SET_NAME) {
 						// close editor window and ask for new name
-						plugin.closeTradingForShopkeeper(id);
+						plugin.closeInventory((Player)event.getWhoClicked());
+						plugin.editing.remove(event.getWhoClicked().getName());
 						plugin.naming.put(event.getWhoClicked().getName(), id);
 						plugin.sendMessage((Player)event.getWhoClicked(), Settings.msgTypeNewName);
 					}
@@ -234,6 +235,7 @@ class ShopListener implements Listener {
 					}
 					plugin.save();
 					plugin.sendMessage(player, Settings.msgNameSet);
+					plugin.closeTradingForShopkeeper(id);
 				}
 			});
 		}

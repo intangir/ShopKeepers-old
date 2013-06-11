@@ -113,6 +113,9 @@ public abstract class LivingEntityShop extends ShopObject {
 			if (Settings.nameplatePrefix != null && !Settings.nameplatePrefix.isEmpty()) {
 				name = ChatColor.translateAlternateColorCodes('&', Settings.nameplatePrefix) + name;
 			}
+			if (name.length() > 32) {
+				name = name.substring(0, 32);
+			}
 			ShopkeepersPlugin.getVolatileCode().setEntityName(entity, name);
 		}
 	}

@@ -369,6 +369,9 @@ public class ShopkeepersPlugin extends JavaPlugin {
 					Shopkeeper shopkeeper = createNewAdminShopkeeper(loc, shopObjType.createObject());
 					if (shopkeeper != null) {
 						sendMessage(player, Settings.msgAdminShopCreated);
+						
+						// run event
+						Bukkit.getPluginManager().callEvent(new ShopkeeperCreatedEvent(player, shopkeeper));
 					}
 				}
 			} else {
@@ -476,6 +479,9 @@ public class ShopkeepersPlugin extends JavaPlugin {
 			activeShopkeepers.put(shopkeeper.getId(), shopkeeper);
 			addShopkeeper(shopkeeper);
 		}
+		
+		// run event
+		Bukkit.getPluginManager().callEvent(new ShopkeeperCreatedEvent(player, shopkeeper));
 		
 		return shopkeeper;
 	}

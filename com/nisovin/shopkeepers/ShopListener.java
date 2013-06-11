@@ -37,6 +37,8 @@ import org.bukkit.event.world.WorldUnloadEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import com.nisovin.shopkeepers.events.ShopkeeperDeletedEvent;
+import com.nisovin.shopkeepers.events.ShopkeeperEditedEvent;
 import com.nisovin.shopkeepers.shoptypes.PlayerShopkeeper;
 
 class ShopListener implements Listener {
@@ -120,18 +122,31 @@ class ShopListener implements Listener {
 						plugin.activeShopkeepers.remove(id);
 						plugin.allShopkeepersByChunk.get(shopkeeper.getChunk()).remove(shopkeeper);
 						plugin.save();
+						
+						// run event
+						Bukkit.getPluginManager().callEvent(new ShopkeeperDeletedEvent((Player)event.getWhoClicked(), shopkeeper));
 					} else if (result == EditorClickResult.DONE_EDITING) {
 						// end the editing session
 						plugin.closeTradingForShopkeeper(id);
 						plugin.save();
+						
+						// run event
+						Bukkit.getPluginManager().callEvent(new ShopkeeperEditedEvent((Player)event.getWhoClicked(), shopkeeper));
 					} else if (result == EditorClickResult.SAVE_AND_CONTINUE) {
+						// save
 						plugin.save();
+						
+						// run event
+						Bukkit.getPluginManager().callEvent(new ShopkeeperEditedEvent((Player)event.getWhoClicked(), shopkeeper));
 					} else if (result == EditorClickResult.SET_NAME) {
 						// close editor window and ask for new name
 						plugin.closeInventory((Player)event.getWhoClicked());
 						plugin.editing.remove(event.getWhoClicked().getName());
 						plugin.naming.put(event.getWhoClicked().getName(), id);
 						plugin.sendMessage((Player)event.getWhoClicked(), Settings.msgTypeNewName);
+						
+						// run event
+						Bukkit.getPluginManager().callEvent(new ShopkeeperEditedEvent((Player)event.getWhoClicked(), shopkeeper));
 					}
 				} else {
 					event.setCancelled(true);
@@ -236,6 +251,9 @@ class ShopListener implements Listener {
 					plugin.save();
 					plugin.sendMessage(player, Settings.msgNameSet);
 					plugin.closeTradingForShopkeeper(id);
+					
+					// run event
+					Bukkit.getPluginManager().callEvent(new ShopkeeperEditedEvent(player, shopkeeper));
 				}
 			});
 		}

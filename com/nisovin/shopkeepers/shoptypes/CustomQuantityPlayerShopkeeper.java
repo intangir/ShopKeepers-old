@@ -104,6 +104,10 @@ public class CustomQuantityPlayerShopkeeper extends PlayerShopkeeper {
 		return recipes;
 	}
 	
+	public Map<ItemStack, Cost> getCosts() {
+		return costs;
+	}
+	
 	@Override
 	public boolean onPlayerEdit(Player player) {
 		Inventory inv = Bukkit.createInventory(player, 27, Settings.editorTitle);
@@ -268,12 +272,28 @@ public class CustomQuantityPlayerShopkeeper extends PlayerShopkeeper {
 		return map;
 	}
 	
-	private class Cost {
+	public class Cost {
 		int amount;
 		int cost;
 		
 		public Cost(int amount, int cost) {
 			this.amount = amount;
+			this.cost = cost;
+		}
+		
+		public int getAmount() {
+			return amount;
+		}
+		
+		public void setAmount(int amount) {
+			this.amount = amount;
+		}
+		
+		public int getCost() {
+			return cost;
+		}
+		
+		public void setCost(int cost) {
 			this.cost = cost;
 		}
 	}

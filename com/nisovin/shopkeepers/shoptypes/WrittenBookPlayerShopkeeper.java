@@ -82,6 +82,10 @@ public class WrittenBookPlayerShopkeeper extends PlayerShopkeeper {
 		}
 		return recipes;
 	}
+	
+	public Map<String, Integer> getCosts() {
+		return costs;
+	}
 
 	@Override
 	public boolean onPlayerEdit(Player player) {

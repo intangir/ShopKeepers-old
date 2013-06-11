@@ -120,6 +120,10 @@ public class TradingPlayerShopkeeper extends PlayerShopkeeper {
 		}
 		return recipes;
 	}
+	
+	public Map<ItemStack, Cost> getCosts() {
+		return costs;
+	}
 
 	@Override
 	protected boolean onPlayerEdit(Player player) {
@@ -349,11 +353,35 @@ public class TradingPlayerShopkeeper extends PlayerShopkeeper {
 		return map;
 	}
 	
-	private class Cost {
+	public class Cost {
 		
 		int amount;		
 		ItemStack item1;
 		ItemStack item2;
+		
+		public int getAmount() {
+			return amount;
+		}
+		
+		public void setAmount(int amount) {
+			this.amount = amount;
+		}
+		
+		public ItemStack getItem1() {
+			return item1;
+		}
+		
+		public void setItem1(ItemStack item) {
+			this.item1 = item;
+		}
+		
+		public ItemStack getItem2() {
+			return item2;
+		}
+		
+		public void setItem2(ItemStack item) {
+			this.item2 = item;
+		}
 		
 	}
 

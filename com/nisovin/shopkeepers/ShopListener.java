@@ -121,32 +121,34 @@ class ShopListener implements Listener {
 						// remove shopkeeper
 						plugin.activeShopkeepers.remove(id);
 						plugin.allShopkeepersByChunk.get(shopkeeper.getChunk()).remove(shopkeeper);
-						plugin.save();
 						
 						// run event
 						Bukkit.getPluginManager().callEvent(new ShopkeeperDeletedEvent((Player)event.getWhoClicked(), shopkeeper));
-					} else if (result == EditorClickResult.DONE_EDITING) {
-						// end the editing session
-						plugin.closeTradingForShopkeeper(id);
-						plugin.save();
 						
-						// run event
-						Bukkit.getPluginManager().callEvent(new ShopkeeperEditedEvent((Player)event.getWhoClicked(), shopkeeper));
-					} else if (result == EditorClickResult.SAVE_AND_CONTINUE) {
 						// save
 						plugin.save();
-						
+					} else if (result == EditorClickResult.DONE_EDITING) {
+						// end the editing session
+						plugin.closeTradingForShopkeeper(id);						
 						// run event
 						Bukkit.getPluginManager().callEvent(new ShopkeeperEditedEvent((Player)event.getWhoClicked(), shopkeeper));
+						// save
+						plugin.save();
+					} else if (result == EditorClickResult.SAVE_AND_CONTINUE) {						
+						// run event
+						Bukkit.getPluginManager().callEvent(new ShopkeeperEditedEvent((Player)event.getWhoClicked(), shopkeeper));
+						// save
+						plugin.save();
 					} else if (result == EditorClickResult.SET_NAME) {
 						// close editor window and ask for new name
 						plugin.closeInventory((Player)event.getWhoClicked());
 						plugin.editing.remove(event.getWhoClicked().getName());
 						plugin.naming.put(event.getWhoClicked().getName(), id);
-						plugin.sendMessage((Player)event.getWhoClicked(), Settings.msgTypeNewName);
-						
+						plugin.sendMessage((Player)event.getWhoClicked(), Settings.msgTypeNewName);						
 						// run event
 						Bukkit.getPluginManager().callEvent(new ShopkeeperEditedEvent((Player)event.getWhoClicked(), shopkeeper));
+						// save
+						plugin.save();
 					}
 				} else {
 					event.setCancelled(true);
@@ -241,6 +243,8 @@ class ShopListener implements Listener {
 				public void run() {
 					String id = plugin.naming.remove(name);
 					Shopkeeper shopkeeper = plugin.activeShopkeepers.get(id);
+					
+					// set name
 					if (message.equals("-")) {
 						shopkeeper.setName("");
 					} else if (message.length() > 32) {
@@ -248,12 +252,14 @@ class ShopListener implements Listener {
 					} else {
 						shopkeeper.setName(message);
 					}
-					plugin.save();
 					plugin.sendMessage(player, Settings.msgNameSet);
 					plugin.closeTradingForShopkeeper(id);
 					
 					// run event
 					Bukkit.getPluginManager().callEvent(new ShopkeeperEditedEvent(player, shopkeeper));
+					
+					// save
+					plugin.save();
 				}
 			});
 		}

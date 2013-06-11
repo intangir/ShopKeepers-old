@@ -464,7 +464,7 @@ public class ShopkeepersPlugin extends JavaPlugin {
 		// create the shopkeeper
 		Shopkeeper shopkeeper = null;
 		if (shopType == ShopkeeperType.PLAYER_NORMAL) {
-			shopkeeper = new CustomQuantityPlayerShopkeeper(player, chest, location, shopObject);
+			shopkeeper = new NormalPlayerShopkeeper(player, chest, location, shopObject);
 		} else if (shopType == ShopkeeperType.PLAYER_BOOK) {
 			shopkeeper = new WrittenBookPlayerShopkeeper(player, chest, location, shopObject);
 		} else if (shopType == ShopkeeperType.PLAYER_BUY) {
@@ -722,7 +722,7 @@ public class ShopkeepersPlugin extends JavaPlugin {
 			} else if (type.equals("trade")) {
 				shopkeeper = new TradingPlayerShopkeeper(section);
 			} else if (type.equals("player") || section.contains("owner")) {
-				shopkeeper = new CustomQuantityPlayerShopkeeper(section);
+				shopkeeper = new NormalPlayerShopkeeper(section);
 			} else {
 				shopkeeper = new AdminShopkeeper(section);
 			}

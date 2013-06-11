@@ -24,16 +24,16 @@ import com.nisovin.shopkeepers.shopobjects.ShopObject;
 import com.nisovin.shopkeepers.util.ItemType;
 
 
-public class CustomQuantityPlayerShopkeeper extends PlayerShopkeeper {
+public class NormalPlayerShopkeeper extends PlayerShopkeeper {
 
 	//private Map<ItemType, Cost> costs;
 	private Map<ItemStack, Cost> costs;
 	
-	public CustomQuantityPlayerShopkeeper(ConfigurationSection config) {
+	public NormalPlayerShopkeeper(ConfigurationSection config) {
 		super(config);
 	}
 
-	public CustomQuantityPlayerShopkeeper(Player owner, Block chest, Location location, ShopObject shopObject) {
+	public NormalPlayerShopkeeper(Player owner, Block chest, Location location, ShopObject shopObject) {
 		super(owner, chest, location, shopObject);
 		this.costs = new HashMap<ItemStack, Cost>();
 	}

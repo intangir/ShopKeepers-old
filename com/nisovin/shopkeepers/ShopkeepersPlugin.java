@@ -74,15 +74,20 @@ public class ShopkeepersPlugin extends JavaPlugin {
 		
 		// load volatile code handler
 		try {
-			Class.forName("net.minecraft.server.v1_5_R2.MinecraftServer");
-			volatileCodeHandle = new VolatileCode_1_5_R2();
-		} catch (ClassNotFoundException e_1_5_r2) {
+			Class.forName("net.minecraft.server.v1_5_R3.MinecraftServer");
+			volatileCodeHandle = new VolatileCode_1_5_R3();
+		} catch (ClassNotFoundException e_1_5_r3) {
 			try {
-				Class.forName("net.minecraft.server.MinecraftServer");
-				if (getServer().getVersion().contains("1.5")) {
-					volatileCodeHandle = new VolatileCode_1_5_Z();
+				Class.forName("net.minecraft.server.v1_5_R2.MinecraftServer");
+				volatileCodeHandle = new VolatileCode_1_5_R2();
+			} catch (ClassNotFoundException e_1_5_r2) {
+				try {
+					Class.forName("net.minecraft.server.MinecraftServer");
+					if (getServer().getVersion().contains("1.5")) {
+						volatileCodeHandle = new VolatileCode_1_5_Z();
+					}
+				} catch (ClassNotFoundException e_1_5_null) {					
 				}
-			} catch (ClassNotFoundException e_1_5_null) {					
 			}
 		}
 		if (volatileCodeHandle == null) {

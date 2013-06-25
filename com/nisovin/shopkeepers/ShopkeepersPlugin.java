@@ -582,22 +582,22 @@ public class ShopkeepersPlugin extends JavaPlugin {
 				while (editors.hasNext()) {
 					String name = editors.next();
 					if (editing.get(name).equals(id)) {
+						editors.remove();
 						Player player = Bukkit.getPlayerExact(name);
 						if (player != null) {
 							player.closeInventory();
 						}
-						editors.remove();
 					}
 				}
 				Iterator<String> purchasers = purchasing.keySet().iterator();
 				while (purchasers.hasNext()) {
 					String name = purchasers.next();
 					if (purchasing.get(name).equals(id)) {
+						purchasers.remove();
 						Player player = Bukkit.getPlayerExact(name);
 						if (player != null) {
 							player.closeInventory();
 						}
-						purchasers.remove();
 					}
 				}
 			}

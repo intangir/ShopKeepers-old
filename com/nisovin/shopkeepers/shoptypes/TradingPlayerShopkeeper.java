@@ -160,9 +160,9 @@ public class TradingPlayerShopkeeper extends PlayerShopkeeper {
 
 	@Override
 	public EditorClickResult onEditorClick(final InventoryClickEvent event) {
+		event.setCancelled(true);
 		final int slot = event.getRawSlot();
 		if (slot >= 0 && slot <= 7) {
-			event.setCancelled(true);
 			// handle changing sell stack size
 			ItemStack item = event.getCurrentItem();
 			if (item != null && item.getTypeId() != 0) {
@@ -186,7 +186,6 @@ public class TradingPlayerShopkeeper extends PlayerShopkeeper {
 			}
 			return EditorClickResult.NOTHING;
 		} else if ((slot >= 9 && slot <= 16) || (slot >= 18 && slot <= 25)) {
-			event.setCancelled(true);
 			if (clickedItem != null) {
 				// placing item
 				Bukkit.getScheduler().scheduleSyncDelayedTask(ShopkeepersPlugin.getInstance(), new Runnable() {
@@ -224,7 +223,6 @@ public class TradingPlayerShopkeeper extends PlayerShopkeeper {
 			return EditorClickResult.NOTHING;
 		} else if (slot > 27) {
 			// clicking in player inventory
-			event.setCancelled(true);
 			if (event.isShiftClick() || event.isRightClick()) {
 				return EditorClickResult.NOTHING;
 			}

@@ -127,7 +127,7 @@ public class VolatileCode_1_5_R3 implements VolatileCodeHandle {
 	public void setEntityName(LivingEntity entity, String name) {
 		if (name != null && !name.isEmpty()) {
 			entity.setCustomName(name);
-			entity.setCustomNameVisible(Settings.showNameplates);
+			entity.setCustomNameVisible(Settings.alwaysShowNameplates);
 		} else {
 			entity.setCustomName(null);
 			entity.setCustomNameVisible(false);

@@ -74,6 +74,7 @@ public abstract class LivingEntityShop extends ShopObject {
 			}
 		}
 		if (entity != null && entity.isValid()) {
+			entity.setRemoveWhenFarAway(false);
 			overwriteAI();
 			return true;
 		} else {

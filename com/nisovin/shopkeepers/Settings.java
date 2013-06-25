@@ -36,6 +36,7 @@ public class Settings {
 	
 	public static String signShopFirstLine = "[SHOP]";
 	public static boolean showNameplates = true;
+	public static boolean alwaysShowNameplates = false;
 	public static String nameplatePrefix = "&a";
 	
 	public static boolean enableBlockShops = true;

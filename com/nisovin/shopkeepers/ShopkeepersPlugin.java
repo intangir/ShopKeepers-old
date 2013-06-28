@@ -389,7 +389,7 @@ public class ShopkeepersPlugin extends JavaPlugin {
 	 */
 	public Shopkeeper createNewAdminShopkeeper(Location location, ShopObject shopObject) {
 		// create the shopkeeper (and spawn it)
-		Shopkeeper shopkeeper = new AdminShopkeeper(location, new VillagerShop());
+		Shopkeeper shopkeeper = new AdminShopkeeper(location, shopObject);
 		shopkeeper.spawn();
 		activeShopkeepers.put(shopkeeper.getId(), shopkeeper);
 		addShopkeeper(shopkeeper);

@@ -16,6 +16,4 @@ public interface VolatileCodeHandle {
 	
 	public void setVillagerProfession(Villager villager, int profession);
 	
-	public void setEntityName(LivingEntity entity, String name);
-	
 }

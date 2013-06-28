@@ -54,7 +54,7 @@ public abstract class LivingEntityShop extends ShopObject {
 					entity.setHealth(entity.getMaxHealth());
 					String name = shopkeeper.getName();
 					if (name != null && !name.isEmpty()) {
-						ShopkeepersPlugin.getVolatileCode().setEntityName(entity, name);
+						setEntityName(name);
 					}
 					entity.teleport(loc);
 					break;
@@ -70,7 +70,7 @@ public abstract class LivingEntityShop extends ShopObject {
 				if (Settings.nameplatePrefix != null && !Settings.nameplatePrefix.isEmpty()) {
 					name = ChatColor.translateAlternateColorCodes('&', Settings.nameplatePrefix) + name;
 				}
-				ShopkeepersPlugin.getVolatileCode().setEntityName(entity, name);
+				setEntityName(name);
 			}
 		}
 		if (entity != null && entity.isValid()) {
@@ -117,7 +117,17 @@ public abstract class LivingEntityShop extends ShopObject {
 			if (name.length() > 32) {
 				name = name.substring(0, 32);
 			}
-			ShopkeepersPlugin.getVolatileCode().setEntityName(entity, name);
+			setEntityName(name);
+		}
+	}
+	
+	private void setEntityName(String name) {
+		if (name != null && !name.isEmpty()) {
+			entity.setCustomName(name);
+			entity.setCustomNameVisible(Settings.alwaysShowNameplates);
+		} else {
+			entity.setCustomName(null);
+			entity.setCustomNameVisible(false);
 		}
 	}
 	

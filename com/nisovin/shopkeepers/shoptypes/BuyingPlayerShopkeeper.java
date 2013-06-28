@@ -13,6 +13,7 @@ import org.bukkit.block.Chest;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryClickEvent.MouseButton;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
@@ -143,14 +144,18 @@ public class BuyingPlayerShopkeeper extends PlayerShopkeeper {
 			if (item != null) {
 				if (item.getTypeId() == Settings.currencyItem) {
 					int amount = item.getAmount();
-					if (event.isShiftClick() && event.isLeftClick()) {
+					if (event.isShiftClick() && event.getButton() == MouseButton.LEFT) {
 						amount += 10;
-					} else if (event.isShiftClick() && event.isRightClick()) {
+					} else if (event.isShiftClick() && event.getButton() == MouseButton.RIGHT) {
 						amount -= 10;
-					} else if (event.isLeftClick()) {
+					} else if (event.getButton() == MouseButton.LEFT) {
 						amount += 1;
-					} else if (event.isRightClick()) {
+					} else if (event.getButton() == MouseButton.RIGHT) {
 						amount -= 1;
+					} else if (event.isShiftClick() && event.getButton() == MouseButton.MIDDLE) {
+						amount = 64;
+					} else if (event.getButton() == MouseButton.MIDDLE) {
+						amount = 1;
 					}
 					if (amount > 64) amount = 64;
 					if (amount <= 0) {
@@ -172,17 +177,23 @@ public class BuyingPlayerShopkeeper extends PlayerShopkeeper {
 			ItemStack item = event.getCurrentItem();
 			if (item != null && item.getTypeId() != 0) {
 				int amt = item.getAmount();
-				if (event.isLeftClick()) {
+				if (event.getButton() == MouseButton.LEFT) {
 					if (event.isShiftClick()) {
 						amt += 10;
 					} else {
 						amt += 1;
 					}
-				} else if (event.isRightClick()) {
+				} else if (event.getButton() == MouseButton.RIGHT) {
 					if (event.isShiftClick()) {
 						amt -= 10;
 					} else {
 						amt -= 1;
+					}
+				} else if (event.getButton() == MouseButton.MIDDLE) {
+					if (event.isShiftClick()) {
+						amt = item.getMaxStackSize();
+					} else {
+						amt = 1;
 					}
 				}
 				if (amt <= 0) amt = 1;

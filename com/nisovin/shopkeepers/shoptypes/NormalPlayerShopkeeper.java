@@ -14,6 +14,7 @@ import org.bukkit.block.Chest;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryClickEvent.MouseButton;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
@@ -146,17 +147,23 @@ public class NormalPlayerShopkeeper extends PlayerShopkeeper {
 			ItemStack item = event.getCurrentItem();
 			if (item != null && item.getTypeId() != 0) {
 				int amt = item.getAmount();
-				if (event.isLeftClick()) {
+				if (event.getButton() == MouseButton.LEFT) {
 					if (event.isShiftClick()) {
 						amt += 10;
 					} else {
 						amt += 1;
 					}
-				} else if (event.isRightClick()) {
+				} else if (event.getButton() == MouseButton.RIGHT) {
 					if (event.isShiftClick()) {
 						amt -= 10;
 					} else {
 						amt -= 1;
+					}
+				} else if (event.getButton() == MouseButton.MIDDLE) {
+					if (event.isShiftClick()) {
+						amt = item.getMaxStackSize();
+					} else {
+						amt = 1;
 					}
 				}
 				if (amt <= 0) amt = 1;

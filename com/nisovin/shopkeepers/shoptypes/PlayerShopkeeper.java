@@ -5,6 +5,7 @@ import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryClickEvent.MouseButton;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -124,14 +125,18 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 			if (item != null) {
 				if (item.getTypeId() == Settings.currencyItem) {
 					int amount = item.getAmount();
-					if (event.isShiftClick() && event.isLeftClick()) {
+					if (event.isShiftClick() && event.getButton() == MouseButton.LEFT) {
 						amount += 10;
-					} else if (event.isShiftClick() && event.isRightClick()) {
+					} else if (event.isShiftClick() && event.getButton() == MouseButton.RIGHT) {
 						amount -= 10;
-					} else if (event.isLeftClick()) {
+					} else if (event.getButton() == MouseButton.LEFT) {
 						amount += 1;
-					} else if (event.isRightClick()) {
+					} else if (event.getButton() == MouseButton.RIGHT) {
 						amount -= 1;
+					} else if (event.isShiftClick() && event.getButton() == MouseButton.MIDDLE) {
+						amount = 64;
+					} else if (event.getButton() == MouseButton.MIDDLE) {
+						amount = 1;
 					}
 					if (amount > 64) amount = 64;
 					if (amount <= 0) {
@@ -155,14 +160,18 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 			if (item != null && Settings.highCurrencyItem > 0) {
 				if (item.getTypeId() == Settings.highCurrencyItem) {
 					int amount = item.getAmount();
-					if (event.isShiftClick() && event.isLeftClick()) {
+					if (event.isShiftClick() && event.getButton() == MouseButton.LEFT) {
 						amount += 10;
-					} else if (event.isShiftClick() && event.isRightClick()) {
+					} else if (event.isShiftClick() && event.getButton() == MouseButton.RIGHT) {
 						amount -= 10;
-					} else if (event.isLeftClick()) {
+					} else if (event.getButton() == MouseButton.LEFT) {
 						amount += 1;
-					} else if (event.isRightClick()) {
+					} else if (event.getButton() == MouseButton.RIGHT) {
 						amount -= 1;
+					} else if (event.isShiftClick() && event.getButton() == MouseButton.MIDDLE) {
+						amount = 64;
+					} else if (event.getButton() == MouseButton.MIDDLE) {
+						amount = 1;
 					}
 					if (amount > 64) amount = 64;
 					if (amount <= 0) {
@@ -196,7 +205,7 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 			ShopkeepersPlugin.debug("Cancelled trade from " + event.getWhoClicked().getName() + " because he can't trade with his own shop");
 		} else {
 			// prevent unwanted special clicks
-			if (event.isRightClick() || event.isShiftClick()) {
+			if (event.getButton() != MouseButton.LEFT || event.isShiftClick()) {
 				event.setCancelled(true);
 				return;
 			}

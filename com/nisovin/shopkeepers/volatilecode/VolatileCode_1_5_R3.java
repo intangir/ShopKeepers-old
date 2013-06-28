@@ -123,16 +123,5 @@ public class VolatileCode_1_5_R3 implements VolatileCodeHandle {
 		return org.bukkit.craftbukkit.v1_5_R3.inventory.CraftItemStack.asNMSCopy(item);
 	}
 
-	@Override
-	public void setEntityName(LivingEntity entity, String name) {
-		if (name != null && !name.isEmpty()) {
-			entity.setCustomName(name);
-			entity.setCustomNameVisible(Settings.alwaysShowNameplates);
-		} else {
-			entity.setCustomName(null);
-			entity.setCustomNameVisible(false);
-		}
-	}
-
 	
 }

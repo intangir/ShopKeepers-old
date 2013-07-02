@@ -13,7 +13,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
 import org.bukkit.inventory.ItemStack;
 
-import com.nisovin.shopkeepers.Settings;
 import com.nisovin.shopkeepers.Shopkeeper;
 
 public class VolatileCode_1_6_R1 implements VolatileCodeHandle {
@@ -29,7 +28,7 @@ public class VolatileCode_1_6_R1 implements VolatileCodeHandle {
 				villager.setCustomName(name);
 			}
 			
-			Field recipeListField = EntityVillager.class.getDeclaredField(Settings.recipeListVar);
+			Field recipeListField = EntityVillager.class.getDeclaredField("bu");
 			recipeListField.setAccessible(true);
 			MerchantRecipeList recipeList = (MerchantRecipeList)recipeListField.get(villager);
 			if (recipeList == null) {

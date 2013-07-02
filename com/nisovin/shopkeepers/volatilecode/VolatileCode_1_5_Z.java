@@ -29,7 +29,7 @@ public class VolatileCode_1_5_Z implements VolatileCodeHandle {
 				villager.setCustomName(name);
 			}
 			
-			Field recipeListField = EntityVillager.class.getDeclaredField(Settings.recipeListVar);
+			Field recipeListField = EntityVillager.class.getDeclaredField("i");
 			recipeListField.setAccessible(true);
 			MerchantRecipeList recipeList = (MerchantRecipeList)recipeListField.get(villager);
 			if (recipeList == null) {

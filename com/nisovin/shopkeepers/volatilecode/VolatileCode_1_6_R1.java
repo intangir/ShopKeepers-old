@@ -45,6 +45,7 @@ public class VolatileCode_1_6_R1 implements VolatileCodeHandle {
 			
 			return true;
 		} catch (Exception e) {
+			e.printStackTrace();
 			return false;
 		}
 	}
@@ -55,7 +56,7 @@ public class VolatileCode_1_6_R1 implements VolatileCodeHandle {
 		try {
 			EntityLiving ev = ((CraftLivingEntity)entity).getHandle();
 			
-			Field goalsField = EntityLiving.class.getDeclaredField("goalSelector");
+			Field goalsField = EntityInsentient.class.getDeclaredField("goalSelector");
 			goalsField.setAccessible(true);
 			PathfinderGoalSelector goals = (PathfinderGoalSelector) goalsField.get(ev);
 			
@@ -81,7 +82,7 @@ public class VolatileCode_1_6_R1 implements VolatileCodeHandle {
 		try {
 			EntityVillager ev = ((CraftVillager)villager).getHandle();
 			
-			Field goalsField = EntityLiving.class.getDeclaredField("goalSelector");
+			Field goalsField = EntityInsentient.class.getDeclaredField("goalSelector");
 			goalsField.setAccessible(true);
 			PathfinderGoalSelector goals = (PathfinderGoalSelector) goalsField.get(ev);
 			

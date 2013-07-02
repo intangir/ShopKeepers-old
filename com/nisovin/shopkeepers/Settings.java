@@ -88,7 +88,7 @@ public class Settings {
 	public static String msgTooManyShops = "&aYou have too many shops.";
 
 	public static String fileEncoding = "";
-	public static String recipeListVar = "i";
+	public static String recipeListVar = "bu";
 	
 	public static void loadConfiguration(Configuration config) {
 		try {

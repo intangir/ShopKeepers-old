@@ -51,7 +51,7 @@ public abstract class LivingEntityShop extends ShopObject {
 			for (Entity e : entities) {
 				if (e.getType() == getEntityType() && e.getUniqueId().toString().equalsIgnoreCase(uuid) && e.isValid()) {
 					entity = (LivingEntity)e;					
-					entity.setHealth(entity.getMaxHealth());
+					//entity.setHealth(entity.getMaxHealth());
 					String name = shopkeeper.getName();
 					if (name != null && !name.isEmpty()) {
 						setEntityName(name);
@@ -166,7 +166,7 @@ public abstract class LivingEntityShop extends ShopObject {
 	public void despawn() {
 		if (entity != null) {
 			entity.remove();
-			entity.setHealth(0);
+			entity.setHealth(0D);
 			entity = null;
 		}
 	}

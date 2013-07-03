@@ -13,8 +13,8 @@ import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryClickEvent.MouseButton;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
@@ -168,19 +168,19 @@ public class TradingPlayerShopkeeper extends PlayerShopkeeper {
 			ItemStack item = event.getCurrentItem();
 			if (item != null && item.getTypeId() != 0) {
 				int amt = item.getAmount();
-				if (event.getButton() == MouseButton.LEFT) {
+				if (event.isLeftClick()) {
 					if (event.isShiftClick()) {
 						amt += 10;
 					} else {
 						amt += 1;
 					}
-				} else if (event.getButton() == MouseButton.RIGHT) {
+				} else if (event.isRightClick()) {
 					if (event.isShiftClick()) {
 						amt -= 10;
 					} else {
 						amt -= 1;
 					}
-				} else if (event.getButton() == MouseButton.MIDDLE) {
+				} else if (event.getClick() == ClickType.MIDDLE) {
 					if (event.isShiftClick()) {
 						amt = item.getMaxStackSize();
 					} else {
@@ -206,19 +206,19 @@ public class TradingPlayerShopkeeper extends PlayerShopkeeper {
 				ItemStack item = event.getCurrentItem();
 				if (item != null && item.getTypeId() != 0) {
 					int amt = item.getAmount();
-					if (event.getButton() == MouseButton.LEFT) {
+					if (event.isLeftClick()) {
 						if (event.isShiftClick()) {
 							amt += 10;
 						} else {
 							amt += 1;
 						}
-					} else if (event.getButton() == MouseButton.RIGHT) {
+					} else if (event.isRightClick()) {
 						if (event.isShiftClick()) {
 							amt -= 10;
 						} else {
 							amt -= 1;
 						}
-					} else if (event.getButton() == MouseButton.MIDDLE) {
+					} else if (event.getClick() == ClickType.MIDDLE) {
 						if (event.isShiftClick()) {
 							amt = item.getMaxStackSize();
 						} else {
@@ -236,7 +236,7 @@ public class TradingPlayerShopkeeper extends PlayerShopkeeper {
 			return EditorClickResult.NOTHING;
 		} else if (slot > 27) {
 			// clicking in player inventory
-			if (event.isShiftClick() || event.getButton() != MouseButton.LEFT) {
+			if (event.isShiftClick() || !event.isLeftClick()) {
 				return EditorClickResult.NOTHING;
 			}
 			ItemStack cursor = event.getCursor();

@@ -16,6 +16,7 @@ delete-shopkeeper-on-break-chest: false
 max-shops-per-player: 0
 max-chest-distance: 15
 player-shopkeeper-inactive-days: 0
+prevent-trading-with-own-shop: true
 
 shop-creation-item: 383
 shop-creation-item-data: 120

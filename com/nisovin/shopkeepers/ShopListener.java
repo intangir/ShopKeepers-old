@@ -26,7 +26,6 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryClickEvent.MouseButton;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -165,7 +164,7 @@ class ShopListener implements Listener {
 		if (event.getInventory().getName().equals("mob.villager") && event.getRawSlot() == 2 && plugin.purchasing.containsKey(event.getWhoClicked().getName())) {
 			String playerName = event.getWhoClicked().getName();
 			// prevent unwanted special clicks
-			if (event.getButton() != MouseButton.LEFT) {
+			if (event.isLeftClick()) {
 				event.setCancelled(true);
 				return;
 			}

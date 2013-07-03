@@ -1,9 +1,11 @@
 package com.nisovin.shopkeepers;
 
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Witch;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityTargetEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 
 public class WitchListener implements Listener {
@@ -28,6 +30,13 @@ public class WitchListener implements Listener {
 			} else {
 				ShopkeepersPlugin.debug("  Non-shopkeeper");
 			}
+		}
+	}
+	
+	@EventHandler
+	void onTarget(EntityTargetEvent event) {
+		if (event.getEntityType() == EntityType.WITCH && plugin.isShopkeeper(event.getEntity())) {
+			event.setCancelled(true);
 		}
 	}
 	

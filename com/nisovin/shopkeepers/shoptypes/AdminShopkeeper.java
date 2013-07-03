@@ -10,7 +10,6 @@ import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event.Result;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
@@ -23,7 +22,6 @@ import com.nisovin.shopkeepers.Settings;
 import com.nisovin.shopkeepers.Shopkeeper;
 import com.nisovin.shopkeepers.ShopkeeperType;
 import com.nisovin.shopkeepers.shopobjects.ShopObject;
-
 
 /**
  * Represents a shopkeeper that is managed by an admin. This shopkeeper will have unlimited supply
@@ -150,40 +148,6 @@ public class AdminShopkeeper extends Shopkeeper {
 	
 	@Override
 	public void onPurchaseClick(InventoryClickEvent event) {
-		if (event.getCurrentItem().getType() == Material.MAP && event.getCurrentItem().getDurability() > 0) {
-			// handle map manually
-			short mapId = event.getCurrentItem().getDurability();
-			// update purchase slot and cursor item
-			event.setCursor(event.getCurrentItem());
-			event.setCurrentItem(null);
-			// find recipe
-			for (ItemStack[] recipe : getRecipes()) {
-				if (recipe[2].getType() == Material.MAP && recipe[2].getDurability() == mapId) {
-					// update cost 1
-					if (recipe[0] != null) {
-						ItemStack cost = event.getInventory().getItem(0);
-						cost.setAmount(cost.getAmount() - recipe[0].getAmount());
-						if (cost.getAmount() > 0) {
-							event.getInventory().setItem(0, cost);
-						} else {
-							event.getInventory().setItem(0, null);
-						}
-					}
-					// update cost 2
-					if (recipe[1] != null) {
-						ItemStack cost = event.getInventory().getItem(1);
-						cost.setAmount(cost.getAmount() - recipe[1].getAmount());
-						if (cost.getAmount() > 0) {
-							event.getInventory().setItem(1, cost);
-						} else {
-							event.getInventory().setItem(1, null);
-						}
-					}
-				}
-			}
-			// do it!
-			event.setResult(Result.ALLOW);
-		}
 	}
 	
 	@Override

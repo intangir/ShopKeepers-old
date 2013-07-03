@@ -12,8 +12,8 @@ import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryClickEvent.MouseButton;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
@@ -21,7 +21,6 @@ import com.nisovin.shopkeepers.EditorClickResult;
 import com.nisovin.shopkeepers.Settings;
 import com.nisovin.shopkeepers.ShopkeeperType;
 import com.nisovin.shopkeepers.shopobjects.ShopObject;
-
 
 public class BuyingPlayerShopkeeper extends PlayerShopkeeper {
 
@@ -144,17 +143,17 @@ public class BuyingPlayerShopkeeper extends PlayerShopkeeper {
 			if (item != null) {
 				if (item.getTypeId() == Settings.currencyItem) {
 					int amount = item.getAmount();
-					if (event.isShiftClick() && event.getButton() == MouseButton.LEFT) {
+					if (event.isShiftClick() && event.isLeftClick()) {
 						amount += 10;
-					} else if (event.isShiftClick() && event.getButton() == MouseButton.RIGHT) {
+					} else if (event.isShiftClick() && event.isRightClick()) {
 						amount -= 10;
-					} else if (event.getButton() == MouseButton.LEFT) {
+					} else if (event.isLeftClick()) {
 						amount += 1;
-					} else if (event.getButton() == MouseButton.RIGHT) {
+					} else if (event.isRightClick()) {
 						amount -= 1;
-					} else if (event.isShiftClick() && event.getButton() == MouseButton.MIDDLE) {
+					} else if (event.isShiftClick() && event.getClick() == ClickType.MIDDLE) {
 						amount = 64;
-					} else if (event.getButton() == MouseButton.MIDDLE) {
+					} else if (event.getClick() == ClickType.MIDDLE) {
 						amount = 1;
 					}
 					if (amount > 64) amount = 64;
@@ -177,19 +176,19 @@ public class BuyingPlayerShopkeeper extends PlayerShopkeeper {
 			ItemStack item = event.getCurrentItem();
 			if (item != null && item.getTypeId() != 0) {
 				int amt = item.getAmount();
-				if (event.getButton() == MouseButton.LEFT) {
+				if (event.isLeftClick()) {
 					if (event.isShiftClick()) {
 						amt += 10;
 					} else {
 						amt += 1;
 					}
-				} else if (event.getButton() == MouseButton.RIGHT) {
+				} else if (event.isRightClick()) {
 					if (event.isShiftClick()) {
 						amt -= 10;
 					} else {
 						amt -= 1;
 					}
-				} else if (event.getButton() == MouseButton.MIDDLE) {
+				} else if (event.getClick() == ClickType.MIDDLE) {
 					if (event.isShiftClick()) {
 						amt = item.getMaxStackSize();
 					} else {

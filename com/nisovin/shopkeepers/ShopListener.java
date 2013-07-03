@@ -25,6 +25,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
@@ -164,7 +165,7 @@ class ShopListener implements Listener {
 		if (event.getInventory().getName().equals("mob.villager") && event.getRawSlot() == 2 && plugin.purchasing.containsKey(event.getWhoClicked().getName())) {
 			String playerName = event.getWhoClicked().getName();
 			// prevent unwanted special clicks
-			if (event.isLeftClick()) {
+			if (!event.isLeftClick() || event.getAction() == InventoryAction.COLLECT_TO_CURSOR) {
 				event.setCancelled(true);
 				return;
 			}
@@ -175,13 +176,13 @@ class ShopListener implements Listener {
 			ItemStack item = event.getCurrentItem();
 			if (shopkeeper != null && item != null) {
 				// prevent double-clicks (ugly fix, but necessary to prevent dupes)
-				Long last = lastPurchase.remove(playerName);
+				/*Long last = lastPurchase.remove(playerName);
 				long curr = System.currentTimeMillis();
 				if (last != null && last.longValue() > curr - 500) {
 					event.setCancelled(true);
 					return;
 				}
-				lastPurchase.put(playerName, curr);
+				lastPurchase.put(playerName, curr);*/
 				
 				// verify purchase
 				ItemStack item1 = event.getInventory().getItem(0);

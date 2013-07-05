@@ -4,7 +4,6 @@ import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
@@ -124,19 +123,7 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 			if (item != null) {
 				if (item.getTypeId() == Settings.currencyItem) {
 					int amount = item.getAmount();
-					if (event.isShiftClick() && event.isLeftClick()) {
-						amount += 10;
-					} else if (event.isShiftClick() && event.isRightClick()) {
-						amount -= 10;
-					} else if (event.isLeftClick()) {
-						amount += 1;
-					} else if (event.isRightClick()) {
-						amount -= 1;
-					} else if (event.isShiftClick() && event.getClick() == ClickType.MIDDLE) {
-						amount = 64;
-					} else if (event.getClick() == ClickType.MIDDLE) {
-						amount = 1;
-					}
+					amount = getNewAmountAfterEditorClick(amount, event);
 					if (amount > 64) amount = 64;
 					if (amount <= 0) {
 						item.setTypeId(Settings.zeroItem);
@@ -159,19 +146,7 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 			if (item != null && Settings.highCurrencyItem > 0) {
 				if (item.getTypeId() == Settings.highCurrencyItem) {
 					int amount = item.getAmount();
-					if (event.isShiftClick() && event.isLeftClick()) {
-						amount += 10;
-					} else if (event.isShiftClick() && event.isRightClick()) {
-						amount -= 10;
-					} else if (event.isLeftClick()) {
-						amount += 1;
-					} else if (event.isRightClick()) {
-						amount -= 1;
-					} else if (event.isShiftClick() && event.getClick() == ClickType.MIDDLE) {
-						amount = 64;
-					} else if (event.getClick() == ClickType.MIDDLE) {
-						amount = 1;
-					}
+					amount = getNewAmountAfterEditorClick(amount, event);
 					if (amount > 64) amount = 64;
 					if (amount <= 0) {
 						item.setTypeId(Settings.highZeroItem);

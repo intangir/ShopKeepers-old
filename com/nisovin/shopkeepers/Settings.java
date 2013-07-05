@@ -32,6 +32,7 @@ public class Settings {
 	public static int shopCreationItem = 383;
 	public static int shopCreationItemData = 120;
 	public static String shopCreationItemName = "";
+	public static boolean preventShopCreationItemRegularUsage = false;
 	public static boolean deletingPlayerShopReturnsEgg = false;
 
 	public static boolean enableVillagerShops = true;	

@@ -49,6 +49,11 @@ public class CreateListener implements Listener {
 			}
 		}
 		
+		// prevent regular usage
+		if (Settings.preventShopCreationItemRegularUsage) {
+			event.setCancelled(true);
+		}
+		
 		// check for player shop spawn
 		String playerName = player.getName();
 		if (event.getAction() == Action.RIGHT_CLICK_AIR) {

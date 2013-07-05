@@ -24,6 +24,7 @@ tax-round-up: false
 shop-creation-item: 383
 shop-creation-item-data: 120
 shop-creation-item-name: ""
+prevent-shop-creation-item-regular-usage: false
 deleting-player-shop-returns-egg: false
 
 enable-villager-shops: true

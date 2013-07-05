@@ -50,7 +50,7 @@ public class CreateListener implements Listener {
 		}
 		
 		// prevent regular usage
-		if (Settings.preventShopCreationItemRegularUsage) {
+		if (Settings.preventShopCreationItemRegularUsage && !player.isOp() && !player.hasPermission("shopkeeper.bypass")) {
 			event.setCancelled(true);
 		}
 		

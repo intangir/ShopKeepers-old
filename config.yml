@@ -36,6 +36,7 @@ sign-shop-first-line: "[SHOP]"
 show-nameplates: true
 always-show-nameplates: false
 nameplate-prefix: "&a"
+name-regex: "[A-Za-z0-9 ]{3,15}"
 
 editor-title: "Shopkeeper Editor"
 name-item: 145
@@ -74,6 +75,7 @@ msg-shop-create-fail: "&aYou cannot create a shopkeeper there."
 msg-too-many-shops: "&aYou have too many shops."
 msg-type-new-name: "&aPlease type the shop's name into the chat.\n  &aType a dash (-) to remove the name."
 msg-name-set: "&aThe shop's name has been set!"
+msg-name-invalid: "&aThat name is not valid!"
 
 msg-player-shop-created: |
     &aShopkeeper created!

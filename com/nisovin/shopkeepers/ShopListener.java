@@ -239,14 +239,20 @@ class ShopListener implements Listener {
 		final String name = player.getName();
 		if (plugin.naming.containsKey(name)) {
 			event.setCancelled(true);
-			final String message = event.getMessage();
+			final String message = event.getMessage().trim();
 			Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
 				public void run() {
 					String id = plugin.naming.remove(name);
 					Shopkeeper shopkeeper = plugin.activeShopkeepers.get(id);
 					
+					// validate name
+					if (!message.matches("^" + Settings.nameRegex + "$")) {
+						plugin.sendMessage(player, Settings.msgNameInvalid);
+						return;
+					}
+					
 					// set name
-					if (message.equals("-")) {
+					if (message.isEmpty() || message.equals("-")) {
 						shopkeeper.setName("");
 					} else if (message.length() > 32) {
 						shopkeeper.setName(message.substring(0, 32));

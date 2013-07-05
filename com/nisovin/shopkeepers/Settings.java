@@ -44,6 +44,7 @@ public class Settings {
 	public static boolean showNameplates = true;
 	public static boolean alwaysShowNameplates = false;
 	public static String nameplatePrefix = "&a";
+	public static String nameRegex = "[A-Za-z0-9 ]{3,15}";
 	
 	//public static boolean enableBlockShops = true;
 	//public static int blockShopType = 0;
@@ -84,6 +85,7 @@ public class Settings {
 	public static String msgChestNotPlaced = "&aYou must select a chest you have recently placed.";
 	public static String msgTypeNewName = "&aPlease type the shop's name into the chat.\n  &aType a dash (-) to remove the name.";
 	public static String msgNameSet = "&aThe shop's name has been set!";
+	public static String msgNameInvalid = "&aThat name is not valid!";
 	
 	public static String msgPlayerShopCreated = "&aShopkeeper created!\n&aAdd items you want to sell to your chest, then\n&aright-click the shop while sneaking to modify costs.";
 	public static String msgBookShopCreated = "&aShopkeeper created!\n&aAdd written books and blank books to your chest, then\n&aright-click the shop while sneaking to modify costs.";

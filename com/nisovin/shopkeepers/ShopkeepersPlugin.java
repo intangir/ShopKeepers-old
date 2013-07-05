@@ -149,7 +149,8 @@ public class ShopkeepersPlugin extends JavaPlugin {
 		}
 		if (Settings.protectChests) {
 			pm.registerEvents(new ChestProtectListener(this), this);
-		} else if (Settings.deleteShopkeeperOnBreakChest) {
+		}
+		if (Settings.deleteShopkeeperOnBreakChest) {
 			pm.registerEvents(new ChestBreakListener(this), this);
 		}
 		

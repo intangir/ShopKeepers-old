@@ -73,6 +73,12 @@ public enum ShopObjectType {
 			next = typeMap.get(nextId);
 			
 			if (player.hasPermission("shopkeeper." + next.permission)) {
+				if (next == VILLAGER && !Settings.enableVillagerShops)
+					continue;
+				else if (next == WITCH && !Settings.enableWitchShops)
+					continue;
+				else if (next == SIGN && !Settings.enableSignShops)
+					continue;
 				return next;
 			}
 		}

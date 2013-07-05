@@ -243,22 +243,26 @@ class ShopListener implements Listener {
 			Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
 				public void run() {
 					String id = plugin.naming.remove(name);
-					Shopkeeper shopkeeper = plugin.activeShopkeepers.get(id);
+					Shopkeeper shopkeeper = plugin.activeShopkeepers.get(id);					
 					
-					// validate name
-					if (!message.matches("^" + Settings.nameRegex + "$")) {
-						plugin.sendMessage(player, Settings.msgNameInvalid);
-						return;
-					}
-					
-					// set name
+					// update name
 					if (message.isEmpty() || message.equals("-")) {
+						// remove name
 						shopkeeper.setName("");
-					} else if (message.length() > 32) {
-						shopkeeper.setName(message.substring(0, 32));
 					} else {
-						shopkeeper.setName(message);
+						// validate name
+						if (!message.matches("^" + Settings.nameRegex + "$")) {
+							plugin.sendMessage(player, Settings.msgNameInvalid);
+							return;
+						}
+						// set name
+						if (message.length() > 32) {
+							shopkeeper.setName(message.substring(0, 32));
+						} else {
+							shopkeeper.setName(message);
+						}
 					}
+						
 					plugin.sendMessage(player, Settings.msgNameSet);
 					plugin.closeTradingForShopkeeper(id);
 					

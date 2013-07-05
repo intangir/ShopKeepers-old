@@ -267,4 +267,15 @@ public abstract class Shopkeeper {
 		item.setItemMeta(meta);
 		return item;
 	}
+	
+	protected int getAmountAfterTaxes(int amount) {
+		if (Settings.taxRate == 0) return amount;
+		int taxes = 0;
+		if (Settings.taxRoundUp) {
+			taxes = (int)Math.ceil((double)amount * (Settings.taxRate/100F));
+		} else {
+			taxes = (int)Math.floor((double)amount * (Settings.taxRate/100F));
+		}
+		return amount - taxes;
+	}
 }

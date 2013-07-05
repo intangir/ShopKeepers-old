@@ -26,6 +26,9 @@ public class Settings {
 	public static int playerShopkeeperInactiveDays = 0;
 	public static boolean preventTradingWithOwnShop = true;
 	
+	public static int taxRate = 0;
+	public static boolean taxRoundUp = false;
+	
 	public static int shopCreationItem = 383;
 	public static int shopCreationItemData = 120;
 	public static String shopCreationItemName = "";
@@ -40,8 +43,8 @@ public class Settings {
 	public static boolean alwaysShowNameplates = false;
 	public static String nameplatePrefix = "&a";
 	
-	public static boolean enableBlockShops = true;
-	public static int blockShopType = 0;
+	//public static boolean enableBlockShops = true;
+	//public static int blockShopType = 0;
 
 	public static String editorTitle = "Shopkeeper Editor";
 	public static int saveItem = Material.EMERALD_BLOCK.getId();

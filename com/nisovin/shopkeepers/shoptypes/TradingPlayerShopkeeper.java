@@ -325,17 +325,25 @@ public class TradingPlayerShopkeeper extends PlayerShopkeeper {
 			event.setCancelled(true);
 			return;
 		} else {
-			boolean added = addToInventory(cost.item1, contents);
-			if (!added) {
-				event.setCancelled(true);
-				return;
+			ItemStack c = cost.item1.clone();
+			c.setAmount(getAmountAfterTaxes(c.getAmount()));
+			if (c.getAmount() > 0) {
+				boolean added = addToInventory(c, contents);
+				if (!added) {
+					event.setCancelled(true);
+					return;
+				}
 			}
 		}
 		if (cost.item2 != null) {
-			boolean added = addToInventory(cost.item2, contents);
-			if (!added) {
-				event.setCancelled(true);
-				return;
+			ItemStack c = cost.item2.clone();
+			c.setAmount(getAmountAfterTaxes(c.getAmount()));
+			if (c.getAmount() > 0) {
+				boolean added = addToInventory(c, contents);
+				if (!added) {
+					event.setCancelled(true);
+					return;
+				}
 			}
 		}
 

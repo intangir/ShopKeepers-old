@@ -257,11 +257,14 @@ public class BuyingPlayerShopkeeper extends PlayerShopkeeper {
 		}
 		
 		// add items to chest
-		type.setAmount(cost.amount);
-		boolean added = addToInventory(type, contents);
-		if (!added) {
-			event.setCancelled(true);
-			return;
+		int amount = getAmountAfterTaxes(cost.amount);
+		if (amount > 0) {
+			type.setAmount(amount);
+			boolean added = addToInventory(type, contents);
+			if (!added) {
+				event.setCancelled(true);
+				return;
+			}
 		}
 
 		// save chest contents

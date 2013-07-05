@@ -182,23 +182,26 @@ public class WrittenBookPlayerShopkeeper extends PlayerShopkeeper {
 			event.setCancelled(true);
 			return;
 		}
+		cost = getAmountAfterTaxes(cost);
 		
 		// add earnings to chest
-		int highCost = cost / Settings.highCurrencyValue;
-		int lowCost = cost % Settings.highCurrencyValue;
-		boolean added = false;
-		if (highCost > 0) {
-			added = addToInventory(new ItemStack(Settings.highCurrencyItem, highCost, Settings.highCurrencyItemData), contents);
-			if (!added) {
-				event.setCancelled(true);
-				return;
+		if (cost > 0) {
+			int highCost = cost / Settings.highCurrencyValue;
+			int lowCost = cost % Settings.highCurrencyValue;
+			boolean added = false;
+			if (highCost > 0) {
+				added = addToInventory(new ItemStack(Settings.highCurrencyItem, highCost, Settings.highCurrencyItemData), contents);
+				if (!added) {
+					event.setCancelled(true);
+					return;
+				}
 			}
-		}
-		if (lowCost > 0) {
-			added = addToInventory(new ItemStack(Settings.currencyItem, lowCost, Settings.currencyItemData), contents);
-			if (!added) {
-				event.setCancelled(true);
-				return;
+			if (lowCost > 0) {
+				added = addToInventory(new ItemStack(Settings.currencyItem, lowCost, Settings.currencyItemData), contents);
+				if (!added) {
+					event.setCancelled(true);
+					return;
+				}
 			}
 		}
 		

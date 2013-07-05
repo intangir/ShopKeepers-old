@@ -58,3 +58,6 @@ permissions:
     shopkeeper.witch:
         description: Create a witch shopkeeper
         default: true
+    shopkeeper.creeper:
+        description: Create a creeper shopkeeper
+        default: true

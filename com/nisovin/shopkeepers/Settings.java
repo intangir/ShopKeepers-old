@@ -39,6 +39,7 @@ public class Settings {
 	public static boolean enableVillagerShops = true;	
 	public static boolean enableSignShops = true;
 	public static boolean enableWitchShops = true;
+	public static boolean enableCreeperShops = false;
 	
 	public static String signShopFirstLine = "[SHOP]";
 	public static boolean showNameplates = true;
@@ -78,6 +79,7 @@ public class Settings {
 	public static String msgSelectedVillagerShop = "&aVillager shop selected.";
 	public static String msgSelectedSignShop = "&aSign shop selected.";
 	public static String msgSelectedWitchShop = "&aWitch shop selected.";
+	public static String msgSelectedCreeperShop = "&aCreeper shop selected.";
 	
 	public static String msgSelectedChest = "&aChest selected! Right click a block to place your shopkeeper.";
 	public static String msgMustSelectChest = "&aYou must right-click a chest before placing your shopkeeper.";

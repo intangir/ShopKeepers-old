@@ -51,6 +51,8 @@ public abstract class ShopObject {
 				return new BlockShop();
 			} else if (obj.equals("witch")) {
 				return new WitchShop();
+			} else if (obj.equals("creeper")) {
+				return new CreeperShop();
 			}
 		}
 		return new VillagerShop();

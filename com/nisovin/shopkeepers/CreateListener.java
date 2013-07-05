@@ -69,6 +69,8 @@ public class CreateListener implements Listener {
 						plugin.sendMessage(player, Settings.msgSelectedSignShop);
 					} else if (shopObjectType == ShopObjectType.WITCH) {
 						plugin.sendMessage(player, Settings.msgSelectedWitchShop);
+					} else if (shopObjectType == ShopObjectType.CREEPER) {
+						plugin.sendMessage(player, Settings.msgSelectedCreeperShop);
 					}
 				}
 			} else {

@@ -66,6 +66,7 @@ msg-selected-trade-shop: "&aTrading shopkeeper selected (trades items with playe
 msg-selected-villager-shop: "&aVillager shop selected."
 msg-selected-sign-shop: "&aSign shop selected."
 msg-selected-witch-shop: "&aWitch shop selected."
+msg-selected-creeper-shop: "&aCreeper shop selected."
 
 msg-selected-chest: "&aChest selected! Right click a block to place your shopkeeper."
 msg-must-select-chest: "&aYou must right-click a chest before placing your shopkeeper."

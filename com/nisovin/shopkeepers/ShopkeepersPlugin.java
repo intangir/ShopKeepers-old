@@ -628,16 +628,17 @@ public class ShopkeepersPlugin extends JavaPlugin {
 		return false;
 	}
 	
-	Shopkeeper getShopkeeperOwnerOfChest(Block block) {
+	List<Shopkeeper> getShopkeeperOwnersOfChest(Block block) {
+		List<Shopkeeper> owners = new ArrayList<Shopkeeper>();
 		for (Shopkeeper shopkeeper : activeShopkeepers.values()) {
 			if (shopkeeper instanceof PlayerShopkeeper) {
 				PlayerShopkeeper pshop = (PlayerShopkeeper)shopkeeper;
 				if (pshop.usesChest(block)) {
-					return pshop;
+					owners.add(pshop);
 				}
 			}
 		}
-		return null;
+		return owners;
 	}
 	
 	void sendMessage(Player player, String message) {

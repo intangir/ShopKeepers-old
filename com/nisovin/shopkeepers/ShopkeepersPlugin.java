@@ -465,6 +465,12 @@ public class ShopkeepersPlugin extends JavaPlugin {
 		}
 		
 		int maxShops = Settings.maxShopsPerPlayer;
+		String[] maxShopsPermOptions = Settings.maxShopsPermOptions.replace(" ", "").split(",");
+		for (String perm : maxShopsPermOptions) {
+			if (player.hasPermission("shopkeeper.maxshops." + perm)) {
+				maxShops = Integer.parseInt(perm);
+			}
+		}
 		
 		// call event
 		CreatePlayerShopkeeperEvent event = new CreatePlayerShopkeeperEvent(player, chest, location, shopType, maxShops);

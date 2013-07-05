@@ -14,6 +14,7 @@ require-chest-recently-placed: true
 protect-chests: true
 delete-shopkeeper-on-break-chest: false
 max-shops-per-player: 0
+max-shops-perm-options: 5,15,25
 max-chest-distance: 15
 player-shopkeeper-inactive-days: 0
 prevent-trading-with-own-shop: true

@@ -21,6 +21,9 @@ permissions:
     shopkeeper.purchase:
         description: Purchase items from any shopkeeper
         default: true
+    shopkeeper.transfer:
+        description: Transfer ownership of a shopkeeper
+        default: op
         
     shopkeeper.admin:
         description: Create and modify an admin shopkeeper

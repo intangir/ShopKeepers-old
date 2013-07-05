@@ -8,6 +8,8 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 
+import com.nisovin.shopkeepers.shoptypes.PlayerShopkeeper;
+
 public class ChestBreakListener implements Listener {
 
 	private ShopkeepersPlugin plugin;
@@ -19,8 +21,8 @@ public class ChestBreakListener implements Listener {
 	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
 	public void onBlockBreak(BlockBreakEvent event) {
 		if (event.getBlock().getType() == Material.CHEST) {
-			List<Shopkeeper> shopkeepers = plugin.getShopkeeperOwnersOfChest(event.getBlock());
-			for (Shopkeeper shopkeeper : shopkeepers) {
+			List<PlayerShopkeeper> shopkeepers = plugin.getShopkeeperOwnersOfChest(event.getBlock());
+			for (PlayerShopkeeper shopkeeper : shopkeepers) {
 				plugin.closeTradingForShopkeeper(shopkeeper.getId());
 				plugin.activeShopkeepers.remove(shopkeeper.getId());
 				plugin.allShopkeepersByChunk.get(shopkeeper.getChunk()).remove(shopkeeper);

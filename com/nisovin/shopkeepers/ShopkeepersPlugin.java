@@ -290,9 +290,41 @@ public class ShopkeepersPlugin extends JavaPlugin {
 			
 		} else if (sender instanceof Player) {
 			Player player = (Player)sender;
+			Block block = player.getTargetBlock(null, 10);
+			
+			// transfer ownership
+			if (args.length == 2 && args[0].equalsIgnoreCase("transfer") && player.hasPermission("shopkeeper.transfer")) {
+				Player newOwner = Bukkit.getPlayer(args[1]);
+				if (newOwner == null) {
+					sender.sendMessage("No player found");
+					return true;
+				}
+				if (block.getType() != Material.CHEST) {
+					sender.sendMessage("Must target chest");
+					return true;
+				}
+				List<PlayerShopkeeper> shopkeepers = getShopkeeperOwnersOfChest(block);
+				if (shopkeepers.size() == 0) {
+					sender.sendMessage("No shopkeepers use that chest");
+					return true;
+				}
+				if (!player.isOp() && !player.hasPermission("shopkeeper.bypass")) {
+					for (PlayerShopkeeper shopkeeper : shopkeepers) {
+						if (!shopkeeper.getOwner().equalsIgnoreCase(player.getName())) {
+							sender.sendMessage("Not your shopkeeper");
+							return true;
+						}
+					}
+				}
+				for (PlayerShopkeeper shopkeeper : shopkeepers) {
+					shopkeeper.setOwner(newOwner.getName());
+				}
+				save();
+				sender.sendMessage("New owner set to " + newOwner.getName());
+				return true;
+			}
 						
 			// get the spawn location for the shopkeeper
-			Block block = player.getTargetBlock(null, 10);
 			if (block != null && block.getType() != Material.AIR) {
 				if (Settings.createPlayerShopWithCommand && block.getType() == Material.CHEST) {
 					// check if already a chest
@@ -628,8 +660,8 @@ public class ShopkeepersPlugin extends JavaPlugin {
 		return false;
 	}
 	
-	List<Shopkeeper> getShopkeeperOwnersOfChest(Block block) {
-		List<Shopkeeper> owners = new ArrayList<Shopkeeper>();
+	List<PlayerShopkeeper> getShopkeeperOwnersOfChest(Block block) {
+		List<PlayerShopkeeper> owners = new ArrayList<PlayerShopkeeper>();
 		for (Shopkeeper shopkeeper : activeShopkeepers.values()) {
 			if (shopkeeper instanceof PlayerShopkeeper) {
 				PlayerShopkeeper pshop = (PlayerShopkeeper)shopkeeper;

@@ -67,6 +67,14 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 	}
 	
 	/**
+	 * Sets the owner of this shop.
+	 * @param owner the owner player name
+	 */
+	public void setOwner(String owner) {
+		this.owner = owner;
+	}
+	
+	/**
 	 * Checks whether this shop uses the indicated chest.
 	 * @param chest the chest to check
 	 * @return

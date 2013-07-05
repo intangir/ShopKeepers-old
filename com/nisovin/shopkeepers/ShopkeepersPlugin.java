@@ -35,6 +35,8 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.permissions.Permission;
+import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -129,6 +131,12 @@ public class ShopkeepersPlugin extends JavaPlugin {
 			for (Chunk chunk : world.getLoadedChunks()) {
 				loadShopkeepersInChunk(chunk);
 			}
+		}
+		
+		// process additional perms
+		String[] perms = Settings.maxShopsPermOptions.replace(" ", "").split(",");
+		for (String perm : perms) {
+			Bukkit.getPluginManager().addPermission(new Permission("shopkeeper.maxshops." + perm, PermissionDefault.FALSE));
 		}
 		
 		// register events

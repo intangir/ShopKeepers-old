@@ -54,6 +54,7 @@ public class Settings {
 	public static int saveItem = Material.EMERALD_BLOCK.getId();
 	public static int nameItem = Material.ANVIL.getId();
 	public static int deleteItem = Material.FIRE.getId();
+	public static int hireItem = Material.EMERALD.getId();
 	
 	public static int currencyItem = Material.EMERALD.getId();
 	public static short currencyItemData = 0;
@@ -70,6 +71,7 @@ public class Settings {
 	public static String msgButtonName = "&aSet Shop Name";
 	public static String msgButtonType = "&aChoose Appearance";
 	public static String msgButtonDelete = "&4Delete";
+	public static String msgButtonHire = "&aHire";
 	
 	public static String msgSelectedNormalShop = "&aNormal shopkeeper selected (sells items to players).";
 	public static String msgSelectedBookShop = "&aBook shopkeeper selected (sell books).";
@@ -88,6 +90,11 @@ public class Settings {
 	public static String msgTypeNewName = "&aPlease type the shop's name into the chat.\n  &aType a dash (-) to remove the name.";
 	public static String msgNameSet = "&aThe shop's name has been set!";
 	public static String msgNameInvalid = "&aThat name is not valid!";
+	
+	public static String msgForHire = "&aFor Hire";
+	public static String msgHireItemText = "&aHire This Shopkeeper";
+	public static String msgHired = "&aYou have hired this shopkeeper!";
+	public static String msgCantHire = "&aYou cannot afford to hire this shopkeeper.";
 	
 	public static String msgPlayerShopCreated = "&aShopkeeper created!\n&aAdd items you want to sell to your chest, then\n&aright-click the shop while sneaking to modify costs.";
 	public static String msgBookShopCreated = "&aShopkeeper created!\n&aAdd written books and blank books to your chest, then\n&aright-click the shop while sneaking to modify costs.";

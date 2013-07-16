@@ -86,6 +86,9 @@ class ShopListener implements Listener {
 		} else if (plugin.purchasing.containsKey(name)) {
 			ShopkeepersPlugin.debug("Player " + name + " closed trade window");
 			plugin.purchasing.remove(name);
+		} else if (plugin.hiring.containsKey(name)) {
+			ShopkeepersPlugin.debug("Player " + name + " closed hire window");
+			plugin.hiring.remove(name);
 		}
 	}
 	
@@ -161,6 +164,58 @@ class ShopListener implements Listener {
 			}
 		}
 		
+		// hire click
+		if (plugin.isShopkeeperHireWindow(event.getInventory())) {
+			event.setCancelled(true);
+			String playerName = event.getWhoClicked().getName();
+			String id = plugin.hiring.get(playerName);
+			Shopkeeper shopkeeper = plugin.activeShopkeepers.get(id);
+			if (shopkeeper != null && shopkeeper instanceof PlayerShopkeeper) {
+				int slot = event.getRawSlot();
+				if (slot == 2 || slot == 6) {
+					Player player = (Player)event.getWhoClicked();
+					ItemStack[] inv = player.getInventory().getContents();
+					ItemStack hireCost = ((PlayerShopkeeper)shopkeeper).getHireCost().clone();
+					for (int i = 0; i < inv.length; i++) {
+						ItemStack item = inv[i];
+						if (item != null && item.isSimilar(hireCost)) {
+							if (item.getAmount() > hireCost.getAmount()) {
+								item.setAmount(item.getAmount() - hireCost.getAmount());
+								hireCost.setAmount(0);
+								break;
+							} else if (item.getAmount() == hireCost.getAmount()) {
+								inv[i] = null;
+								hireCost.setAmount(0);
+								break;
+							} else {
+								hireCost.setAmount(hireCost.getAmount() - item.getAmount());
+								inv[i] = null;
+							}
+						}
+					}
+					if (hireCost.getAmount() == 0) {
+						// hire it
+						plugin.hiring.remove(player.getName());
+						plugin.closeInventory(event.getWhoClicked());
+						player.getInventory().setContents(inv);
+						((PlayerShopkeeper)shopkeeper).setForHire(false, null);
+						((PlayerShopkeeper)shopkeeper).setOwner(player.getName());
+						plugin.save();
+						plugin.sendMessage(player, Settings.msgHired);
+						
+					} else {
+						// not enough money
+						plugin.hiring.remove(player.getName());
+						plugin.closeInventory(event.getWhoClicked());
+						plugin.sendMessage(player, Settings.msgCantHire);
+					}
+				}
+			} else {
+				plugin.hiring.remove(event.getWhoClicked().getName());
+				plugin.closeInventory(event.getWhoClicked());
+			}
+		}
+		
 		// purchase click
 		if (event.getInventory().getName().equals("mob.villager") && event.getRawSlot() == 2 && plugin.purchasing.containsKey(event.getWhoClicked().getName())) {
 			String playerName = event.getWhoClicked().getName();
@@ -183,6 +238,9 @@ class ShopListener implements Listener {
 					return;
 				}
 				lastPurchase.put(playerName, curr);*/
+				
+				// check for hire
+				//if (shopkeeper instanceof )
 				
 				// verify purchase
 				ItemStack item1 = event.getInventory().getItem(0);

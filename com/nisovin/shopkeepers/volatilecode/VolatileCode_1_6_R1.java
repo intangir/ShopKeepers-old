@@ -19,11 +19,9 @@ public class VolatileCode_1_6_R1 implements VolatileCodeHandle {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public boolean openTradeWindow(Shopkeeper shopkeeper, Player player) {
-
+	public boolean openTradeWindow(String name, List<ItemStack[]> recipes, Player player) {
 		try {
 			EntityVillager villager = new EntityVillager(((CraftPlayer)player).getHandle().world, 0);
-			String name = shopkeeper.getName();
 			if (name != null && !name.isEmpty()) {
 				villager.setCustomName(name);
 			}
@@ -36,7 +34,7 @@ public class VolatileCode_1_6_R1 implements VolatileCodeHandle {
 				recipeListField.set(villager, recipeList);
 			}
 			recipeList.clear();
-			for (ItemStack[] recipe : shopkeeper.getRecipes()) {
+			for (ItemStack[] recipe : recipes) {
 				recipeList.add(createMerchantRecipe(recipe[0], recipe[1], recipe[2]));
 			}
 			
@@ -47,6 +45,11 @@ public class VolatileCode_1_6_R1 implements VolatileCodeHandle {
 			e.printStackTrace();
 			return false;
 		}
+	}
+	
+	@Override
+	public boolean openTradeWindow(Shopkeeper shopkeeper, Player player) {
+		return openTradeWindow(shopkeeper.getName(), shopkeeper.getRecipes(), player);
 	}
 	
 	@SuppressWarnings("rawtypes")

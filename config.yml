@@ -41,6 +41,7 @@ name-regex: "[A-Za-z0-9 ]{3,25}"
 editor-title: "Shopkeeper Editor"
 name-item: 145
 delete-item: 51
+hire-item: 338
 
 currency-item: 388
 currency-item-data: 0
@@ -57,6 +58,7 @@ language: en
 msg-button-name: "&aSet Shop Name"
 msg-button-type: "&aChoose Appearance"
 msg-button-delete: "&4Delete"
+msg-button-hire: "&aHire"
 
 msg-selected-normal-shop: "&aNormal shopkeeper selected (sells items to players)."
 msg-selected-book-shop: "&aBook shopkeeper selected (sell books)."
@@ -77,6 +79,11 @@ msg-too-many-shops: "&aYou have too many shops."
 msg-type-new-name: "&aPlease type the shop's name into the chat.\n  &aType a dash (-) to remove the name."
 msg-name-set: "&aThe shop's name has been set!"
 msg-name-invalid: "&aThat name is not valid!"
+
+msg-for-hire: "&aFor Hire"
+msg-hire-item-text: "&aHire This Shopkeeper"
+msg-hired: "&aYou have hired this shopkeeper!"
+msg-cant-hire: "&aYou cannot afford to hire this shopkeeper."
 
 msg-player-shop-created: |
     &aShopkeeper created!

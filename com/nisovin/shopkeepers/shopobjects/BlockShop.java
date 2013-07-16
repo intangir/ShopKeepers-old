@@ -61,8 +61,12 @@ public class BlockShop extends ShopObject {
 			if (block.getType() == Material.WALL_SIGN || block.getType() == Material.SIGN_POST) {
 				Sign sign = (Sign)block.getState();
 				sign.setLine(0, Settings.signShopFirstLine);
-				if (name.length() > 15) name = name.substring(0, 15);
-				sign.setLine(1, name);
+				if (name != null) {
+					if (name.length() > 15) name = name.substring(0, 15);
+					sign.setLine(1, name);
+				} else {
+					sign.setLine(1, "");
+				}
 				if (shopkeeper instanceof PlayerShopkeeper) {
 					sign.setLine(2, ((PlayerShopkeeper)shopkeeper).getOwner());
 				}

@@ -111,11 +111,13 @@ public abstract class LivingEntityShop extends ShopObject {
 	@Override
 	public void setName(String name) {
 		if (entity != null && entity.isValid() && Settings.showNameplates) {
-			if (Settings.nameplatePrefix != null && !Settings.nameplatePrefix.isEmpty()) {
-				name = ChatColor.translateAlternateColorCodes('&', Settings.nameplatePrefix) + name;
-			}
-			if (name.length() > 32) {
-				name = name.substring(0, 32);
+			if (name != null) {
+				if (Settings.nameplatePrefix != null && !Settings.nameplatePrefix.isEmpty()) {
+					name = ChatColor.translateAlternateColorCodes('&', Settings.nameplatePrefix) + name;
+				}
+				if (name.length() > 32) {
+					name = name.substring(0, 32);
+				}
 			}
 			setEntityName(name);
 		}

@@ -35,6 +35,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.plugin.Plugin;
@@ -59,6 +60,7 @@ public class ShopkeepersPlugin extends JavaPlugin {
 	Map<String, String> editing = new HashMap<String, String>();
 	Map<String, String> naming = Collections.synchronizedMap(new HashMap<String, String>());
 	Map<String, String> purchasing = new HashMap<String, String>();
+	Map<String, String> hiring = new HashMap<String, String>();
 	Map<String, List<String>> recentlyPlacedChests = new HashMap<String, List<String>>();
 	Map<String, ShopkeeperType> selectedShopType = new HashMap<String, ShopkeeperType>();
 	Map<String, ShopObjectType> selectedShopObjectType = new HashMap<String, ShopObjectType>();
@@ -330,6 +332,38 @@ public class ShopkeepersPlugin extends JavaPlugin {
 				sender.sendMessage("New owner set to " + newOwner.getName());
 				return true;
 			}
+			
+			// set for hire
+			if (args.length == 1 && args[0].equalsIgnoreCase("setforhire") && player.hasPermission("shopkeeper.setforhire")) {
+				if (block.getType() != Material.CHEST) {
+					sender.sendMessage("Must target chest");
+					return true;
+				}
+				List<PlayerShopkeeper> shopkeepers = getShopkeeperOwnersOfChest(block);
+				if (shopkeepers.size() == 0) {
+					sender.sendMessage("No shopkeepers use that chest");
+					return true;
+				}
+				if (!player.isOp() && !player.hasPermission("shopkeeper.bypass")) {
+					for (PlayerShopkeeper shopkeeper : shopkeepers) {
+						if (!shopkeeper.getOwner().equalsIgnoreCase(player.getName())) {
+							sender.sendMessage("Not your shopkeeper");
+							return true;
+						}
+					}
+				}
+				ItemStack hireCost = player.getItemInHand();
+				if (hireCost == null || hireCost.getType() == Material.AIR || hireCost.getAmount() == 0) {
+					sender.sendMessage("Must hold hire cost in hand");
+					return true;
+				}
+				for (PlayerShopkeeper shopkeeper : shopkeepers) {
+					shopkeeper.setForHire(true, hireCost);
+				}
+				save();
+				sender.sendMessage("Shopkeeper set for hire");
+				return true;
+			}
 						
 			// get the spawn location for the shopkeeper
 			if (block != null && block.getType() != Material.AIR) {
@@ -563,6 +597,10 @@ public class ShopkeepersPlugin extends JavaPlugin {
 	public boolean isShopkeeperEditorWindow(Inventory inventory) {
 		return inventory.getTitle().equals(Settings.editorTitle);
 	}
+	
+	public boolean isShopkeeperHireWindow(Inventory inventory) {
+		return inventory.getTitle().equals(Settings.msgForHire);
+	}
 
 	void addShopkeeper(Shopkeeper shopkeeper) {
 		// add to chunk list
@@ -600,23 +638,29 @@ public class ShopkeepersPlugin extends JavaPlugin {
 			boolean isEditing = shopkeeper.onEdit(player);
 			if (isEditing) {
 				ShopkeepersPlugin.debug("  Editor window opened");
-				plugin.editing.put(player.getName(), shopkeeper.getId());
+				editing.put(player.getName(), shopkeeper.getId());
 			} else {
 				ShopkeepersPlugin.debug("  Editor window NOT opened");
 			}
 		} else if (shopkeeper != null) {
-			// trading with shopkeeper
-			ShopkeepersPlugin.debug("  Opening trade window...");
-			OpenTradeEvent evt = new OpenTradeEvent(player, shopkeeper);
-			Bukkit.getPluginManager().callEvent(evt);
-			if (evt.isCancelled()) {
-				ShopkeepersPlugin.debug("  Trade cancelled by another plugin");
-				return;
+			if (shopkeeper instanceof PlayerShopkeeper && ((PlayerShopkeeper)shopkeeper).isForHire() && player.hasPermission("shopkeeper.hire")) {
+				// show hire interface
+				openHireWindow((PlayerShopkeeper)shopkeeper, player);
+				hiring.put(player.getName(), shopkeeper.getId());
+			} else {
+				// trading with shopkeeper
+				ShopkeepersPlugin.debug("  Opening trade window...");
+				OpenTradeEvent evt = new OpenTradeEvent(player, shopkeeper);
+				Bukkit.getPluginManager().callEvent(evt);
+				if (evt.isCancelled()) {
+					ShopkeepersPlugin.debug("  Trade cancelled by another plugin");
+					return;
+				}
+				// open trade window
+				openTradeWindow(shopkeeper, player);
+				purchasing.put(player.getName(), shopkeeper.getId());
+				ShopkeepersPlugin.debug("  Trade window opened");
 			}
-			// open trade window
-			plugin.openTradeWindow(shopkeeper, player);
-			plugin.purchasing.put(player.getName(), shopkeeper.getId());
-			ShopkeepersPlugin.debug("  Trade window opened");
 		}
 	}
 	
@@ -645,6 +689,17 @@ public class ShopkeepersPlugin extends JavaPlugin {
 						}
 					}
 				}
+				Iterator<String> hirers = hiring.keySet().iterator();
+				while (hirers.hasNext()) {
+					String name = hirers.next();
+					if (hiring.get(name).equals(id)) {
+						hirers.remove();
+						Player player = Bukkit.getPlayerExact(name);
+						if (player != null) {
+							player.closeInventory();
+						}
+					}
+				}
 			}
 		}, 1);
 	}
@@ -659,6 +714,23 @@ public class ShopkeepersPlugin extends JavaPlugin {
 	
 	boolean openTradeWindow(Shopkeeper shopkeeper, Player player) {
 		return volatileCodeHandle.openTradeWindow(shopkeeper, player);
+	}
+	
+	void openHireWindow(PlayerShopkeeper shopkeeper, Player player) {
+		Inventory inv = Bukkit.createInventory(player, 9, Settings.msgForHire);
+		
+		ItemStack item = new ItemStack(Settings.hireItem, 0);
+		ItemMeta meta = item.getItemMeta();
+		meta.setDisplayName(Settings.msgButtonHire);
+		item.setItemMeta(meta);
+		inv.setItem(2, item);
+		inv.setItem(6, item);
+		
+		ItemStack hireCost = shopkeeper.getHireCost();
+		if (hireCost == null) return;
+		inv.setItem(4, hireCost);
+		
+		player.openInventory(inv);
 	}
 	
 	boolean isChestProtected(Player player, Block block) {

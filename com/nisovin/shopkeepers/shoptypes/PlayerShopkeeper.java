@@ -26,9 +26,12 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 	protected int chestx;
 	protected int chesty;
 	protected int chestz;
+	protected boolean forHire;
+	protected ItemStack hireCost;
 	
 	public PlayerShopkeeper(ConfigurationSection config) {
 		super(config);
+		forHire = false;
 	}
 	
 	public PlayerShopkeeper(Player owner, Block chest, Location location, ShopObject shopObject) {
@@ -37,6 +40,7 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 		this.chestx = chest.getX();
 		this.chesty = chest.getY();
 		this.chestz = chest.getZ();
+		this.forHire = false;
 	}
 	
 	@Override
@@ -46,6 +50,8 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 		chestx = config.getInt("chestx");
 		chesty = config.getInt("chesty");
 		chestz = config.getInt("chestz");
+		forHire = config.getBoolean("forhire");
+		hireCost = config.getItemStack("hirecost");
 	}
 	
 	@Override
@@ -56,6 +62,8 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 		config.set("chestx", chestx);
 		config.set("chesty", chesty);
 		config.set("chestz", chestz);
+		config.set("forhire", forHire);
+		config.set("hirecost", hireCost);
 	}
 	
 	/**
@@ -72,6 +80,24 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 	 */
 	public void setOwner(String owner) {
 		this.owner = owner;
+	}
+	
+	public boolean isForHire() {
+		return forHire;
+	}
+	
+	public void setForHire(boolean forHire, ItemStack hireCost) {
+		this.forHire = forHire;
+		this.hireCost = hireCost;
+		if (forHire) {
+			setName(Settings.msgForHire);
+		} else {
+			setName(null);
+		}
+	}
+	
+	public ItemStack getHireCost() {
+		return hireCost;
 	}
 	
 	/**

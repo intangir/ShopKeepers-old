@@ -4,6 +4,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.LivingEntity;
@@ -98,14 +99,13 @@ public class VolatileCode_Unknown implements VolatileCodeHandle {
 		classEntity = Class.forName(nmsPackageString + "Entity");
 		worldField = classEntity.getDeclaredField("world");
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	@Override
-	public boolean openTradeWindow(Shopkeeper shopkeeper, Player player) {
+	public boolean openTradeWindow(String name, List<ItemStack[]> recipes, Player player) {
 		try {
 			
 			Object villager = classEntityVillagerConstructor.newInstance(worldField.get(craftPlayerGetHandle.invoke(player)));
-			String name = shopkeeper.getName();
 			if (name != null && !name.isEmpty()) {
 				setCustomNameMethod.invoke(villager, name);				
 			}
@@ -116,7 +116,7 @@ public class VolatileCode_Unknown implements VolatileCodeHandle {
 				recipeListField.set(villager, recipeList);
 			}
 			((ArrayList)recipeList).clear();
-			for (ItemStack[] recipe : shopkeeper.getRecipes()) {
+			for (ItemStack[] recipe : recipes) {
 				Object r = createMerchantRecipe(recipe[0], recipe[1], recipe[2]);
 				if (r != null) {
 					((ArrayList)recipeList).add(r);
@@ -130,6 +130,11 @@ public class VolatileCode_Unknown implements VolatileCodeHandle {
 			e.printStackTrace();
 			return false;
 		}
+	}
+	
+	@Override
+	public boolean openTradeWindow(Shopkeeper shopkeeper, Player player) {
+		return openTradeWindow(shopkeeper.getName(), shopkeeper.getRecipes(), player);
 	}
 	
 	@Override

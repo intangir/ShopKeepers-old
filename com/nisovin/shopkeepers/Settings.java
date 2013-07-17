@@ -54,7 +54,10 @@ public class Settings {
 	public static int saveItem = Material.EMERALD_BLOCK.getId();
 	public static int nameItem = Material.ANVIL.getId();
 	public static int deleteItem = Material.FIRE.getId();
+	
 	public static int hireItem = Material.EMERALD.getId();
+	public static String hireItemText = "&aHire This Shopkeeper";
+	public static String forHireTitle = "For Hire";
 	
 	public static int currencyItem = Material.EMERALD.getId();
 	public static short currencyItemData = 0;
@@ -91,8 +94,6 @@ public class Settings {
 	public static String msgNameSet = "&aThe shop's name has been set!";
 	public static String msgNameInvalid = "&aThat name is not valid!";
 	
-	public static String msgForHire = "&aFor Hire";
-	public static String msgHireItemText = "&aHire This Shopkeeper";
 	public static String msgHired = "&aYou have hired this shopkeeper!";
 	public static String msgCantHire = "&aYou cannot afford to hire this shopkeeper.";
 	

@@ -1,5 +1,6 @@
 package com.nisovin.shopkeepers.shoptypes;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
@@ -31,7 +32,6 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 	
 	public PlayerShopkeeper(ConfigurationSection config) {
 		super(config);
-		forHire = false;
 	}
 	
 	public PlayerShopkeeper(Player owner, Block chest, Location location, ShopObject shopObject) {
@@ -90,7 +90,7 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 		this.forHire = forHire;
 		this.hireCost = hireCost;
 		if (forHire) {
-			setName(Settings.msgForHire);
+			setName(ChatColor.translateAlternateColorCodes('&', Settings.forHireTitle));
 		} else {
 			setName(null);
 		}

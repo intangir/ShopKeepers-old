@@ -41,7 +41,10 @@ name-regex: "[A-Za-z0-9 ]{3,25}"
 editor-title: "Shopkeeper Editor"
 name-item: 145
 delete-item: 51
-hire-item: 338
+
+hire-item: 388
+hire-item-text: "&aHire This Shopkeeper"
+for-hire-title: "For Hire"
 
 currency-item: 388
 currency-item-data: 0
@@ -80,8 +83,6 @@ msg-type-new-name: "&aPlease type the shop's name into the chat.\n  &aType a das
 msg-name-set: "&aThe shop's name has been set!"
 msg-name-invalid: "&aThat name is not valid!"
 
-msg-for-hire: "&aFor Hire"
-msg-hire-item-text: "&aHire This Shopkeeper"
 msg-hired: "&aYou have hired this shopkeeper!"
 msg-cant-hire: "&aYou cannot afford to hire this shopkeeper."
 

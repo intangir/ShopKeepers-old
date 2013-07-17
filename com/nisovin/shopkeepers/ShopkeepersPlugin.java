@@ -137,7 +137,9 @@ public class ShopkeepersPlugin extends JavaPlugin {
 		// process additional perms
 		String[] perms = Settings.maxShopsPermOptions.replace(" ", "").split(",");
 		for (String perm : perms) {
-			Bukkit.getPluginManager().addPermission(new Permission("shopkeeper.maxshops." + perm, PermissionDefault.FALSE));
+			if (Bukkit.getPluginManager().getPermission("shopkeeper.maxshops." + perm) == null) {
+				Bukkit.getPluginManager().addPermission(new Permission("shopkeeper.maxshops." + perm, PermissionDefault.FALSE));
+			}
 		}
 		
 		// register events
@@ -358,7 +360,7 @@ public class ShopkeepersPlugin extends JavaPlugin {
 					return true;
 				}
 				for (PlayerShopkeeper shopkeeper : shopkeepers) {
-					shopkeeper.setForHire(true, hireCost);
+					shopkeeper.setForHire(true, hireCost.clone());
 				}
 				save();
 				sender.sendMessage("Shopkeeper set for hire");
@@ -599,7 +601,7 @@ public class ShopkeepersPlugin extends JavaPlugin {
 	}
 	
 	public boolean isShopkeeperHireWindow(Inventory inventory) {
-		return inventory.getTitle().equals(Settings.msgForHire);
+		return inventory.getTitle().equals(Settings.forHireTitle);
 	}
 
 	void addShopkeeper(Shopkeeper shopkeeper) {
@@ -717,11 +719,11 @@ public class ShopkeepersPlugin extends JavaPlugin {
 	}
 	
 	void openHireWindow(PlayerShopkeeper shopkeeper, Player player) {
-		Inventory inv = Bukkit.createInventory(player, 9, Settings.msgForHire);
+		Inventory inv = Bukkit.createInventory(player, 9, ChatColor.translateAlternateColorCodes('&', Settings.forHireTitle));
 		
 		ItemStack item = new ItemStack(Settings.hireItem, 0);
 		ItemMeta meta = item.getItemMeta();
-		meta.setDisplayName(Settings.msgButtonHire);
+		meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', Settings.msgButtonHire));
 		item.setItemMeta(meta);
 		inv.setItem(2, item);
 		inv.setItem(6, item);

@@ -155,6 +155,9 @@ public class ShopkeepersPlugin extends JavaPlugin {
 		if (Settings.enableWitchShops) {
 			pm.registerEvents(new WitchListener(this), this);
 		}
+		if (Settings.enableCreeperShops) {
+			pm.registerEvents(new CreeperListener(this), this);
+		}
 		if (Settings.blockVillagerSpawns) {
 			pm.registerEvents(new BlockSpawnListener(), this);
 		}

@@ -10,7 +10,6 @@ import com.nisovin.shopkeepers.ShopkeepersPlugin;
 
 public class VillagerShop extends LivingEntityShop {
 
-	private Villager villager;
 	private int profession;
 	
 	@Override
@@ -34,10 +33,9 @@ public class VillagerShop extends LivingEntityShop {
 	@Override
 	public boolean spawn(String world, int x, int y, int z) {
 		boolean spawned = super.spawn(world, x, y, z);
-		if (spawned && entity != null && entity.isValid()) {
-			villager = (Villager)entity;
-			ShopkeepersPlugin.getVolatileCode().setVillagerProfession(villager, profession);
-			villager.setBreed(false);
+		if (spawned && entity != null && entity.isValid() && entity.getType() == EntityType.VILLAGER) {
+			ShopkeepersPlugin.getVolatileCode().setVillagerProfession((Villager)entity, profession);
+			((Villager)entity).setBreed(false);
 			return true;
 		} else {
 			return false;
@@ -53,8 +51,10 @@ public class VillagerShop extends LivingEntityShop {
 	public void cycleType() {
 		profession += 1;
 		if (profession > 5) profession = 0;
-		ShopkeepersPlugin.getVolatileCode().setVillagerProfession(villager, profession);
-	}	
+		if (entity instanceof Villager) {
+			ShopkeepersPlugin.getVolatileCode().setVillagerProfession((Villager)entity, profession);
+		}
+	}
 
 	private short getProfessionWoolColor() {
 		switch (profession) {

@@ -31,7 +31,7 @@ public class CreeperShop extends LivingEntityShop {
 	@Override
 	public boolean spawn(String world, int x, int y, int z) {
 		boolean spawned = super.spawn(world, x, y, z);
-		if (spawned && entity != null && entity.isValid()) {
+		if (spawned && entity != null && entity.isValid() && entity instanceof Creeper) {
 			((Creeper)entity).setPowered(powered);
 			return true;
 		} else {

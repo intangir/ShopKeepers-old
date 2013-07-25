@@ -442,6 +442,8 @@ public class ShopkeepersPlugin extends JavaPlugin {
 							loc = block.getLocation();
 						} else if (args[0].equals("witch")) {
 							shopObjType = ShopObjectType.WITCH;
+						} else if (args[0].equals("creeper")) {
+							shopObjType = ShopObjectType.CREEPER;
 						}
 					}
 					Shopkeeper shopkeeper = createNewAdminShopkeeper(loc, shopObjType.createObject());

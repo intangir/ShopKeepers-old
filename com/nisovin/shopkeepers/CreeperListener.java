@@ -51,7 +51,7 @@ public class CreeperListener implements Listener {
 	
 	@EventHandler
 	void onExplode(EntityExplodeEvent event) {
-		if (event.getEntityType() == EntityType.CREEPER && plugin.isShopkeeper(event.getEntity())) {
+		if (event.getEntity() != null && event.getEntity().getType() == EntityType.CREEPER && plugin.isShopkeeper(event.getEntity())) {
 			event.setCancelled(true);
 		}
 	}

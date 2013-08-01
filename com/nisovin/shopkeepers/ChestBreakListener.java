@@ -22,12 +22,14 @@ public class ChestBreakListener implements Listener {
 	public void onBlockBreak(BlockBreakEvent event) {
 		if (event.getBlock().getType() == Material.CHEST) {
 			List<PlayerShopkeeper> shopkeepers = plugin.getShopkeeperOwnersOfChest(event.getBlock());
-			for (PlayerShopkeeper shopkeeper : shopkeepers) {
-				plugin.closeTradingForShopkeeper(shopkeeper.getId());
-				plugin.activeShopkeepers.remove(shopkeeper.getId());
-				plugin.allShopkeepersByChunk.get(shopkeeper.getChunk()).remove(shopkeeper);
+			if (shopkeepers.size() > 0) {
+				for (PlayerShopkeeper shopkeeper : shopkeepers) {
+					plugin.closeTradingForShopkeeper(shopkeeper.getId());
+					plugin.activeShopkeepers.remove(shopkeeper.getId());
+					plugin.allShopkeepersByChunk.get(shopkeeper.getChunk()).remove(shopkeeper);
+					shopkeeper.remove();
+				}
 				plugin.save();
-				shopkeeper.remove();
 			}
 		}
 	}

@@ -1,21 +1,16 @@
 package com.nisovin.shopkeepers.shoptypes;
 
-import java.util.ArrayList;
-import java.util.Map;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 
 import com.nisovin.shopkeepers.EditorClickResult;
 import com.nisovin.shopkeepers.Settings;
@@ -81,7 +76,22 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 	 * @return
 	 */
 	public boolean usesChest(Block chest) {
-		return (chest.getWorld().getName().equals(world) && chest.getX() == chestx && chest.getY() == chesty && chest.getZ() == chestz);
+		if (!chest.getWorld().getName().equals(world)) 
+			return false;
+		int x = chest.getX();
+		int y = chest.getY();
+		int z = chest.getZ();
+		if (x == chestx && y == chesty && z == chestz) 
+			return true;
+		if (x == chestx + 1 && y == chesty && z == chestz) 
+			return true;
+		if (x == chestx - 1 && y == chesty && z == chestz) 
+			return true;
+		if (x == chestx && y == chesty && z == chestz + 1) 
+			return true;
+		if (x == chestx && y == chesty && z == chestz - 1) 
+			return true;
+		return false;
 	}
 
 	/**
@@ -93,7 +103,6 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 		Block chest = Bukkit.getWorld(world).getBlockAt(chestx, chesty, chestz);
 		return (chest.getType() == Material.CHEST);
 	}
-
 
 	@Override
 	public boolean onEdit(Player player) {
@@ -141,38 +150,14 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 			event.setCancelled(true);
 			return EditorClickResult.NOTHING;
 		}
-		if (event.getRawSlot() == 8) {
-			// save
-			event.setCancelled(true);
-			saveEditor(event.getInventory());
-			return EditorClickResult.DONE_EDITING;
-		} else if (event.getRawSlot() == 17) {
-			// change profession
-			event.setCancelled(true);
-			shopObject.cycleType();
-			event.getInventory().setItem(17, shopObject.getTypeItem());
-			return EditorClickResult.SAVE_AND_CONTINUE;
-		} else if (event.getRawSlot() == 26) {
-			// delete
-			event.setCancelled(true);
-			delete();
-			return EditorClickResult.DELETE_SHOPKEEPER;
-		} else if (event.getRawSlot() >= 18 && event.getRawSlot() <= 25) {
+		if (event.getRawSlot() >= 18 && event.getRawSlot() <= 25) {
 			// change low cost
 			event.setCancelled(true);
 			ItemStack item = event.getCurrentItem();
 			if (item != null) {
 				if (item.getTypeId() == Settings.currencyItem) {
 					int amount = item.getAmount();
-					if (event.isShiftClick() && event.isLeftClick()) {
-						amount += 10;
-					} else if (event.isShiftClick() && event.isRightClick()) {
-						amount -= 10;
-					} else if (event.isLeftClick()) {
-						amount += 1;
-					} else if (event.isRightClick()) {
-						amount -= 1;
-					}
+					amount = getNewAmountAfterEditorClick(amount, event);
 					if (amount > 64) amount = 64;
 					if (amount <= 0) {
 						item.setTypeId(Settings.zeroItem);
@@ -187,6 +172,7 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 					item.setAmount(1);
 				}
 			}
+			return EditorClickResult.NOTHING;
 		} else if (event.getRawSlot() >= 9 && event.getRawSlot() <= 16) {
 			// change high cost
 			event.setCancelled(true);
@@ -194,15 +180,7 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 			if (item != null && Settings.highCurrencyItem > 0) {
 				if (item.getTypeId() == Settings.highCurrencyItem) {
 					int amount = item.getAmount();
-					if (event.isShiftClick() && event.isLeftClick()) {
-						amount += 10;
-					} else if (event.isShiftClick() && event.isRightClick()) {
-						amount -= 10;
-					} else if (event.isLeftClick()) {
-						amount += 1;
-					} else if (event.isRightClick()) {
-						amount -= 1;
-					}
+					amount = getNewAmountAfterEditorClick(amount, event);
 					if (amount > 64) amount = 64;
 					if (amount <= 0) {
 						item.setTypeId(Settings.highZeroItem);
@@ -217,8 +195,10 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 					item.setAmount(1);
 				}
 			}
+			return EditorClickResult.NOTHING;
+		} else {
+			return super.onEditorClick(event);
 		}
-		return EditorClickResult.NOTHING;
 	}
 
 	@Override
@@ -226,13 +206,15 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 		saveEditor(event.getInventory());
 	}
 	
-	protected abstract void saveEditor(Inventory inv);
-	
 	@Override
 	public final void onPurchaseClick(InventoryClickEvent event) {
 		if (event.getWhoClicked().getName().equalsIgnoreCase(owner)) {
 			event.setCancelled(true);
 		} else {
+			if (!event.isLeftClick() || event.isShiftClick()) {
+				event.setCancelled(true);
+				return;
+			}
 			onPlayerPurchaseClick(event);
 		}
 	}
@@ -295,24 +277,6 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 		}
 	}
 	
-	protected ItemStack setItemMetadata(ItemStack item, String name, String lore) {
-		ItemMeta im = item.getItemMeta();
-		im.setDisplayName(name);
-		ArrayList<String> lores = new ArrayList<String>();
-		for(String loreline: lore.split("\n")) {
-			lores.add(loreline);
-		}
-		im.setLore(lores);
-		item.setItemMeta(im);
-		return item;
-	}
-	
-	protected void setActionButtons(Inventory inv) {
-		inv.setItem(8, setItemMetadata(new ItemStack(Settings.inventoryItem), "View Inventory", "lets you view the inventory\nyour vendor is using"));
-		inv.setItem(17, setItemMetadata(new ItemStack(shopObject.getTypeItem()), "Change Clothes", "changes the look\nof your shopkeeper"));
-		inv.setItem(26, setItemMetadata(new ItemStack(Settings.deleteItemId, 1, Settings.deleteItemData), "Close Shop", "close this shop location\nreturn vendor to egg"));
-	}
-	
 	protected int getCostFromColumn(Inventory inv, int column) {
 		ItemStack lowCostItem = inv.getItem(column + 18);
 		ItemStack highCostItem = inv.getItem(column + 9);
@@ -329,7 +293,7 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 	protected boolean removeFromInventory(ItemStack item, ItemStack[] contents) {
 		item = item.clone();
 		for (int i = 0; i < contents.length; i++) {
-			if (contents[i] != null && contents[i].getTypeId() == item.getTypeId() && contents[i].getDurability() == item.getDurability() && equalEnchantments(item, contents[i])) {
+			if (contents[i] != null && item.isSimilar(contents[i])) {
 				if (contents[i].getAmount() > item.getAmount()) {
 					contents[i].setAmount(contents[i].getAmount() - item.getAmount());
 					return true;
@@ -351,7 +315,7 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 			if (contents[i] == null) {
 				contents[i] = item;
 				return true;
-			} else if (contents[i].getTypeId() == item.getTypeId() && contents[i].getDurability() == item.getDurability() && contents[i].getAmount() != contents[i].getMaxStackSize()) {
+			} else if (item.isSimilar(contents[i]) && contents[i].getAmount() != contents[i].getMaxStackSize()) {
 				int amt = contents[i].getAmount() + item.getAmount();
 				if (amt <= contents[i].getMaxStackSize()) {
 					contents[i].setAmount(amt);
@@ -363,24 +327,6 @@ public abstract class PlayerShopkeeper extends Shopkeeper {
 			}
 		}
 		return false;
-	}
-	
-	protected boolean equalEnchantments(ItemStack item1, ItemStack item2) {
-		Map<Enchantment, Integer> enchants1 = item1.getEnchantments();
-		Map<Enchantment, Integer> enchants2 = item2.getEnchantments();
-		if ((enchants1 == null || enchants1.size() == 0) && (enchants2 == null || enchants2.size() == 0)) {
-			return true;
-		} else if (enchants1 == null || enchants2 == null || enchants1.size() != enchants2.size()) {
-			return false;
-		} else {
-			for (Enchantment ench : enchants1.keySet()) {
-				Integer lvl2 = enchants2.get(ench);
-				if (lvl2 == null || !lvl2.equals(enchants1.get(ench))) {
-					return false;
-				}
-			}
-			return true;
-		}
 	}
 	
 }

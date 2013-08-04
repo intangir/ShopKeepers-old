@@ -3,29 +3,28 @@ package com.nisovin.shopkeepers.volatilecode;
 import java.lang.reflect.Field;
 import java.util.List;
 
-import net.minecraft.server.v1_5_R3.*;
+import net.minecraft.server.v1_6_R2.*;
 
-import org.bukkit.craftbukkit.v1_5_R3.entity.CraftLivingEntity;
-import org.bukkit.craftbukkit.v1_5_R3.entity.CraftPlayer;
-import org.bukkit.craftbukkit.v1_5_R3.entity.CraftVillager;
+import org.bukkit.craftbukkit.v1_6_R2.entity.CraftLivingEntity;
+import org.bukkit.craftbukkit.v1_6_R2.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_6_R2.entity.CraftVillager;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
 import org.bukkit.inventory.ItemStack;
 
-import com.nisovin.shopkeepers.Settings;
 import com.nisovin.shopkeepers.Shopkeeper;
 
-public class VolatileCode_1_5_R3 implements VolatileCodeHandle {
+public class VolatileCode_1_6_R2 implements VolatileCodeHandle {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public boolean openTradeWindow(Shopkeeper shopkeeper, Player player) {
+	public boolean openTradeWindow(List<ItemStack[]> recipes, Player player) {
 
 		try {
 			EntityVillager villager = new EntityVillager(((CraftPlayer)player).getHandle().world, 0);
 			
-			Field recipeListField = EntityVillager.class.getDeclaredField(Settings.recipeListVar);
+			Field recipeListField = EntityVillager.class.getDeclaredField("bu");
 			recipeListField.setAccessible(true);
 			MerchantRecipeList recipeList = (MerchantRecipeList)recipeListField.get(villager);
 			if (recipeList == null) {
@@ -33,25 +32,31 @@ public class VolatileCode_1_5_R3 implements VolatileCodeHandle {
 				recipeListField.set(villager, recipeList);
 			}
 			recipeList.clear();
-			for (ItemStack[] recipe : shopkeeper.getRecipes()) {
+			for (ItemStack[] recipe : recipes) {
 				recipeList.add(createMerchantRecipe(recipe[0], recipe[1], recipe[2]));
 			}
 			
-			villager.a_(((CraftPlayer)player).getHandle());
+			villager.a(((CraftPlayer)player).getHandle());
 			
 			return true;
 		} catch (Exception e) {
+			e.printStackTrace();
 			return false;
 		}
 	}
 	
+	@Override
+	public boolean openTradeWindow(Shopkeeper shopkeeper, Player player) {
+		return openTradeWindow(shopkeeper.getRecipes(), player);
+	}
+
 	@SuppressWarnings("rawtypes")
 	@Override
 	public void overwriteLivingEntityAI(LivingEntity entity) {
 		try {
 			EntityLiving ev = ((CraftLivingEntity)entity).getHandle();
 			
-			Field goalsField = EntityLiving.class.getDeclaredField("goalSelector");
+			Field goalsField = EntityInsentient.class.getDeclaredField("goalSelector");
 			goalsField.setAccessible(true);
 			PathfinderGoalSelector goals = (PathfinderGoalSelector) goalsField.get(ev);
 			
@@ -64,8 +69,8 @@ public class VolatileCode_1_5_R3 implements VolatileCodeHandle {
 			list = (List)listField.get(goals);
 			list.clear();
 
-			goals.a(0, new PathfinderGoalFloat(ev));
-			goals.a(1, new PathfinderGoalLookAtPlayer(ev, EntityHuman.class, 12.0F, 1.0F));
+			goals.a(0, new PathfinderGoalFloat((EntityInsentient) ev));
+			goals.a(1, new PathfinderGoalLookAtPlayer((EntityInsentient) ev, EntityHuman.class, 12.0F, 1.0F));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}		
@@ -77,7 +82,7 @@ public class VolatileCode_1_5_R3 implements VolatileCodeHandle {
 		try {
 			EntityVillager ev = ((CraftVillager)villager).getHandle();
 			
-			Field goalsField = EntityLiving.class.getDeclaredField("goalSelector");
+			Field goalsField = EntityInsentient.class.getDeclaredField("goalSelector");
 			goalsField.setAccessible(true);
 			PathfinderGoalSelector goals = (PathfinderGoalSelector) goalsField.get(ev);
 			
@@ -114,9 +119,9 @@ public class VolatileCode_1_5_R3 implements VolatileCodeHandle {
 		return recipe;
 	}
 	
-	private net.minecraft.server.v1_5_R3.ItemStack convertItemStack(org.bukkit.inventory.ItemStack item) {
+	private net.minecraft.server.v1_6_R2.ItemStack convertItemStack(org.bukkit.inventory.ItemStack item) {
 		if (item == null) return null;
-		return org.bukkit.craftbukkit.v1_5_R3.inventory.CraftItemStack.asNMSCopy(item);
+		return org.bukkit.craftbukkit.v1_6_R2.inventory.CraftItemStack.asNMSCopy(item);
 	}
 	
 }

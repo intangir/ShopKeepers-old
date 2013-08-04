@@ -74,6 +74,12 @@ public class VillagerListener implements Listener {
 			} else if (shopkeeper == null) {
 				// non-shop keeper villager
 				
+				// if its a citizens2 NPC don't mess with the event 
+				if(villager.hasMetadata("NPC"))
+				{
+					return;
+				}
+				
 				Player player = event.getPlayer();
 
 				// hire him if holding his hiring item

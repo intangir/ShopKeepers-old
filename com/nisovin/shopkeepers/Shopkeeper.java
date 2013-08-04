@@ -1,14 +1,19 @@
 package com.nisovin.shopkeepers;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import com.nisovin.shopkeepers.shopobjects.ShopObject;
 
@@ -182,7 +187,33 @@ public abstract class Shopkeeper {
 	 * @param event the click event
 	 * @return how the main plugin should handle the click
 	 */
-	public abstract EditorClickResult onEditorClick(InventoryClickEvent event);	
+	public EditorClickResult onEditorClick(InventoryClickEvent event) {
+		// check for special buttons
+		if (event.getRawSlot() == 8) {
+			// it's the inventory button - open the inventory
+			event.setCancelled(true);
+			saveEditor(event.getInventory());
+			return EditorClickResult.ACCESS_INVENTORY;
+		} else if (event.getRawSlot() == 17) {
+			// it's the cycle button - cycle to next type
+			if (event.getCursor() != null && event.getCursor().getType() != Material.AIR) {
+				shopObject.setItem(event.getCursor().clone());
+			} else {
+				shopObject.cycleType();
+			}
+			event.setCancelled(true);
+			return EditorClickResult.SAVE_AND_CONTINUE;
+		} else if (event.getRawSlot() == 26) {
+			// it's the delete button - remove the shopkeeper
+			delete();
+			event.setCancelled(true);
+			return EditorClickResult.DELETE_SHOPKEEPER;
+		} else {
+			return EditorClickResult.NOTHING;
+		}
+	}
+	
+	protected abstract void saveEditor(Inventory inv);
 	
 	/**
 	 * Called when a player closes the editor window.
@@ -198,5 +229,44 @@ public abstract class Shopkeeper {
 	
 	protected void closeInventory(HumanEntity player) {
 		ShopkeepersPlugin.plugin.closeInventory(player);
+	}
+
+	protected int getNewAmountAfterEditorClick(int amount, InventoryClickEvent event) {
+		if (event.isLeftClick()) {
+			if (event.isShiftClick()) {
+				amount += 10;
+			} else {
+				amount += 1;
+			}
+		} else if (event.isRightClick()) {
+			if (event.isShiftClick()) {
+				amount -= 10;
+			} else {
+				amount -= 1;
+			}
+		} else if (event.getClick() == ClickType.MIDDLE) {
+			amount = 64;
+		} else if (event.getHotbarButton() >= 0) {
+			amount = event.getHotbarButton();
+		}
+		return amount;
+	}
+
+	protected void setActionButtons(Inventory inv) {
+		inv.setItem(8, setItemMetadata(new ItemStack(Settings.inventoryItem), Settings.msgButtonInv, Settings.tipButtonInv));
+		inv.setItem(17, setItemMetadata(new ItemStack(shopObject.getTypeItem()), Settings.msgButtonType, Settings.tipButtonType));
+		inv.setItem(26, setItemMetadata(new ItemStack(Settings.createItemId, 1, Settings.createItemData), Settings.msgButtonDelete, Settings.tipButtonDelete));
+	}
+
+	protected ItemStack setItemMetadata(ItemStack item, String name, String lore) {
+		ItemMeta im = item.getItemMeta();
+		im.setDisplayName(name);
+		ArrayList<String> lores = new ArrayList<String>();
+		for(String loreline: lore.split("\n")) {
+			lores.add(loreline);
+		}
+		im.setLore(lores);
+		item.setItemMeta(im);
+		return item;
 	}
 }

@@ -28,6 +28,8 @@ public abstract class ShopObject {
 	
 	public abstract Location getActualLocation();
 	
+	public abstract void setItem(ItemStack item);
+
 	public abstract boolean check(String world, int x, int y, int z);
 	
 	public abstract void despawn();

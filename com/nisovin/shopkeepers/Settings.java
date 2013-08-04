@@ -35,8 +35,8 @@ public class Settings {
 
 	public static String editorTitle = "Shopkeeper Editor";
 	public static int inventoryItem = Material.CHEST.getId();
-	public static int deleteItemId = Material.MONSTER_EGG.getId();
-	public static short deleteItemData = 120;
+	public static int createItemId = Material.MONSTER_EGG.getId();
+	public static short createItemData = 120;
 	
 	public static int currencyItem = Material.EMERALD.getId();
 	public static short currencyItemData = 0;
@@ -50,7 +50,16 @@ public class Settings {
 	public static int highCurrencyMinCost = 20;
 	public static int highZeroItem = Material.SLIME_BALL.getId();
 	
-	public static String inventoryTitle = "Shop Inventory";
+	public static String msgButtonInv = "View Inventory";
+	public static String tipButtonInv = "lets you view the inventory\nyour vendor is using";
+
+	public static String msgButtonType = "Change Clothes";
+	public static String tipButtonType = "changes the look\nof your shopkeeper";
+
+	public static String msgButtonDelete = "Close Shop";
+	public static String tipButtonDelete = "close this shop location\nreturn vendor to egg";
+
+	//public static String inventoryTitle = "Shop Inventory";
 	
 	public static String msgSelectedNormalShop = "&aNormal shopkeeper selected (sells items to players).";
 	public static String msgSelectedBookShop = "&aBook shopkeeper selected (sell books).";
@@ -66,14 +75,10 @@ public class Settings {
 	public static String msgTradeShopCreated = "&aShopkeeper created!\n&aAdd items you want to sell to your chest, then\n&aright-click the villager while sneaking to modify costs.";
 	public static String msgAdminShopCreated = "&aShopkeeper created!\n&aRight-click the villager while sneaking to modify trades.";
 	public static String msgTooManyShops = "&aYou have too many shops.";
-	public static String msgShopInUse = "&aSomeone else is already purchasing from this shopkeeper.";
 	
 	public static String msgVillagerHired = "&aYou hired the villager.";
 	public static String msgVillagerForHire = "&aThe villager offered his services as a shopkeeper in exchange for " + Material.getMaterial(hireVillagerItem).toString() + ".";
 
-	
-	
-	public static String recipeListVar = "i";
 	
 	public static void loadConfiguration(Configuration config) {
 		try {

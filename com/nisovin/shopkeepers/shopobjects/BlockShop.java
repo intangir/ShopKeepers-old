@@ -49,6 +49,11 @@ public class BlockShop extends ShopObject {
 	}
 
 	@Override
+	public void setItem(ItemStack item) {
+		
+	}
+
+	@Override
 	public boolean check(String world, int x, int y, int z) {
 		return false;
 	}

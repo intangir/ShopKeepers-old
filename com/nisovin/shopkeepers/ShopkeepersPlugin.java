@@ -25,6 +25,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -58,9 +59,9 @@ public class ShopkeepersPlugin extends JavaPlugin {
 		
 		// load volatile code handler
 		try {
-			Class.forName("net.minecraft.server.v1_5_R3.MinecraftServer");
-			volatileCodeHandle = new VolatileCode_1_5_R3();
-		} catch (ClassNotFoundException e_1_5_r3) {
+			Class.forName("net.minecraft.server.v1_6_R2.MinecraftServer");
+			volatileCodeHandle = new VolatileCode_1_6_R2();
+		} catch (ClassNotFoundException e_1_6_r2) {
 		}
 		if (volatileCodeHandle == null) {
 			getLogger().severe("Incompatible server version: Shopkeepers plugin cannot be enabled.");
@@ -332,6 +333,10 @@ public class ShopkeepersPlugin extends JavaPlugin {
 		return activeShopkeepers.containsKey("entity" + entity.getEntityId());
 	}	
 
+	public boolean isShopkeeperEditorWindow(Inventory inventory) {
+		return inventory.getTitle().equals(Settings.editorTitle);
+	}
+
 	void addShopkeeper(Shopkeeper shopkeeper) {
 		// add to chunk list
 		List<Shopkeeper> list = allShopkeepersByChunk.get(shopkeeper.getChunk());
@@ -351,22 +356,22 @@ public class ShopkeepersPlugin extends JavaPlugin {
 				while (editors.hasNext()) {
 					String name = editors.next();
 					if (editing.get(name).equals(id)) {
+						editors.remove();
 						Player player = Bukkit.getPlayerExact(name);
 						if (player != null) {
 							player.closeInventory();
 						}
-						editors.remove();
 					}
 				}
 				Iterator<String> purchasers = purchasing.keySet().iterator();
 				while (purchasers.hasNext()) {
 					String name = purchasers.next();
 					if (purchasing.get(name).equals(id)) {
+						purchasers.remove();
 						Player player = Bukkit.getPlayerExact(name);
 						if (player != null) {
 							player.closeInventory();
 						}
-						purchasers.remove();
 					}
 				}
 			}
@@ -527,6 +532,10 @@ public class ShopkeepersPlugin extends JavaPlugin {
 	
 	public static VolatileCodeHandle getVolatileCode() {
 		return volatileCodeHandle;
+	}
+	
+	public static ShopkeepersPlugin getInstance() {
+		return plugin;
 	}
 	
 	public static void debug(String message) {

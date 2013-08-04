@@ -7,6 +7,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.inventory.ItemStack;
 
 import com.nisovin.shopkeepers.ShopkeepersPlugin;
 
@@ -48,7 +49,7 @@ public abstract class LivingEntityShop extends ShopObject {
 			for (Entity e : entities) {
 				if (e.getType() == getEntityType() && e.getUniqueId().toString().equalsIgnoreCase(uuid) && e.isValid()) {
 					entity = (LivingEntity)e;
-					entity.setHealth(entity.getMaxHealth());
+					//entity.setHealth(entity.getMaxHealth());
 					entity.teleport(loc);
 					break;
 				}
@@ -94,6 +95,14 @@ public abstract class LivingEntityShop extends ShopObject {
 	}
 	
 	@Override
+	public void setItem(ItemStack item) {
+		if (entity != null && entity.isValid()) {
+			entity.getEquipment().setItemInHand(item);
+			entity.getEquipment().setItemInHandDropChance(0);
+		}
+	}
+
+	@Override
 	public boolean check(String world, int x, int y, int z) {
 		if (entity == null || !entity.isValid()) {
 			boolean spawned = spawn(world, x, y, z);
@@ -120,7 +129,7 @@ public abstract class LivingEntityShop extends ShopObject {
 	public void despawn() {
 		if (entity != null) {
 			entity.remove();
-			entity.setHealth(0);
+			entity.setHealth(0D);
 			entity = null;
 		}
 	}

@@ -12,11 +12,11 @@ import java.util.List;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -45,7 +45,7 @@ class ShopListener implements Listener {
 			String id = plugin.editing.remove(name);
 			Shopkeeper shopkeeper = plugin.activeShopkeepers.get(id);
 			if (shopkeeper != null) {
-				if (event.getInventory().getTitle().equals(Settings.editorTitle)) {
+				if (plugin.isShopkeeperEditorWindow(event.getInventory())) {
 					shopkeeper.onEditorClose(event);
 					plugin.closeTradingForShopkeeper(id);
 					plugin.save();
@@ -60,10 +60,11 @@ class ShopListener implements Listener {
 	@EventHandler
 	void onInventoryClick(InventoryClickEvent event) {
 		// shopkeeper editor click
-		if (event.getInventory().getTitle().equals(Settings.editorTitle)) {
-			if (plugin.editing.containsKey(event.getWhoClicked().getName())) {
+		if (plugin.isShopkeeperEditorWindow(event.getInventory())) {
+			String playerName = event.getWhoClicked().getName();
+			if (plugin.editing.containsKey(playerName)) {
 				// get the shopkeeper being edited
-				String id = plugin.editing.get(event.getWhoClicked().getName());
+				String id = plugin.editing.get(playerName);
 				Shopkeeper shopkeeper = plugin.activeShopkeepers.get(id);
 				if (shopkeeper != null) {
 					// editor click
@@ -74,22 +75,18 @@ class ShopListener implements Listener {
 						
 						// return egg
 						if (Settings.deletingPlayerShopReturnsEgg && shopkeeper instanceof PlayerShopkeeper) {
-							HashMap<Integer, ItemStack> hash = event.getWhoClicked().getInventory().addItem(new ItemStack(Material.MONSTER_EGG, 1, (short)120));
-				    		// or drop it on ground
-							if (!hash.isEmpty()) {
-								Iterator<Integer> it = hash.keySet().iterator();
-								if (it.hasNext()) {
-									event.getWhoClicked().getWorld().dropItem(event.getWhoClicked().getLocation(), hash.get(it.next()));
-								}
+							ItemStack creationItem = new ItemStack(Settings.createItemId, 1, (short)Settings.createItemData);
+							HashMap<Integer, ItemStack> remaining = event.getWhoClicked().getInventory().addItem(creationItem);
+							if (!remaining.isEmpty()) {
+								event.getWhoClicked().getWorld().dropItem(shopkeeper.getActualLocation(), creationItem);
 							}
-
 						}
 						
 						// remove shopkeeper
 						plugin.activeShopkeepers.remove(id);
 						plugin.allShopkeepersByChunk.get(shopkeeper.getChunk()).remove(shopkeeper);
 						plugin.save();
-					} else if (result == EditorClickResult.DONE_EDITING) {
+					} else if (result == EditorClickResult.ACCESS_INVENTORY) {
 						// end the editing session
 						plugin.closeTradingForShopkeeper(id);
 						plugin.save();
@@ -110,8 +107,9 @@ class ShopListener implements Listener {
 		}
 		// purchase click
 		if (event.getInventory().getName().equals("mob.villager") && event.getRawSlot() == 2 && plugin.purchasing.containsKey(event.getWhoClicked().getName())) {
+			String playerName = event.getWhoClicked().getName();
 			// prevent shift clicks
-			if (event.isShiftClick()) {
+			if (!event.isLeftClick() || event.getAction() == InventoryAction.COLLECT_TO_CURSOR) {
 				event.setCancelled(true);
 				return;
 			}
@@ -152,7 +150,7 @@ class ShopListener implements Listener {
 						if (isNew) writer.append("TIME,PLAYER,SHOP TYPE,SHOP POS,OWNER,ITEM TYPE,DATA,QUANTITY,CURRENCY 1,CURRENCY 2\n");
 						writer.append("\"" + 
 								new SimpleDateFormat("HH:mm:ss").format(new Date()) + "\",\"" + 
-								event.getWhoClicked().getName() + "\",\"" + 
+								playerName + "\",\"" + 
 								shopkeeper.getPositionString() + "\",\"" + 
 								owner + "\",\"" + 
 								item.getType().name() + "\",\"" + 
@@ -172,7 +170,7 @@ class ShopListener implements Listener {
 	private boolean itemEquals(ItemStack item1, ItemStack item2) {
 		if ((item1 == null || item1.getTypeId() == 0) && (item2 == null || item2.getTypeId() == 0)) return true;
 		if (item1 == null || item2 == null) return false;
-		return item1.getTypeId() == item2.getTypeId() && item1.getDurability() == item2.getDurability() && itemNamesEqual(item1, item2);
+		return item1.isSimilar(item2);
 	}
 
 	private static String getNameOfItem(ItemStack item) {
@@ -189,12 +187,6 @@ class ShopListener implements Listener {
 		if (item == null || item.getTypeId() == 0) return "(nothing)";
 		String name = getNameOfItem(item);
 		return item.getTypeId() + ":" + item.getDurability() + (!name.isEmpty() ? ":" + name : "");
-	}
-
-	private static boolean itemNamesEqual(ItemStack item1, ItemStack item2) {
-		String name1 = getNameOfItem(item1);
-		String name2 = getNameOfItem(item2);
-		return (name1.equals(name2));
 	}
 
 	@EventHandler

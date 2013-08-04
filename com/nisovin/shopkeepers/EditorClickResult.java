@@ -18,9 +18,9 @@ public enum EditorClickResult {
 	SAVE_AND_CONTINUE,
 	
 	/**
-	 * Done editing, so save and close the editor window.
+	 * Save and access the underlying inventory.
 	 */
-	DONE_EDITING,
+	ACCESS_INVENTORY,
 	
 	/**
 	 * Delete this shopkeeper and save.

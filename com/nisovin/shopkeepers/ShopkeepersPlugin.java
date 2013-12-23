@@ -60,8 +60,8 @@ public class ShopkeepersPlugin extends JavaPlugin {
 		// load volatile code handler
 		try {
 			Class.forName("net.minecraft.server.v1_6_R2.MinecraftServer");
-			volatileCodeHandle = new VolatileCode_1_6_R2();
-		} catch (ClassNotFoundException e_1_6_r2) {
+			volatileCodeHandle = new VolatileCode_1_6_R3();
+		} catch (ClassNotFoundException e_1_6_r3) {
 		}
 		if (volatileCodeHandle == null) {
 			getLogger().severe("Incompatible server version: Shopkeepers plugin cannot be enabled.");
